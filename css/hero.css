@@ -71,13 +71,16 @@
     padding: 0 18px;
     z-index: 12;
     pointer-events: none;
-    /* Exclude bottom overlay area from centering */
-    margin-top: -10%;
+    margin-top: 0;
 }
 
 .buttons {
     pointer-events: auto;
     margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     padding: 0;
     height: 48px;
     width: 48px;
@@ -153,6 +156,10 @@
 
 #articleTitle h2 {
     margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     font-size: 1.35em;
     font-weight: 700;
     line-height: 1.28;
@@ -167,6 +174,10 @@
     font-size: 0.88em;
     line-height: 1.45;
     margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 #articleTitle a img {
@@ -216,6 +227,10 @@
     -webkit-backdrop-filter: blur(8px);
     color: #ffffff;
     margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .heroAuthorPill {
@@ -421,7 +436,7 @@
 }
 
 .companionCard:hover .companionTitle {
-    color: #fb923c;
+    color: #f87171;
 }
 
 .companionRank {
@@ -468,6 +483,10 @@
     font-weight: 600;
     line-height: 1.4;
     margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     color: var(--text-primary);
     transition: color 0.18s ease;
     display: -webkit-box;
@@ -483,7 +502,7 @@
 }
 
 .companionTitle a:hover {
-    color: #fb923c;
+    color: #f87171;
     text-decoration: none;
 }
 
@@ -491,6 +510,10 @@
     font-size: 11px;
     color: var(--text-muted);
     margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .companionFooter {
@@ -512,7 +535,6 @@
 }
 
 .companionViewAll:hover {
-    color: #fb923c;
+    color: #f87171;
     transform: translateX(2px);
 }
-

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editorial Studio - Add Project - Point of View | LoreGround</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="articles-data.js"></script>
+    <script src="projects-data.js"></script>
+    <script src="db.js"></script>
+</head>
+<body class="publishStudioBody">
+    <!-- Studio Header -->
+    <header class="studioHeader">
+        <div class="studioHeaderLeft">
+            <a href="index.html" class="logoLink" title="Home"><img src="images/logo.png" alt="Logo" id="logo"></a>
+        </div>
+        <div class="studioHeaderRight" id="studioHeaderRight">
+            <a href="projects.html" class="backHomeBtn" style="margin-right: 2px;">Projects &amp; Series</a>
+            <a href="index.html" class="backHomeBtn">&larr; Back to Website</a>
+            <button type="button" class="studioTopPublishBtn" id="studioTopPublishBtn" onclick="document.getElementById('publishForm').requestSubmit()">
+                Publish Article &rarr;
+            </button>
+            <div id="studioAccountDropdownSlot"></div>
+        </div>
+    </header>
+
+    <!-- Studio Layout -->
+    <main class="studioLayout">
+        <!-- Editor Column -->
+        <div class="studioEditorPane">
+            <div class="studioCard">
+                <div class="studioHeaderIntro">
+                    <span class="sectionBadge" id="studioBadge">Editorial Desk</span>
+                    <h1 id="studioHeading">Create New Project</h1>
+                    <p id="studioSubtitle">Assemble a multi-part essay collection, research anthology, or serial investigation.</p>
+                </div>
+
+                
+<form id="projectForm" onsubmit="handleProjectSubmit(event)">
+    <div id="projectStepOne" class="projectWizardStep">
+    <div class="formGroup">
+        <label for="projectTitle">Project Title *</label>
+        <input type="text" id="projectTitle" required maxlength="160" placeholder="e.g. The Atlantic World: Demographics, Trade, and Imperial Rule">
+    </div>
+    <div class="formGroup">
+        <label for="projectSubtitle">Subtitle / Brief Thesis</label>
+        <input type="text" id="projectSubtitle" maxlength="200" placeholder="A three-part inquiry into early modern institutions...">
+    </div>
+    <div class="formGroup">
+        <label for="projectDescription">Comprehensive Overview *</label>
+        <textarea id="projectDescription" required rows="4" maxlength="1200" placeholder="Explain the project's background, scope of inquiry..."></textarea>
+    </div>
+    
+    <div class="formGroup">
+        <label>Categories (Select at least one) *</label>
+        <div class="projectCategoryPicker">
+            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="History" checked> History</label>
+            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="World" checked> World</label>
+            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="Economy"> Economy</label>
+            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="Culture"> Culture</label>
+            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="Technology"> Technology</label>
+            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="Cinematography"> Cinematography</label>
+        </div>
+    </div>
+
+    <div class="formGroup">
+        <label for="projectCoverSelect">Cover Image Theme *</label>
+        <select id="projectCoverSelect" style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;">
+            <option value="images/spanish colonisation.png">Colonial & Imperial (Spanish Colonisation)</option>
+            <option value="images/orthaxis.jpg">Philosophical & Abstract (Orthaxis)</option>
+            <option value="images/hero.jpg">Classic Renaissance Editorial</option>
+        </select>
+    </div>
+    <div class="formGroup">
+        <label for="projectCoverUpload">Upload a cover image (optional)</label>
+        <input type="file" id="projectCoverUpload" accept="image/*">
+        <small class="formHint">Images are stored with the project in this browser.</small>
+    </div>
+    <button type="button" class="studioPrimarySubmitBtn wizardNextBtn" id="projectNextStepBtn">Next: Write the first article &rarr;</button>
+    </div>
+
+    <div id="projectStepTwo" class="projectWizardStep hidden">
+    <h3 style="margin-top: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">Initial Essay (Part 1 - Required)</h3>
+    
+    <div class="formGroup">
+        <label for="initialPartTitle">Part 1 Title *</label>
+        <input type="text" id="initialPartTitle" required placeholder="e.g. Part I: Demographic Collapse">
+    </div>
+    <div class="formGroup">
+        <label for="initialPartReadTime">Estimated Read Time (minutes) *</label>
+        <input type="number" id="initialPartReadTime" min="1" max="60" value="5" readonly>
+        <small class="formHint">Calculated automatically from the article body.</small>
+    </div>
+    <div class="formGroup">
+        <label for="initialPartBody">Part 1 Full Essay Body *</label>
+        <textarea id="initialPartBody" required rows="8" placeholder="Write or paste Part 1 essay content..."></textarea>
+    </div>
+    
+    <div class="studioActions" style="margin-top: 40px;">
+        <a href="projects.html" class="studioCancelBtn">Cancel</a>
+        <button type="button" class="studioCancelBtn" id="projectBackStepBtn">Back</button>
+        <button type="submit" class="studioPrimarySubmitBtn">Publish Project &rarr;</button>
+    </div>
+    </div>
+</form>
+
+            </div>
+        </div>
+
+        <!-- Sticky Live Preview Column -->
+        <aside class="studioPreviewPane">
+            <div class="previewStickyCard">
+                <div class="previewCardHeader">
+                    <div>
+                        <span class="previewSmallTag">Real-Time Simulation</span>
+                        <h3>Live Preview</h3>
+                    </div>
+                    <div class="previewTypeToggle">
+                        <button type="button" class="previewToggleBtn active" id="btnPreviewCard" onclick="switchPreviewMode('card')">Grid Card</button>
+                        <button type="button" class="previewToggleBtn" id="btnPreviewHero" onclick="switchPreviewMode('hero')">Hero Slide</button>
+                    </div>
+                </div>
+
+                <!-- Live Grid Card Simulation -->
+                <div id="simCardView" class="simulationContainer">
+                    <div class="articleCard simArticleCard">
+                        <div id="articleCardImage" class="simCardImage">
+                            <img id="simCardImg" src="images/spanish colonisation.png" alt="Preview">
+                        </div>
+                        <div id="articleCardContent" class="simCardContent">
+                            <div class="cardMeta"><span class="cardMetaCat" id="simCategoryBadge">History</span><span class="cardMetaSep">·</span><span id="simCardReadTime">4 min read</span></div>
+                            <h2 id="simCardTitle">Maritime Empires and Global Commerce</h2>
+                            <p id="simCardDesc">A concise 1-2 sentence hook for the hero carousel and article card...</p>
+                        </div>
+                        <div id="articleCardInfo" class="simCardInfo articleCardFooter">
+                            <div class="cardAuthorRow">
+                                <div class="cardAuthorLink">
+                                    <img id="simCardAvatar" src="images/mert_img.png" alt="Author" class="cardAuthorAvatar">
+                                    <span class="cardAuthorName" id="simCardAuthor">Ali Mert Bayar</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Hero Slide Simulation (Matches main site .article exactly!) -->
+                <div id="simHeroView" class="simulationContainer hidden">
+                    <div class="simMainArticle">
+                        <div class="simHeroThumbnailWrap">
+                            <img id="simHeroImg" src="images/spanish colonisation.png" alt="Hero Preview">
+                            <div class="simHeroBackdropGradient"></div>
+                        </div>
+                        <div class="simHeroNavButtons">
+                            <span class="simNavBtn"><img src="images/left arrow.png" alt="left"></span>
+                            <span class="simNavBtn"><img src="images/right arrow.png" alt="right"></span>
+                        </div>
+                        <div class="simHeroOverlayContent">
+                            <div class="simHeroTextWrap">
+                                <div class="simHeroTitleRow">
+                                    <h2 id="simHeroTitle">Maritime Empires and Global Commerce</h2>
+                                    <span class="simHeroArrow"><img src="images/arrow.png" alt="arrow"></span>
+                                </div>
+                                <div class="simHeroDescWrap">
+                                    <p id="simHeroDesc">A concise 1-2 sentence hook for the hero carousel and article card...</p>
+                                </div>
+                            </div>
+                            <div class="simHeroInfoRow">
+                                <div class="simHeroParams">
+                                    <span class="simHeroPill heroAuthorPill" id="simHeroAuthorPill">
+                                        <img id="simHeroAvatar" src="images/mert_img.png" alt="Author" class="heroAuthorAvatar">
+                                        <span id="simHeroAuthor">By Ali Mert Bayar</span>
+                                    </span>
+                                    <span class="simHeroPill" id="simHeroReadTime">1 min read</span>
+                                </div>
+                                <div class="simHeroKeys">
+                                    <span class="simHeroPill" id="simHeroCategory">History</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checklist -->
+                <div class="readinessChecklist">
+                    <h4>Publishing Checklist</h4>
+                    <div class="checkItem" id="checkTitle">
+                        <span class="checkIcon">&bull;</span> Title provided (max 160 chars)
+                    </div>
+                    <div class="checkItem" id="checkAuthor">
+                        <span class="checkIcon">&bull;</span> Author byline provided (max 30 chars)
+                    </div>
+                    <div class="checkItem" id="checkSummary">
+                        <span class="checkIcon">&bull;</span> Card summary provided (max 400 chars)
+                    </div>
+                    <div class="checkItem" id="checkBody">
+                        <span class="checkIcon">&bull;</span> Full article content drafted
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <footer class="studioFooter">
+        <p>&copy; 2026 Article Website. Editorial Management Studio.</p>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!DB.isAuthenticated()) {
+            window.location.href = 'auth.html?redirect=add-project.html&reason=auth_required';
+        }
+        if (typeof DB !== 'undefined' && DB.renderHeaderAuth) {
+            DB.renderHeaderAuth('studioAccountDropdownSlot');
+        }
+
+        const stepOne = document.getElementById('projectStepOne');
+        const stepTwo = document.getElementById('projectStepTwo');
+        const body = document.getElementById('initialPartBody');
+        const readTime = document.getElementById('initialPartReadTime');
+        const coverUpload = document.getElementById('projectCoverUpload');
+        const calculateReadTime = () => {
+            const words = body.value.trim().split(/\s+/).filter(Boolean).length;
+            readTime.value = Math.max(1, Math.ceil(words / 200));
+        };
+
+        document.getElementById('projectNextStepBtn').addEventListener('click', () => {
+            if (!document.getElementById('projectTitle').value.trim() || !document.getElementById('projectDescription').value.trim()) {
+                alert('Please provide a project title and overview before continuing.');
+                return;
+            }
+            stepOne.classList.add('hidden');
+            stepTwo.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        document.getElementById('projectBackStepBtn').addEventListener('click', () => {
+            stepTwo.classList.add('hidden');
+            stepOne.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        body.addEventListener('input', calculateReadTime);
+        coverUpload.addEventListener('change', () => {
+            const file = coverUpload.files && coverUpload.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => { coverUpload.dataset.image = reader.result; };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    function switchPreviewMode(mode) {
+        const card = document.getElementById('simCardView');
+        const hero = document.getElementById('simHeroView');
+        const cardButton = document.getElementById('btnPreviewCard');
+        const heroButton = document.getElementById('btnPreviewHero');
+        const showHero = mode === 'hero';
+        card.classList.toggle('hidden', showHero);
+        hero.classList.toggle('hidden', !showHero);
+        cardButton.classList.toggle('active', !showHero);
+        heroButton.classList.toggle('active', showHero);
+    }
+
+    function handleProjectSubmit(event) {
+        event.preventDefault();
+        try {
+            const checkboxes = document.querySelectorAll('.projCatCb:checked');
+            const categories = Array.from(checkboxes).map(cb => cb.value);
+            if (categories.length === 0) {
+                alert('Please select at least one category.');
+                return;
+            }
+
+            const projectData = {
+                title: document.getElementById('projectTitle').value,
+                subtitle: document.getElementById('projectSubtitle').value,
+                description: document.getElementById('projectDescription').value,
+                cover: document.getElementById('projectCoverUpload').dataset.image || document.getElementById('projectCoverSelect').value,
+                categories: categories,
+                parts: [{
+                    title: document.getElementById('initialPartTitle').value,
+                    readTime: parseInt(document.getElementById('initialPartReadTime').value, 10) || 1,
+                    body: document.getElementById('initialPartBody').value
+                }]
+            };
+
+            const savedProject = DB.saveProject(projectData);
+            alert('Project created successfully!');
+            window.location.href = 'projects.html?id=' + encodeURIComponent(savedProject.id);
+        } catch(err) {
+            alert('Error creating project: ' + err.message);
+        }
+    }
+</script>
+
+    <!-- GitHub Pages Sync Modal -->
+    <div class="syncModalOverlay" id="syncModalOverlay">
+        <div class="syncModalCard">
+            <div class="syncModalHeader">
+                <h3>Article Published!</h3>
+                <span class="syncModalBadge">✓ Saved Locally</span>
+            </div>
+            <div class="syncModalBody">
+                <p>Your article is live in your browser. Since GitHub Pages is a static server, to ensure all visitors on the web can read it, download the updated files below and push them to your repository:</p>
+                <div class="syncModalDownloadRow">
+                    <button type="button" class="syncDownloadBtn" id="syncDownloadJsBtn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download articles-data.js
+                    </button>
+                    <button type="button" class="syncDownloadBtn" id="syncDownloadJsonBtn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download articles.json
+                    </button>
+                </div>
+                <div class="syncModalHint">
+                    💡 <strong>Tip:</strong> If you run <code>python3 server.py</code> while writing, all articles are automatically saved to these files without needing manual downloads!
+                </div>
+            </div>
+            <div class="syncModalFooter">
+                <button type="button" class="syncModalPrimaryBtn" id="syncContinueBtn">
+                    View Published Article &rarr;
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

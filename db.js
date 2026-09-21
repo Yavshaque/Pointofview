@@ -383,7 +383,9 @@ const DB = (function() {
         } catch (e) {
             console.error('Error reading projects:', e);
         }
-        const seeds = getSeedProjects();
+        const seeds = (typeof window !== 'undefined' && Array.isArray(window.PROJECTS_DATABASE) && window.PROJECTS_DATABASE.length)
+            ? window.PROJECTS_DATABASE
+            : getSeedProjects();
         try {
             localStorage.setItem(PROJECTS_KEY, JSON.stringify(seeds));
         } catch (e) {}
@@ -746,9 +748,9 @@ const DB = (function() {
             const unreadInquiries = isFounder ? getUnreadContactMessageCount(user.id || user.email) : 0;
 
             const writeBtn = !hideWriteBtn ? `
-                <a href="publish.html" id="publishNavBtn">
+                <a href="add-essay.html" id="publishNavBtn" class="publishNavBtn">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                    Write Article
+                    <span>Add Article</span>
                 </a>
             ` : '';
 
@@ -794,7 +796,7 @@ const DB = (function() {
                                 <span>My Articles</span>
                             </button>
 
-                            <a href="publish.html" class="dropdownItem">
+                            <a href="add-essay.html" class="dropdownItem">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                                 <span>Write an Article</span>
                             </a>
@@ -836,10 +838,10 @@ const DB = (function() {
             `;
         } else {
             container.innerHTML = `
-                <a href="publish.html" id="publishNavBtn" onclick="return DB.handleWriteClick(event)">
+                ${!hideWriteBtn ? `<a href="add-essay.html" id="publishNavBtn" class="publishNavBtn" onclick="return DB.handleWriteClick(event)">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                    Write Article
-                </a>
+                    <span>Add Article</span>
+                </a>` : ''}
                 <a href="auth.html" id="signInButton">Sign In</a>
             `;
         }
@@ -848,7 +850,7 @@ const DB = (function() {
     function handleWriteClick(e) {
         if (!isAuthenticated()) {
             if (e) e.preventDefault();
-            window.location.href = 'auth.html?redirect=publish.html&reason=auth_required';
+            window.location.href = 'auth.html?redirect=add-essay.html&reason=auth_required';
             return false;
         }
         return true;
@@ -907,7 +909,7 @@ const DB = (function() {
                 <div class="adminTabContent" id="adminTabArticles">
                     <div class="adminTableHeaderRow">
                         <span class="adminSectionLabel">Manage All Published Articles</span>
-                        <a href="publish.html" class="adminAddBtn">+ Write New</a>
+                        <a href="add-essay.html" class="adminAddBtn">+ Write New</a>
                     </div>
                     <div class="adminTableWrap">
                         <table class="adminTable">
@@ -930,7 +932,7 @@ const DB = (function() {
                                             <span class="adminTopicBadge">${(art.keywords || []).filter(k => k.toLowerCase() !== 'published').join(', ') || 'Article'}</span>
                                         </td>
                                         <td class="adminActionsCell">
-                                            <a href="publish.html?edit=${encodeURIComponent(art.id)}" class="adminEditLink">Edit</a>
+                                            <a href="add-essay.html?edit=${encodeURIComponent(art.id)}" class="adminEditLink">Edit</a>
                                             <button type="button" class="adminDeleteBtn" onclick="DB.adminDeleteArticlePrompt('${art.id}', '${escapeQuotes(art.title)}')">Delete</button>
                                         </td>
                                     </tr>
@@ -1078,7 +1080,7 @@ const DB = (function() {
         const user = getCurrentUser();
         if (!user) {
             alert('Please sign in to view your articles.');
-            window.location.href = 'auth.html?redirect=publish.html';
+            window.location.href = 'auth.html?redirect=add-essay.html';
             return;
         }
 
@@ -1133,12 +1135,12 @@ const DB = (function() {
                             <p style="margin: 0 auto 16px auto; color: var(--text-muted); max-width: 440px; font-size: 14px; line-height: 1.5;">
                                 You haven't published any articles yet. Share your historical insights, economic analyses, or cultural dispatches with readers worldwide.
                             </p>
-                            <a href="publish.html" class="adminAddBtn" style="display: inline-block; padding: 10px 22px; font-size: 14px; text-decoration: none;">+ Write Your First Article</a>
+                            <a href="add-essay.html" class="adminAddBtn" style="display: inline-block; padding: 10px 22px; font-size: 14px; text-decoration: none;">+ Write Your First Article</a>
                         </div>
                     ` : `
                         <div class="adminTableHeaderRow">
                             <span class="adminSectionLabel">Articles Authored by You</span>
-                            <a href="publish.html" class="adminAddBtn">+ Write New</a>
+                            <a href="add-essay.html" class="adminAddBtn">+ Write New</a>
                         </div>
                         <div class="adminTableWrap">
                             <table class="adminTable">
@@ -1165,7 +1167,7 @@ const DB = (function() {
                                             <td style="font-size: 12px; color: var(--text-muted);">${art.date || 'Recent'}</td>
                                             <td class="adminActionsCell">
                                                 <a href="article.html?id=${encodeURIComponent(art.id)}" class="adminEditLink" style="color: var(--text-primary); border-color: var(--border-subtle);">Read</a>
-                                                <a href="publish.html?edit=${encodeURIComponent(art.id)}" class="adminEditLink">Edit</a>
+                                                <a href="add-essay.html?edit=${encodeURIComponent(art.id)}" class="adminEditLink">Edit</a>
                                                 <button type="button" class="adminDeleteBtn" onclick="DB.myArticlesDeletePrompt('${art.id}', '${escapeQuotes(art.title)}')">Delete</button>
                                             </td>
                                         </tr>
@@ -1267,7 +1269,7 @@ const DB = (function() {
 
                     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
                         <button type="button" class="adminOutlineBtn" onclick="DB.closeAccountProfileModal()">Close</button>
-                        <a href="publish.html" class="adminAddBtn" style="padding: 8px 18px; text-decoration: none;">+ Write Article</a>
+                        <a href="add-essay.html" class="adminAddBtn" style="padding: 8px 18px; text-decoration: none;">+ Write Essay</a>
                     </div>
                 </div>
             </div>

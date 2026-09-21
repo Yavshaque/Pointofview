@@ -28,9 +28,9 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #fb923c;
-    background: var(--accent-orange-subtle);
-    border: 1px solid var(--accent-orange-border);
+    color: #fca5a5;
+    background: var(--accent-red-subtle);
+    border: 1px solid var(--accent-red-border);
     padding: 4px 12px;
     border-radius: 999px;
     margin-bottom: 8px;
@@ -208,7 +208,7 @@
     font-size: 0.83rem;
     line-height: 1.55;
     color: var(--text-secondary);
-    /* Full summary shown — no line-clamp */
+    display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
 }
 
 .articleCardFooter {

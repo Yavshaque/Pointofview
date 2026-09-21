@@ -594,7 +594,7 @@
 
 .simHeroNavButtons {
     position: absolute;
-    top: 42%;
+    top: 52%;
     left: 0;
     width: 100%;
     display: flex;
@@ -666,6 +666,10 @@
 }
 
 .simHeroDescWrap p {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     font-size: 11px;
     color: rgba(255, 255, 255, 0.88);
     margin: 0;
@@ -899,3 +903,63 @@
     opacity: 0.9;
 }
 
+/* Project creation wizard */
+.projectWizardStep.hidden {
+    display: none;
+}
+
+.projectStepHeading {
+    margin: 0 0 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.projectStepHeading span {
+    color: var(--accent-primary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.projectStepHeading h2 {
+    margin: 8px 0 4px;
+    color: var(--text-primary);
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.projectStepHeading p,
+.formHint {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.wizardNextBtn {
+    margin-top: 14px;
+}
+
+.projectCategoryPicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.projectCategoryOption {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 13px;
+    border: 1px solid var(--border-glass);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, .04);
+    cursor: pointer;
+    transition: border-color .2s ease, color .2s ease, background .2s ease;
+}
+
+.projectCategoryOption:has(input:checked) {
+    color: var(--text-primary);
+    border-color: rgba(59, 124, 244, .65);
+    background: var(--accent-subtle);
+}

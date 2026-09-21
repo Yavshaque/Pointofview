@@ -91,7 +91,26 @@ function initializeArticles(baseData) {
     const deletedIds = (typeof DB !== 'undefined' && DB.getDeletedArticleIds) ? DB.getDeletedArticleIds() : new Set();
     const customIds = new Set(customArticles.map(a => String(a.id)));
     const filteredBase = defaultData.filter(a => !customIds.has(String(a.id)));
-    articlesData = [...customArticles, ...filteredBase].filter(a => !deletedIds.has(String(a.id)));
+    let activeProjects = [];
+    if (typeof DB !== 'undefined' && DB.getProjects) {
+        const projects = DB.getProjects();
+        activeProjects = projects.filter(p => p.parts && p.parts.length > 0).map(p => {
+            const firstPart = p.parts[0];
+            return {
+                id: p.id,
+                title: p.title,
+                author: p.author,
+                date: firstPart.date || p.createdAt || '2026-01-01',
+                image: p.cover || 'images/spanish colonisation.png',
+                readTime: p.parts.reduce((acc, part) => acc + (part.readTime || 4), 0),
+                description: p.subtitle || p.description,
+                keywords: p.categories || ['Series'],
+                isProject: true
+            };
+        });
+    }
+
+    articlesData = [...activeProjects, ...customArticles, ...filteredBase].filter(a => !deletedIds.has(String(a.id)));
 
     if (articlesData.length === 0) {
         articlesData = [...baselineArticles];
@@ -200,7 +219,8 @@ function renderMiniAvatarHTML(authorName, className = 'cardAuthorAvatar') {
 function updateDOM(index) {
     if (!articlesData[index]) return;
     const currentArticle = articlesData[index];
-    const articleHref = `article.html?id=${encodeURIComponent(currentArticle.id)}`;
+    const isProject = currentArticle.isProject === true;
+    const articleHref = isProject ? `projects.html?id=${encodeURIComponent(currentArticle.id)}` : `article.html?id=${encodeURIComponent(currentArticle.id)}`;
 
     // Update hero image, title, and description
     if (thumbnailImage) {
@@ -251,7 +271,7 @@ function updateDOM(index) {
                 .join('');
         }
         if (typeof DB !== 'undefined' && DB.canEditArticle && DB.canEditArticle(currentArticle)) {
-            keyHtml += `<a href="publish.html?edit=${encodeURIComponent(currentArticle.id)}" class="heroEditPill" title="Edit this article">
+            keyHtml += `<a href="add-essay.html?edit=${encodeURIComponent(currentArticle.id)}" class="heroEditPill" title="Edit this article">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 Edit Article
             </a>`;
@@ -268,13 +288,14 @@ function renderLatestArticles(articles) {
         const articleCard = document.createElement('div');
         articleCard.classList.add('articleCard');
 
-        const articleHref = `article.html?id=${encodeURIComponent(article.id)}`;
+        const isProject = article.isProject === true;
+        const articleHref = isProject ? `projects.html?id=${encodeURIComponent(article.id)}` : `article.html?id=${encodeURIComponent(article.id)}`;
         const canEdit = typeof DB !== 'undefined' && DB.canEditArticle && DB.canEditArticle(article);
         const authorName = article.author || 'Ali Mert Bayar';
         const avatarHtml = renderMiniAvatarHTML(authorName, 'cardAuthorAvatar');
 
         const editPill = canEdit ? `
-            <a href="publish.html?edit=${encodeURIComponent(article.id)}" class="cardEditLink" title="Edit this article">
+            <a href="add-essay.html?edit=${encodeURIComponent(article.id)}" class="cardEditLink" title="Edit this article">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 Edit
             </a>

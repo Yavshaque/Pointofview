@@ -16,7 +16,7 @@
     /* Text */
     --text-primary: #eef0f8;
     --text-secondary: #8d93ab;
-    --text-muted: #5a6282;
+    --text-muted: #7d87a6;
     --text-inverted: #ffffff;
 
     /* Borders */
@@ -66,4 +66,3 @@
     --grad-blue: linear-gradient(135deg, #3b7cf4 0%, #2563eb 100%);
     --grad-hero-overlay: linear-gradient(to top, rgba(5, 5, 12, 0.97) 0%, rgba(5, 5, 12, 0.65) 55%, transparent 100%);
 }
-

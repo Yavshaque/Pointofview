@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editorial Projects &amp; Series - Article Website</title>
+    <title>Editorial Projects & Series - Point of View | LoreGround</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="articles-data.js"></script>
+    <script src="projects-data.js"></script>
     <script src="db.js"></script>
 </head>
 <body class="projectsPageBody">
@@ -22,12 +23,15 @@
                 <li><a href="index.html">Home</a></li>
                 <li><a href="index.html#content">Articles</a></li>
                 <li><a href="projects.html" style="color: #ffffff; border-bottom: 2px solid #b91c1c; padding-bottom: 4px;">Projects</a></li>
-                <li><a href="publish.html">Publish</a></li>
                 <li><a href="index.html#ourTeam">About</a></li>
                 <li><a href="index.html#contactSection">Contact</a></li>
             </ul>
         </div>
         <div class="headers" id="headerRight" style="display: flex; gap: 12px; align-items: center;">
+            <a href="add-essay.html" id="publishNavBtn" class="publishNavBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>Add Article</span>
+            </a>
             <div id="authHeaderSlot" style="display: flex; gap: 10px; align-items: center;"></div>
         </div>
     </header>
@@ -40,20 +44,20 @@
             <!-- Hero Card -->
             <section class="projectsHeroCard">
                 <div class="projectsHeroContent">
-                    <span class="sectionBadge">Curated Series &amp; Inquiries</span>
+                    <span class="sectionBadge">Editorial Projects</span>
                     <h1 class="projectsHeroTitle">Editorial Projects &amp; Essay Series</h1>
                     <p class="projectsHeroLead">
                         In-depth, multi-part intellectual inquiries, thematic anthologies, and comprehensive scholarly investigations produced by our authors.
                     </p>
                 </div>
                 <div class="projectsHeroActions">
-                    <button type="button" class="createProjectBtn" id="openCreateProjectBtn">
+                    <button type="button" class="createProjectBtn" onclick="window.location.href='add-project.html'" id="openCreateProjectBtn">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                         Create New Project
                     </button>
                     <div class="projectsCountBadge" id="projectsCountBadge">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                        <span id="projectsTotalCountText">Loading series...</span>
+                        <span id="projectsTotalCountText">Loading projects...</span>
                     </div>
                 </div>
             </section>
@@ -205,6 +209,15 @@
             </div>
         </div>
     </main>
+
+    <footer class="readerFooter">
+        <div class="footerContainer">
+            <div class="footerBottom" style="border-top: none; padding-top: 0;">
+                <p>Point of View editorial projects bring related articles together into readable, multi-part investigations.</p>
+                <p>&copy; 2026 Article Website. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <!-- ================================================================
          MODAL 1: CREATE / EDIT PROJECT MODAL
@@ -411,7 +424,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Render header auth
             if (typeof DB !== 'undefined' && DB.renderHeaderAuth) {
-                DB.renderHeaderAuth('authHeaderSlot');
+                DB.renderHeaderAuth('authHeaderSlot', { hideWriteBtn: true });
             }
 
             // Route Handler
@@ -495,12 +508,13 @@
                     const inSubtitle = (proj.subtitle || '').toLowerCase().includes(q);
                     const inDesc = (proj.description || '').toLowerCase().includes(q);
                     const inAuthor = (proj.author || '').toLowerCase().includes(q);
-                    if (!inTitle && !inSubtitle && !inDesc && !inAuthor) return false;
+                    const inParts = (proj.parts || []).some(p => (p.title || '').toLowerCase().includes(q));
+                    if (!inTitle && !inSubtitle && !inDesc && !inAuthor && !inParts) return false;
                 }
                 return true;
             });
 
-            countText.textContent = `${projects.length} Curated Series`;
+            countText.textContent = `${filtered.length} Projects`;
 
             if (filtered.length === 0) {
                 container.innerHTML = `
@@ -681,7 +695,7 @@
                 addPartSlot.innerHTML = `
                     <button type="button" class="projectActionButton primary" id="addPartToProjectBtn">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                        + Add Part / Essay
+                        Add Part / Essay
                     </button>
                 `;
 
@@ -700,7 +714,7 @@
                 partsContainer.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: var(--text-muted);">
                         <p style="margin-bottom: 12px;">This project currently has no essay parts published.</p>
-                        ${canEdit ? `<button type="button" class="projectActionButton primary" onclick="openPartModal('${project.id}')">+ Add First Part</button>` : ''}
+                        ${canEdit ? `<button type="button" class="projectActionButton primary" onclick="openPartModal('${project.id}')">Add First Part</button>` : ''}
                     </div>
                 `;
                 return;
@@ -910,17 +924,7 @@
             const cancelProjectBtn = document.getElementById('cancelProjectModalBtn');
             const projectForm = document.getElementById('projectForm');
 
-            openCreateBtn.addEventListener('click', () => {
-                const currentUser = (typeof DB !== 'undefined' && DB.getCurrentUser) ? DB.getCurrentUser() : null;
-                if (!currentUser) {
-                    if (confirm('You must be signed in to create an editorial project. Would you like to sign in now?')) {
-                        window.location.href = 'auth.html?redirect=projects.html';
-                    }
-                    return;
-                }
-                openProjectModal();
-            });
-
+            
             closeProjectBtn.addEventListener('click', closeProjectModal);
             cancelProjectBtn.addEventListener('click', closeProjectModal);
 
@@ -1345,4 +1349,3 @@
     </script>
 </body>
 </html>
-

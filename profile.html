@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Writer Profile - Article Website</title>
+    <title>Writer Profile - Point of View | LoreGround</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
@@ -23,15 +23,14 @@
                 <li><a href="index.html#mainContent">Home</a></li>
                 <li><a href="index.html#content">Articles</a></li>
                 <li><a href="projects.html">Projects</a></li>
-                <li><a href="publish.html">Publish</a></li>
                 <li><a href="index.html#ourTeam">About</a></li>
                 <li><a href="index.html#contactSection">Contact</a></li>
             </ul>
         </div>
         <div class="headers" id="headerRight">
-            <a href="publish.html" id="publishNavBtn">
+            <a href="add-essay.html" id="publishNavBtn" class="publishNavBtn">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                Write Article
+                <span>Add Article</span>
             </a>
             <a href="auth.html" id="signInButton">Sign In</a>
         </div>
@@ -107,7 +106,7 @@
                     <h2 class="profileFeedTitle" id="profileFeedTitle">Published Articles</h2>
                     <span class="profileArticlesCountBadge" id="feedCountBadge">0</span>
                 </div>
-                <a href="publish.html" class="adminAddBtn" id="profileWriteBtn" style="padding: 8px 16px; font-size: 13px; text-decoration: none;">+ Write New Dispatch</a>
+                <a href="add-essay.html" class="adminAddBtn" id="profileWriteBtn" style="padding: 8px 16px; font-size: 13px; text-decoration: none;">+ Write New Dispatch</a>
             </div>
 
             <div class="profileArticlesGrid" id="profileArticlesGrid">
@@ -121,7 +120,7 @@
             <div class="footerTop">
                 <div class="footerBrand">
                     <img src="images/logo.png" alt="Logo">
-                    <p>Exploring global history, economic shifts, and transformative ideas through engaging articles and research.</p>
+                    <p>Meet the writers behind Point of View and explore their articles, research, and editorial projects.</p>
                 </div>
                 <div class="footerNav">
                     <h4>Navigation</h4>
@@ -387,7 +386,7 @@
                         <div style="font-size: 38px; margin-bottom: 10px;">📰</div>
                         <h3 style="margin: 0; font-size: 1.25rem;">No Published Articles Yet</h3>
                         <p>This author has not published any public dispatches to the platform yet.</p>
-                        <a href="publish.html" class="adminAddBtn" style="display: inline-block; padding: 10px 22px; text-decoration: none;">+ Write New Article</a>
+                        <a href="add-essay.html" class="adminAddBtn" style="display: inline-block; padding: 10px 22px; text-decoration: none;">+ Write New Article</a>
                     </div>
                 `;
                 return;
@@ -418,7 +417,7 @@
                                 <a href="article.html?id=${encodeURIComponent(art.id)}" class="profileReadBtn">Read Article &rarr;</a>
                                 ${(canEdit || canDelete) ? `
                                     <div class="profileArticleActions">
-                                        ${canEdit ? `<a href="publish.html?edit=${encodeURIComponent(art.id)}" class="profileEditBtn">Edit</a>` : ''}
+                                        ${canEdit ? `<a href="add-essay.html?edit=${encodeURIComponent(art.id)}" class="profileEditBtn">Edit</a>` : ''}
                                         ${canDelete ? `<button type="button" class="profileDeleteBtn" onclick="handleDeleteArticle('${art.id}', '${escapeQuotes(art.title)}')">Delete</button>` : ''}
                                     </div>
                                 ` : ''}

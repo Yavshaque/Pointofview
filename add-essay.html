@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editorial Studio - Publish Article</title>
+    <title>Editorial Studio - Add Essay - Point of View | LoreGround</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
@@ -72,9 +72,9 @@
                     <div class="formGroup">
                         <div class="labelRow">
                             <label for="articleTitle">Article Title <span class="requiredAsterisk">*</span></label>
-                            <span class="charCounter" id="titleCounter">0 / 120</span>
+                            <span class="charCounter" id="titleCounter">0 / 160</span>
                         </div>
-                        <input type="text" id="articleTitle" name="title" maxlength="120" placeholder="e.g. Maritime Empires and Global Commerce" required oninput="handleTitleInput(this.value)">
+                        <input type="text" id="articleTitle" name="title" maxlength="160" placeholder="e.g. Maritime Empires and Global Commerce" required oninput="handleTitleInput(this.value)">
                         <div class="progressTrack"><div class="progressBar" id="titleBar"></div></div>
                     </div>
 
@@ -127,9 +127,9 @@
                     <div class="formGroup">
                         <div class="labelRow">
                             <label for="articleSummary">Summary / Hook <span class="requiredAsterisk">*</span></label>
-                            <span class="charCounter" id="summaryCounter">0 / 280</span>
+                            <span class="charCounter" id="summaryCounter">0 / 400</span>
                         </div>
-                        <textarea id="articleSummary" name="summary" rows="3" maxlength="280" placeholder="A concise, compelling overview for the hero carousel and article card..." required oninput="handleSummaryInput(this.value)"></textarea>
+                        <textarea id="articleSummary" name="summary" rows="3" maxlength="400" placeholder="A concise, compelling overview for the hero carousel and article card..." required oninput="handleSummaryInput(this.value)"></textarea>
                         <div class="progressTrack"><div class="progressBar" id="summaryBar"></div></div>
                     </div>
 
@@ -274,13 +274,13 @@
                 <div class="readinessChecklist">
                     <h4>Publishing Checklist</h4>
                     <div class="checkItem" id="checkTitle">
-                        <span class="checkIcon">&bull;</span> Title provided (max 70 chars)
+                        <span class="checkIcon">&bull;</span> Title provided (max 160 chars)
                     </div>
                     <div class="checkItem" id="checkAuthor">
                         <span class="checkIcon">&bull;</span> Author byline provided (max 30 chars)
                     </div>
                     <div class="checkItem" id="checkSummary">
-                        <span class="checkIcon">&bull;</span> Card summary provided (max 120 chars)
+                        <span class="checkIcon">&bull;</span> Card summary provided (max 400 chars)
                     </div>
                     <div class="checkItem" id="checkBody">
                         <span class="checkIcon">&bull;</span> Full article content drafted
@@ -305,7 +305,7 @@
             const editId = urlParams.get('edit');
 
             if (!DB.isAuthenticated()) {
-                const redirectParam = editId ? `publish.html?edit=${encodeURIComponent(editId)}` : 'publish.html';
+                const redirectParam = editId ? `add-essay.html?edit=${encodeURIComponent(editId)}` : 'add-essay.html';
                 window.location.href = `auth.html?redirect=${encodeURIComponent(redirectParam)}&reason=auth_required`;
                 return;
             }
@@ -654,7 +654,7 @@
         }
 
         function handleTitleInput(val) {
-            const max = 120;
+            const max = 160;
             const counter = document.getElementById('titleCounter');
             counter.textContent = `${val.length} / ${max}`;
             const pct = Math.min(100, (val.length / max) * 100);
@@ -706,7 +706,7 @@
         }
 
         function handleSummaryInput(val) {
-            const max = 280;
+            const max = 400;
             const counter = document.getElementById('summaryCounter');
             counter.textContent = `${val.length} / ${max}`;
             const pct = Math.min(100, (val.length / max) * 100);
@@ -897,7 +897,7 @@
             event.preventDefault();
 
             if (!DB.isAuthenticated()) {
-                const redirectParam = (isEditMode && editArticleId) ? `publish.html?edit=${encodeURIComponent(editArticleId)}` : 'publish.html';
+                const redirectParam = (isEditMode && editArticleId) ? `add-essay.html?edit=${encodeURIComponent(editArticleId)}` : 'add-essay.html';
                 alert('You must be signed in to perform this action.');
                 window.location.href = `auth.html?redirect=${encodeURIComponent(redirectParam)}&reason=auth_required`;
                 return;
