@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editorial Projects &amp; Series - Article Website</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="db.js"></script>
+</head>
+<body class="projectsPageBody">
+    <!-- Navigation Header -->
+    <header class="authHeader">
+        <div class="headers" id="headerLeft">
+            <a href="index.html" class="logoLink" title="Home"><img src="images/logo.png" alt="Logo" id="logo"></a>
+        </div>
+        <div class="headers" id="headerCenter">
+            <ul id="headerUL">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#content">Articles</a></li>
+                <li><a href="projects.html" style="color: #ffffff; border-bottom: 2px solid #b91c1c; padding-bottom: 4px;">Projects</a></li>
+                <li><a href="publish.html">Publish</a></li>
+                <li><a href="index.html#ourTeam">About</a></li>
+                <li><a href="index.html#contactSection">Contact</a></li>
+            </ul>
+        </div>
+        <div class="headers" id="headerRight" style="display: flex; gap: 12px; align-items: center;">
+            <div id="authHeaderSlot" style="display: flex; gap: 10px; align-items: center;"></div>
+        </div>
+    </header>
+
+    <main class="projectsContainer" id="projectsMainContainer">
+        <!-- ================================================================
+             VIEW 1: ALL PROJECTS GRID VIEW
+             ================================================================ -->
+        <div id="projectsGridView">
+            <!-- Hero Card -->
+            <section class="projectsHeroCard">
+                <div class="projectsHeroContent">
+                    <span class="sectionBadge">Curated Series &amp; Inquiries</span>
+                    <h1 class="projectsHeroTitle">Editorial Projects &amp; Essay Series</h1>
+                    <p class="projectsHeroLead">
+                        In-depth, multi-part intellectual inquiries, thematic anthologies, and comprehensive scholarly investigations produced by our authors.
+                    </p>
+                </div>
+                <div class="projectsHeroActions">
+                    <button type="button" class="createProjectBtn" id="openCreateProjectBtn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                        Create New Project
+                    </button>
+                    <div class="projectsCountBadge" id="projectsCountBadge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        <span id="projectsTotalCountText">Loading series...</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search & Filters -->
+            <div class="projectsControlsBar">
+                <div class="projectsSearchBox">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="projectSearchInput" class="projectsSearchInput" placeholder="Search projects by title, author, topic...">
+                </div>
+                <div class="projectsFilterChips" id="projectFilterChips">
+                    <button type="button" class="projectFilterChip active" data-category="all">All Series</button>
+                    <button type="button" class="projectFilterChip" data-category="History">History</button>
+                    <button type="button" class="projectFilterChip" data-category="World">World</button>
+                    <button type="button" class="projectFilterChip" data-category="Economy">Economy</button>
+                    <button type="button" class="projectFilterChip" data-category="Culture">Culture</button>
+                    <button type="button" class="projectFilterChip" data-category="Technology">Technology</button>
+                    <button type="button" class="projectFilterChip" data-category="Cinematography">Cinematography</button>
+                </div>
+            </div>
+
+            <!-- Projects Grid -->
+            <div class="projectsGrid" id="projectsGrid"></div>
+        </div>
+
+        <!-- ================================================================
+             VIEW 2: PROJECT DETAIL & TABLE OF CONTENTS VIEW
+             ================================================================ -->
+        <div id="projectDetailView" class="projectDetailWrapper hidden">
+            <!-- Breadcrumbs -->
+            <div class="projectBreadcrumbBar">
+                <a href="projects.html" class="projectBackLink" id="backToProjectsBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back to All Projects
+                </a>
+                <div id="projectDetailManageSlot" class="projectDetailActionButtons"></div>
+            </div>
+
+            <!-- Project Detail Header Card -->
+            <section class="projectDetailHeaderCard" id="projectDetailHeaderCard">
+                <div class="projectDetailTopMeta">
+                    <span class="projectSeriesBadge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                        <span id="projectDetailBadgeText">Series</span>
+                    </span>
+                    <div class="projectCategoryTags" id="projectDetailCategories"></div>
+                </div>
+
+                <h1 class="projectDetailTitle" id="projectDetailTitle"></h1>
+                <p class="projectDetailSubtitle" id="projectDetailSubtitle"></p>
+                <p class="projectDetailDescription" id="projectDetailDescription"></p>
+
+                <div class="projectDetailStatsBar">
+                    <div class="projectAuthorCard">
+                        <div class="projectAuthorAvatarLarge" id="projectDetailAuthorAvatar"></div>
+                        <div class="projectAuthorTitleGroup">
+                            <strong id="projectDetailAuthorName"></strong>
+                            <span id="projectDetailAuthorRole"></span>
+                        </div>
+                    </div>
+                    <div class="projectTotalTime" id="projectDetailTotalStats"></div>
+                </div>
+            </section>
+
+            <!-- Table of Contents Section -->
+            <section class="projectPartsListCard">
+                <div class="projectPartsListHeader">
+                    <h2>Table of Contents</h2>
+                    <div id="addPartSlot"></div>
+                </div>
+                <div class="projectPartsItemsContainer" id="projectPartsContainer"></div>
+            </section>
+        </div>
+
+        <!-- ================================================================
+             VIEW 3: IN-SERIES SEQUENTIAL ESSAY READER
+             ================================================================ -->
+        <div id="seriesReaderView" class="seriesReaderWrapper hidden">
+            <!-- Context Bar -->
+            <div class="seriesReaderTopContextBar">
+                <div class="seriesContextInfo">
+                    <span class="seriesContextProjectTitle" id="seriesContextProjectTitle"></span>
+                    <span class="seriesContextDivider">&bull;</span>
+                    <span class="seriesContextPartTitle" id="seriesContextPartTitle"></span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="seriesJumpSelect" class="seriesJumpSelect" title="Jump to Part"></select>
+                    <button type="button" class="projectActionButton" id="seriesReturnToTocBtn">
+                        Table of Contents &rarr;
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reader Article Glass Card -->
+            <article class="readerArticle">
+                <div class="readerTextZone readerHeaderZone">
+                    <div class="readerCategoryRow">
+                        <span class="sectionBadge" id="seriesReaderPartBadge">Part 1</span>
+                        <span class="readTimeBadge" id="seriesReaderReadTime"></span>
+                    </div>
+
+                    <h1 id="seriesReaderHeadline" class="readerTitle"></h1>
+                    <p id="seriesReaderSubtitle" class="readerLead"></p>
+
+                    <div class="readerMeta">
+                        <div class="readerAuthorInfo">
+                            <span class="metaLabel">Written by</span>
+                            <strong id="seriesReaderAuthor" class="authorName"></strong>
+                        </div>
+                        <div class="readerMetaDivider">&bull;</div>
+                        <div class="readerDateInfo">
+                            <span id="seriesReaderDate"></span>
+                        </div>
+                        <div class="readerMetaDivider">&bull;</div>
+                        <div id="seriesReaderAuthorActions"></div>
+                    </div>
+                </div>
+
+                <!-- Body Text Zone -->
+                <div class="readerTextZone">
+                    <div id="seriesReaderBody" class="readerBodyText"></div>
+
+                    <!-- Bibliography Section -->
+                    <section id="seriesReaderBibliography" class="articleBibliographySection hidden">
+                        <div class="bibliographyHeader">
+                            <div class="bibTitleGroup">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                <h3>Bibliography &amp; References</h3>
+                            </div>
+                            <span class="bibCountBadge" id="seriesBibCountBadge">0 sources</span>
+                        </div>
+                        <div class="bibliographyList" id="seriesBibliographyList"></div>
+                    </section>
+                </div>
+            </article>
+
+            <!-- Bottom Navigation Bar -->
+            <div class="seriesNavControlsBar">
+                <a href="#" class="seriesNavBtn" id="seriesPrevPartBtn">
+                    &larr; <span id="seriesPrevPartLabel">Previous Part</span>
+                </a>
+                <a href="#" class="seriesNavCenterBtn" id="seriesCenterTocBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    Project Overview
+                </a>
+                <a href="#" class="seriesNavBtn" id="seriesNextPartBtn">
+                    <span id="seriesNextPartLabel">Next Part</span> &rarr;
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- ================================================================
+         MODAL 1: CREATE / EDIT PROJECT MODAL
+         ================================================================ -->
+    <div class="projectModalOverlay" id="projectModalOverlay">
+        <div class="projectModalContent">
+            <div class="projectModalHeader">
+                <div>
+                    <h3 id="projectModalTitle">Create New Project</h3>
+                    <p>Assemble a multi-part essay collection, research anthology, or serial investigation.</p>
+                </div>
+                <button type="button" class="projectModalCloseBtn" id="closeProjectModalBtn">&times;</button>
+            </div>
+
+            <form id="projectForm">
+                <input type="hidden" id="projectIdField" value="">
+
+                <div class="projectFormGroup">
+                    <label for="projectTitleInput">Project Title *</label>
+                    <input type="text" id="projectTitleInput" required maxlength="120" placeholder="e.g. The Atlantic World: Demographics, Trade, and Imperial Rule">
+                </div>
+
+                <div class="projectFormGroup">
+                    <label for="projectSubtitleInput">Subtitle / Brief Thesis</label>
+                    <input type="text" id="projectSubtitleInput" maxlength="200" placeholder="A three-part inquiry into early modern institutions and economic divergence.">
+                </div>
+
+                <div class="projectFormGroup">
+                    <label for="projectDescriptionInput">Comprehensive Overview *</label>
+                    <textarea id="projectDescriptionInput" required rows="4" maxlength="1200" placeholder="Explain the project's background, scope of inquiry, and what the series explores..."></textarea>
+                </div>
+
+                <div class="projectFormGroup">
+                    <label for="projectCoverSelect">Cover Image Theme</label>
+                    <select id="projectCoverSelect">
+                        <option value="images/spanish colonisation.png">Colonial &amp; Imperial (Spanish Colonisation)</option>
+                        <option value="images/orthaxis.jpg">Philosophical &amp; Abstract (Orthaxis)</option>
+                        <option value="images/hero.jpg">Classic Renaissance Editorial</option>
+                    </select>
+                </div>
+
+                <div class="projectFormGroup">
+                    <label>Categories &amp; Topics</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
+                            <input type="checkbox" name="projectCategory" value="History" checked> History
+                        </label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
+                            <input type="checkbox" name="projectCategory" value="World" checked> World
+                        </label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
+                            <input type="checkbox" name="projectCategory" value="Economy"> Economy
+                        </label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
+                            <input type="checkbox" name="projectCategory" value="Culture"> Culture
+                        </label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
+                            <input type="checkbox" name="projectCategory" value="Technology"> Technology
+                        </label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
+                            <input type="checkbox" name="projectCategory" value="Cinematography"> Cinematography
+                        </label>
+                    </div>
+                </div>
+
+                <div class="projectCollaboratorBox" id="projectCollaboratorBox">
+                    <label for="projectCollaboratorSelect">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Collaborator / Co-Author (Optional)
+                    </label>
+                    <p style="font-size: 12px; color: #94a3b8; margin: 0;">
+                        Invite another registered writer to co-author and manage this series with you.
+                    </p>
+                    <select id="projectCollaboratorSelect" style="margin-top: 4px; padding: 10px 14px; font-size: 13.5px;">
+                        <option value="">-- Solo Project (No Collaborator) --</option>
+                    </select>
+                </div>
+
+                <!-- Initial Essay / Part 1 Section (Required when creating a project) -->
+                <div id="projectInitialPartSection" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <div>
+                            <h4 style="font-size: 15px; color: #ffffff; margin: 0 0 4px 0; font-family: 'Playfair Display', serif;">Initial Essay (Part 1 - Required)</h4>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">A project must contain at least one essay/article to be launched.</p>
+                        </div>
+                        <span class="sectionBadge" style="font-size: 11px;">Required</span>
+                    </div>
+
+                    <!-- Part 1 Quick Import -->
+                    <div class="projectImportBox" style="margin-bottom: 16px;">
+                        <div class="projectImportBoxTitle">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Import from Published Articles (Optional)
+                        </div>
+                        <select id="initialPartImportSelect" style="margin-top: 4px; padding: 8px 12px; font-size: 13px;">
+                            <option value="">-- Choose an existing article to pre-fill Part 1 --</option>
+                        </select>
+                    </div>
+
+                    <div class="projectFormGroup">
+                        <label for="initialPartTitleInput">Part 1 Title *</label>
+                        <input type="text" id="initialPartTitleInput" placeholder="e.g. Part I: Demographic Collapse and the Formation of Racial Classes">
+                    </div>
+
+                    <div class="projectFormGroup">
+                        <label for="initialPartSubtitleInput">Part 1 Synopsis / Thesis</label>
+                        <input type="text" id="initialPartSubtitleInput" placeholder="Brief thesis of the first part...">
+                    </div>
+
+                    <div class="projectFormGroup" style="display: flex; flex-direction: row; gap: 16px;">
+                        <div style="flex: 1;">
+                            <label for="initialPartReadTimeInput">Estimated Read Time (minutes) *</label>
+                            <input type="number" id="initialPartReadTimeInput" min="1" max="60" value="5">
+                        </div>
+                    </div>
+
+                    <div class="projectFormGroup">
+                        <label for="initialPartBodyInput">Part 1 Full Essay Body *</label>
+                        <textarea id="initialPartBodyInput" rows="6" placeholder="Write or paste Part 1 essay content..."></textarea>
+                    </div>
+
+                    <div class="projectFormGroup">
+                        <label for="initialPartBibliographyInput">Part 1 Bibliography / Sources (Optional)</label>
+                        <textarea id="initialPartBibliographyInput" rows="3" placeholder="References for Part 1 (one per line)..."></textarea>
+                    </div>
+                </div>
+
+                <div class="projectModalActions">
+                    <button type="button" class="projectCancelBtn" id="cancelProjectModalBtn">Cancel</button>
+                    <button type="submit" class="projectSaveBtn" id="saveProjectSubmitBtn">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         MODAL 2: ADD / EDIT PART MODAL
+         ================================================================ -->
+    <div class="projectModalOverlay" id="partModalOverlay">
+        <div class="projectModalContent" style="max-width: 780px;">
+            <div class="projectModalHeader">
+                <div>
+                    <h3 id="partModalTitle">Add Essay / Part to Series</h3>
+                    <p>Compose an original essay or import from your published articles.</p>
+                </div>
+                <button type="button" class="projectModalCloseBtn" id="closePartModalBtn">&times;</button>
+            </div>
+
+            <form id="partForm">
+                <input type="hidden" id="partIdField" value="">
+                <input type="hidden" id="partProjectIdField" value="">
+
+                <!-- Quick Import from Published Articles -->
+                <div class="projectImportBox" id="projectImportBox">
+                    <div class="projectImportBoxTitle">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Quick Import (Optional)
+                    </div>
+                    <p style="font-size: 12px; color: #94a3b8; margin: 0;">
+                        Import essay content directly from your existing published articles:
+                    </p>
+                    <select id="importArticleSelect" style="margin-top: 4px; padding: 8px 12px; font-size: 13px;">
+                        <option value="">-- Choose an article to populate fields --</option>
+                    </select>
+                </div>
+
+                <div class="projectFormGroup">
+                    <label for="partTitleInput">Part / Essay Title *</label>
+                    <input type="text" id="partTitleInput" required maxlength="140" placeholder="e.g. Part I: Demographic Collapse and the Formation of Racial Classes">
+                </div>
+
+                <div class="projectFormGroup">
+                    <label for="partSubtitleInput">Part Synopsis / Thesis</label>
+                    <input type="text" id="partSubtitleInput" maxlength="240" placeholder="Pathogens, forced labor, and the emergence of the casta system.">
+                </div>
+
+                <div class="projectFormGroup" style="display: flex; flex-direction: row; gap: 16px;">
+                    <div style="flex: 1;">
+                        <label for="partReadTimeInput">Estimated Read Time (minutes) *</label>
+                        <input type="number" id="partReadTimeInput" required min="1" max="60" value="5">
+                    </div>
+                </div>
+
+                <div class="projectFormGroup">
+                    <label for="partBodyInput">Full Essay Body *</label>
+                    <textarea id="partBodyInput" required rows="10" placeholder="Write or paste the full essay body. Separate paragraphs with blank lines..."></textarea>
+                </div>
+
+                <div class="projectFormGroup">
+                    <label for="partBibliographyInput">Bibliography &amp; References (Optional)</label>
+                    <textarea id="partBibliographyInput" rows="4" placeholder="Crosby, Alfred W. (1972). The Columbian Exchange...&#10;One reference per line."></textarea>
+                </div>
+
+                <div class="projectModalActions">
+                    <button type="button" class="projectCancelBtn" id="cancelPartModalBtn">Cancel</button>
+                    <button type="submit" class="projectSaveBtn" id="savePartSubmitBtn">Save Essay Part</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Controller Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render header auth
+            if (typeof DB !== 'undefined' && DB.renderHeaderAuth) {
+                DB.renderHeaderAuth('authHeaderSlot');
+            }
+
+            // Route Handler
+            window.addEventListener('popstate', handleRouting);
+            handleRouting();
+
+            // Setup Search & Category Filter Listeners
+            initSearchAndFilters();
+
+            // Setup Modal Listeners
+            initModals();
+        });
+
+        // ======================================================================
+        // Routing Controller
+        // ======================================================================
+        function handleRouting() {
+            const params = new URLSearchParams(window.location.search);
+            const projectId = params.get('id');
+            const partIndexStr = params.get('part');
+
+            const gridView = document.getElementById('projectsGridView');
+            const detailView = document.getElementById('projectDetailView');
+            const readerView = document.getElementById('seriesReaderView');
+
+            gridView.classList.add('hidden');
+            detailView.classList.add('hidden');
+            readerView.classList.add('hidden');
+
+            if (projectId && partIndexStr !== null) {
+                // View 3: In-Series Essay Reader
+                const partIdx = parseInt(partIndexStr, 10) || 0;
+                renderSeriesReader(projectId, partIdx);
+                readerView.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (projectId) {
+                // View 2: Project Detail & Table of Contents
+                renderProjectDetail(projectId);
+                detailView.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // View 1: Projects Grid
+                renderProjectsGrid();
+                gridView.classList.remove('hidden');
+            }
+        }
+
+        function navigateTo(projectId = null, partIndex = null) {
+            const params = new URLSearchParams();
+            if (projectId) params.set('id', projectId);
+            if (partIndex !== null && partIndex !== undefined) params.set('part', partIndex);
+
+            const queryString = params.toString();
+            const newUrl = window.location.pathname + (queryString ? `?${queryString}` : '');
+            history.pushState(null, '', newUrl);
+            handleRouting();
+        }
+
+        // ======================================================================
+        // View 1: Projects Grid View
+        // ======================================================================
+        let currentFilterCategory = 'all';
+        let currentSearchQuery = '';
+
+        function renderProjectsGrid() {
+            const projects = (typeof DB !== 'undefined' && DB.getProjects) ? DB.getProjects() : [];
+            const container = document.getElementById('projectsGrid');
+            const countText = document.getElementById('projectsTotalCountText');
+
+            // Filter logic
+            const filtered = projects.filter(proj => {
+                // Category match
+                if (currentFilterCategory !== 'all') {
+                    const cats = (proj.categories || []).map(c => c.toLowerCase());
+                    if (!cats.includes(currentFilterCategory.toLowerCase())) return false;
+                }
+                // Search query match
+                if (currentSearchQuery.trim()) {
+                    const q = currentSearchQuery.toLowerCase();
+                    const inTitle = (proj.title || '').toLowerCase().includes(q);
+                    const inSubtitle = (proj.subtitle || '').toLowerCase().includes(q);
+                    const inDesc = (proj.description || '').toLowerCase().includes(q);
+                    const inAuthor = (proj.author || '').toLowerCase().includes(q);
+                    if (!inTitle && !inSubtitle && !inDesc && !inAuthor) return false;
+                }
+                return true;
+            });
+
+            countText.textContent = `${projects.length} Curated Series`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px;">
+                        <h3 style="color: #ffffff; font-family: 'Playfair Display', serif; font-size: 1.6rem; margin-bottom: 8px;">No projects found</h3>
+                        <p style="color: var(--text-muted); font-size: 14px;">Try searching with different keywords or choosing another topic filter.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(proj => {
+                const parts = proj.parts || [];
+                const partsCount = parts.length;
+                const totalReadTime = parts.reduce((acc, p) => acc + (p.readTime || 4), 0);
+                const categories = proj.categories || ['General'];
+
+                // Mini preview of up to 3 parts
+                const partsPreviewHtml = parts.slice(0, 3).map((pt, idx) => `
+                    <div class="projectPartsPreviewItem">
+                        <span class="projectPartDot"></span>
+                        <span>Part ${idx + 1}: ${escapeHtml(pt.title.replace(/^Part\s+[IVX0-9]+:\s*/i, ''))}</span>
+                    </div>
+                `).join('');
+
+                const avatar = (typeof DB !== 'undefined' && DB.getAuthorAvatar) ? DB.getAuthorAvatar(proj.author) : null;
+                const authorInitial = (proj.author || 'A').charAt(0).toUpperCase();
+
+                return `
+                    <article class="projectCard">
+                        <div class="projectCardCoverWrapper">
+                            <img src="${escapeHtml(proj.cover || 'images/spanish colonisation.png')}" alt="${escapeHtml(proj.title)}" class="projectCardCoverImg">
+                            <div class="projectCardCoverOverlay"></div>
+                            <div class="projectCardTopBadges">
+                                <span class="projectSeriesBadge">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                                    Series &bull; ${partsCount} ${partsCount === 1 ? 'Part' : 'Parts'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="projectCardBody">
+                            <div class="projectCategoryTags">
+                                ${categories.map(c => `<span class="sectionBadge" style="font-size: 11px; padding: 2px 8px;">${escapeHtml(c)}</span>`).join('')}
+                            </div>
+
+                            <h3 class="projectCardTitle">${escapeHtml(proj.title)}</h3>
+                            <p class="projectCardDescription">${escapeHtml(proj.subtitle || proj.description)}</p>
+
+                            ${partsPreviewHtml ? `<div class="projectPartsPreviewList">${partsPreviewHtml}</div>` : ''}
+
+                            <div class="projectCardAuthorRow">
+                                <div class="projectCoAuthorsRow">
+                                    ${avatar ? `<img src="${avatar}" alt="" class="projectAuthorAvatar">` : `<div class="projectAuthorAvatar">${authorInitial}</div>`}
+                                    ${proj.collaboratorName ? ((typeof DB !== 'undefined' && DB.getAuthorAvatar && DB.getAuthorAvatar(proj.collaboratorName)) ? `<img src="${DB.getAuthorAvatar(proj.collaboratorName)}" alt="" class="projectAuthorAvatar projectCoAuthorAvatarOverlap">` : `<div class="projectAuthorAvatar projectCoAuthorAvatarOverlap">${proj.collaboratorName.charAt(0).toUpperCase()}</div>`) : ''}
+                                </div>
+                                <div class="projectAuthorMeta">
+                                    <span class="projectAuthorName">
+                                        ${escapeHtml(proj.author || 'Editorial Staff')}${proj.collaboratorName ? ` &amp; ${escapeHtml(proj.collaboratorName)} <span class="projectCollabBadge">Collab</span>` : ''}
+                                    </span>
+                                    <span class="projectAuthorRole">${escapeHtml(proj.collaboratorName ? 'Co-Authored Series' : (proj.authorRole || 'Author & Contributor'))}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="projectCardFooter">
+                            <span class="projectTotalTime">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                ${totalReadTime} min total read
+                            </span>
+                            <a href="projects.html?id=${encodeURIComponent(proj.id)}" class="exploreProjectBtn" onclick="event.preventDefault(); navigateTo('${proj.id}');">
+                                Explore Series &rarr;
+                            </a>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function initSearchAndFilters() {
+            const searchInput = document.getElementById('projectSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    currentSearchQuery = e.target.value;
+                    renderProjectsGrid();
+                });
+            }
+
+            const filterChips = document.querySelectorAll('.projectFilterChip');
+            filterChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    filterChips.forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    currentFilterCategory = chip.getAttribute('data-category');
+                    renderProjectsGrid();
+                });
+            });
+        }
+
+        // ======================================================================
+        // View 2: Project Detail & Table of Contents
+        // ======================================================================
+        function renderProjectDetail(projectId) {
+            const project = (typeof DB !== 'undefined' && DB.getProjectById) ? DB.getProjectById(projectId) : null;
+            if (!project) {
+                alert('Project not found or has been removed.');
+                navigateTo();
+                return;
+            }
+
+            document.title = `${project.title} - Editorial Projects`;
+
+            // Badges & Categories
+            const parts = project.parts || [];
+            document.getElementById('projectDetailBadgeText').textContent = `Series • ${parts.length} ${parts.length === 1 ? 'Part' : 'Parts'}`;
+            const catContainer = document.getElementById('projectDetailCategories');
+            catContainer.innerHTML = (project.categories || ['General']).map(c => `
+                <span class="sectionBadge">${escapeHtml(c)}</span>
+            `).join('');
+
+            // Title, Subtitle, Description
+            document.getElementById('projectDetailTitle').textContent = project.title;
+            const subtitleEl = document.getElementById('projectDetailSubtitle');
+            if (project.subtitle) {
+                subtitleEl.textContent = project.subtitle;
+                subtitleEl.classList.remove('hidden');
+            } else {
+                subtitleEl.classList.add('hidden');
+            }
+            document.getElementById('projectDetailDescription').textContent = project.description || '';
+
+            // Author Card
+            const avatar = (typeof DB !== 'undefined' && DB.getAuthorAvatar) ? DB.getAuthorAvatar(project.author) : null;
+            const collabAvatar = (project.collaboratorName && typeof DB !== 'undefined' && DB.getAuthorAvatar) ? DB.getAuthorAvatar(project.collaboratorName) : null;
+            const avatarEl = document.getElementById('projectDetailAuthorAvatar');
+            if (project.collaboratorName) {
+                avatarEl.innerHTML = `
+                    <div style="display: flex; align-items: center;">
+                        ${avatar ? `<img src="${avatar}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="">` : `<div style="width: 36px; height: 36px; border-radius: 50%; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;">${(project.author || 'A').charAt(0).toUpperCase()}</div>`}
+                        ${collabAvatar ? `<img src="${collabAvatar}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-left: -10px; border: 2px solid #0f172a;" alt="">` : `<div style="width: 36px; height: 36px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; margin-left: -10px; border: 2px solid #0f172a;">${project.collaboratorName.charAt(0).toUpperCase()}</div>`}
+                    </div>
+                `;
+                document.getElementById('projectDetailAuthorName').innerHTML = `${escapeHtml(project.author)} &amp; ${escapeHtml(project.collaboratorName)} <span class="projectCollabBadge">Collaboration</span>`;
+                document.getElementById('projectDetailAuthorRole').textContent = 'Co-Authored Series';
+            } else {
+                if (avatar) {
+                    avatarEl.innerHTML = `<img src="${avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" alt="">`;
+                } else {
+                    avatarEl.textContent = (project.author || 'A').charAt(0).toUpperCase();
+                }
+                document.getElementById('projectDetailAuthorName').textContent = project.author || 'Editorial Staff';
+                document.getElementById('projectDetailAuthorRole').textContent = project.authorRole || 'Author & Contributor';
+            }
+
+            // Stats
+            const totalReadTime = parts.reduce((acc, p) => acc + (p.readTime || 4), 0);
+            document.getElementById('projectDetailTotalStats').innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>${parts.length} Essays &bull; ~${totalReadTime} minutes complete series</span>
+            `;
+
+            // Author Management Toolbar
+            const manageSlot = document.getElementById('projectDetailManageSlot');
+            const addPartSlot = document.getElementById('addPartSlot');
+            const canEdit = (typeof DB !== 'undefined' && DB.canEditProject) ? DB.canEditProject(project) : false;
+
+            if (canEdit) {
+                manageSlot.innerHTML = `
+                    <button type="button" class="projectActionButton" id="editProjectDetailsBtn">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Edit Details
+                    </button>
+                    <button type="button" class="projectActionButton danger" id="deleteProjectBtn">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        Delete Project
+                    </button>
+                `;
+                addPartSlot.innerHTML = `
+                    <button type="button" class="projectActionButton primary" id="addPartToProjectBtn">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                        + Add Part / Essay
+                    </button>
+                `;
+
+                // Wire up actions
+                document.getElementById('editProjectDetailsBtn').addEventListener('click', () => openProjectModal(project));
+                document.getElementById('deleteProjectBtn').addEventListener('click', () => promptDeleteProject(project.id, project.title));
+                document.getElementById('addPartToProjectBtn').addEventListener('click', () => openPartModal(project.id));
+            } else {
+                manageSlot.innerHTML = '';
+                addPartSlot.innerHTML = '';
+            }
+
+            // Table of Contents Rows
+            const partsContainer = document.getElementById('projectPartsContainer');
+            if (parts.length === 0) {
+                partsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <p style="margin-bottom: 12px;">This project currently has no essay parts published.</p>
+                        ${canEdit ? `<button type="button" class="projectActionButton primary" onclick="openPartModal('${project.id}')">+ Add First Part</button>` : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            partsContainer.innerHTML = parts.map((part, index) => {
+                const partNumFormatted = String(index + 1).padStart(2, '0');
+                return `
+                    <div class="projectPartRowCard">
+                        <div class="projectPartRowLeft">
+                            <div class="projectPartNumberBox">${partNumFormatted}</div>
+                            <div class="projectPartRowDetails">
+                                <h3 class="projectPartRowTitle">${escapeHtml(part.title)}</h3>
+                                ${part.subtitle ? `<p class="projectPartRowSubtitle">${escapeHtml(part.subtitle)}</p>` : ''}
+                                <div class="projectPartRowMeta">
+                                    <span>${part.readTime || 4} min read</span>
+                                    ${part.bibliography ? `<span>&bull; References included</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="projectPartRowActions">
+                            ${canEdit ? `
+                                <button type="button" class="projectActionButton" onclick="openPartModal('${project.id}', ${index})" title="Edit Essay Part">
+                                    Edit
+                                </button>
+                                <button type="button" class="projectActionButton danger" onclick="promptDeletePart('${project.id}', ${index}, '${escapeQuotes(part.title)}')" title="Remove Part">
+                                    &times;
+                                </button>
+                            ` : ''}
+                            <a href="projects.html?id=${encodeURIComponent(project.id)}&part=${index}" class="readPartBtn" onclick="event.preventDefault(); navigateTo('${project.id}', ${index});">
+                                Read Part &rarr;
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ======================================================================
+        // View 3: In-Series Sequential Essay Reader
+        // ======================================================================
+        function renderSeriesReader(projectId, partIndex) {
+            const project = (typeof DB !== 'undefined' && DB.getProjectById) ? DB.getProjectById(projectId) : null;
+            if (!project) {
+                alert('Project not found.');
+                navigateTo();
+                return;
+            }
+
+            const parts = project.parts || [];
+            if (partIndex < 0 || partIndex >= parts.length) {
+                alert('Specified part not found.');
+                navigateTo(projectId);
+                return;
+            }
+
+            const currentPart = parts[partIndex];
+            document.title = `${currentPart.title} - ${project.title}`;
+
+            // Context Bar
+            document.getElementById('seriesContextProjectTitle').textContent = project.title;
+            document.getElementById('seriesContextPartTitle').textContent = `Part ${partIndex + 1} of ${parts.length}: ${currentPart.title}`;
+
+            // Quick Jump Select
+            const jumpSelect = document.getElementById('seriesJumpSelect');
+            jumpSelect.innerHTML = parts.map((pt, idx) => `
+                <option value="${idx}" ${idx === partIndex ? 'selected' : ''}>
+                    Part ${idx + 1}: ${escapeHtml(pt.title)}
+                </option>
+            `).join('');
+            jumpSelect.onchange = (e) => {
+                navigateTo(projectId, parseInt(e.target.value, 10));
+            };
+
+            document.getElementById('seriesReturnToTocBtn').onclick = () => navigateTo(projectId);
+            document.getElementById('seriesCenterTocBtn').onclick = (e) => {
+                e.preventDefault();
+                navigateTo(projectId);
+            };
+
+            // Reader Article Header
+            document.getElementById('seriesReaderPartBadge').textContent = `Part ${partIndex + 1} of ${parts.length}`;
+            document.getElementById('seriesReaderReadTime').textContent = `${currentPart.readTime || 4} min read`;
+            document.getElementById('seriesReaderHeadline').textContent = currentPart.title;
+            const subEl = document.getElementById('seriesReaderSubtitle');
+            if (currentPart.subtitle) {
+                subEl.textContent = currentPart.subtitle;
+                subEl.classList.remove('hidden');
+            } else {
+                subEl.classList.add('hidden');
+            }
+
+            if (project.collaboratorName) {
+                document.getElementById('seriesReaderAuthor').innerHTML = `${escapeHtml(project.author)} &amp; ${escapeHtml(project.collaboratorName)} <span class="projectCollabBadge">Collab</span>`;
+            } else {
+                document.getElementById('seriesReaderAuthor').textContent = project.author || 'Editorial Staff';
+            }
+            document.getElementById('seriesReaderDate').textContent = project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recent';
+
+            // Author edit shortcuts in reader
+            const authorActionsSlot = document.getElementById('seriesReaderAuthorActions');
+            const canEdit = (typeof DB !== 'undefined' && DB.canEditProject) ? DB.canEditProject(project) : false;
+            if (canEdit) {
+                authorActionsSlot.innerHTML = `
+                    <button type="button" class="projectActionButton" onclick="openPartModal('${project.id}', ${partIndex})">
+                        Edit This Part
+                    </button>
+                `;
+            } else {
+                authorActionsSlot.innerHTML = '';
+            }
+
+            // Body paragraphs
+            const bodyEl = document.getElementById('seriesReaderBody');
+            bodyEl.innerHTML = '';
+            const paragraphs = (currentPart.body || '').split(/\n\s*\n/);
+            paragraphs.forEach(paragraphText => {
+                const trimmed = paragraphText.trim();
+                if (trimmed) {
+                    const p = document.createElement('p');
+                    p.textContent = trimmed;
+                    bodyEl.appendChild(p);
+                }
+            });
+
+            // Bibliography
+            const bibSection = document.getElementById('seriesReaderBibliography');
+            const bibList = document.getElementById('seriesBibliographyList');
+            const bibCountBadge = document.getElementById('seriesBibCountBadge');
+            bibList.innerHTML = '';
+
+            if (currentPart.bibliography && currentPart.bibliography.trim()) {
+                const entries = currentPart.bibliography.split('\n').map(l => l.trim()).filter(Boolean);
+                if (entries.length > 0) {
+                    bibSection.classList.remove('hidden');
+                    bibCountBadge.textContent = `${entries.length} ${entries.length === 1 ? 'source' : 'sources'}`;
+                    entries.forEach((entry, i) => {
+                        const item = document.createElement('div');
+                        item.className = 'bibItem';
+
+                        const indexBadge = document.createElement('span');
+                        indexBadge.className = 'bibIndex';
+                        indexBadge.textContent = `[${i + 1}]`;
+
+                        const textSpan = document.createElement('span');
+                        textSpan.className = 'bibText';
+
+                        // Auto-link URLs
+                        const urlPattern = /(https?:\/\/[^\s]+)/g;
+                        if (urlPattern.test(entry)) {
+                            textSpan.innerHTML = entry.replace(urlPattern, url => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="bibLink">${url}</a>`);
+                        } else {
+                            textSpan.textContent = entry;
+                        }
+
+                        item.appendChild(indexBadge);
+                        item.appendChild(textSpan);
+                        bibList.appendChild(item);
+                    });
+                } else {
+                    bibSection.classList.add('hidden');
+                }
+            } else {
+                bibSection.classList.add('hidden');
+            }
+
+            // Bottom Navigation Buttons
+            const prevBtn = document.getElementById('seriesPrevPartBtn');
+            const prevLabel = document.getElementById('seriesPrevPartLabel');
+            if (partIndex > 0) {
+                prevBtn.classList.remove('disabled');
+                prevLabel.textContent = `Part ${partIndex}: ${parts[partIndex - 1].title}`;
+                prevBtn.onclick = (e) => {
+                    e.preventDefault();
+                    navigateTo(projectId, partIndex - 1);
+                };
+            } else {
+                prevBtn.classList.add('disabled');
+                prevLabel.textContent = 'Beginning of Series';
+                prevBtn.onclick = (e) => e.preventDefault();
+            }
+
+            const nextBtn = document.getElementById('seriesNextPartBtn');
+            const nextLabel = document.getElementById('seriesNextPartLabel');
+            if (partIndex < parts.length - 1) {
+                nextBtn.classList.remove('disabled');
+                nextLabel.textContent = `Part ${partIndex + 2}: ${parts[partIndex + 1].title}`;
+                nextBtn.onclick = (e) => {
+                    e.preventDefault();
+                    navigateTo(projectId, partIndex + 1);
+                };
+            } else {
+                nextBtn.classList.add('disabled');
+                nextLabel.textContent = 'End of Series';
+                nextBtn.onclick = (e) => e.preventDefault();
+            }
+        }
+
+        // ======================================================================
+        // Modals Management (Create/Edit Project & Add/Edit Part)
+        // ======================================================================
+        function initModals() {
+            // Project Modal buttons
+            const openCreateBtn = document.getElementById('openCreateProjectBtn');
+            const projectOverlay = document.getElementById('projectModalOverlay');
+            const closeProjectBtn = document.getElementById('closeProjectModalBtn');
+            const cancelProjectBtn = document.getElementById('cancelProjectModalBtn');
+            const projectForm = document.getElementById('projectForm');
+
+            openCreateBtn.addEventListener('click', () => {
+                const currentUser = (typeof DB !== 'undefined' && DB.getCurrentUser) ? DB.getCurrentUser() : null;
+                if (!currentUser) {
+                    if (confirm('You must be signed in to create an editorial project. Would you like to sign in now?')) {
+                        window.location.href = 'auth.html?redirect=projects.html';
+                    }
+                    return;
+                }
+                openProjectModal();
+            });
+
+            closeProjectBtn.addEventListener('click', closeProjectModal);
+            cancelProjectBtn.addEventListener('click', closeProjectModal);
+
+            projectForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                handleSaveProject();
+            });
+
+            // Part Modal buttons
+            const partOverlay = document.getElementById('partModalOverlay');
+            const closePartBtn = document.getElementById('closePartModalBtn');
+            const cancelPartBtn = document.getElementById('cancelPartModalBtn');
+            const partForm = document.getElementById('partForm');
+
+            closePartBtn.addEventListener('click', closePartModal);
+            cancelPartBtn.addEventListener('click', closePartModal);
+
+            partForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                handleSavePart();
+            });
+
+            // Close on overlay click
+            projectOverlay.addEventListener('click', (e) => {
+                if (e.target === projectOverlay) closeProjectModal();
+            });
+            partOverlay.addEventListener('click', (e) => {
+                if (e.target === partOverlay) closePartModal();
+            });
+        }
+
+        function openProjectModal(existingProject = null) {
+            const overlay = document.getElementById('projectModalOverlay');
+            const titleEl = document.getElementById('projectModalTitle');
+            const idField = document.getElementById('projectIdField');
+            const titleInput = document.getElementById('projectTitleInput');
+            const subtitleInput = document.getElementById('projectSubtitleInput');
+            const descInput = document.getElementById('projectDescriptionInput');
+            const coverSelect = document.getElementById('projectCoverSelect');
+            const collabSelect = document.getElementById('projectCollaboratorSelect');
+            const initialPartSection = document.getElementById('projectInitialPartSection');
+
+            // Populate Collaborators dropdown with registered users (excluding current user)
+            const currentUser = (typeof DB !== 'undefined' && DB.getCurrentUser) ? DB.getCurrentUser() : null;
+            const allUsers = (typeof DB !== 'undefined' && DB.getAllUsers) ? DB.getAllUsers() : [];
+            collabSelect.innerHTML = '<option value="">-- Solo Project (No Collaborator) --</option>';
+
+            allUsers.forEach(u => {
+                if (!u.name) return;
+                if (currentUser && (u.id === currentUser.id || (u.email && u.email.toLowerCase() === currentUser.email.toLowerCase()))) return;
+                const opt = document.createElement('option');
+                opt.value = u.id || u.name;
+                const roleLabel = u.role === 'admin' ? 'Editor-in-Chief' : (u.role === 'co-founder' ? 'Co-Founder' : 'Author');
+                opt.textContent = `${u.name} (${roleLabel})`;
+                if (existingProject && (existingProject.collaboratorId === u.id || existingProject.collaboratorName === u.name)) {
+                    opt.selected = true;
+                }
+                collabSelect.appendChild(opt);
+            });
+
+            if (existingProject) {
+                titleEl.textContent = 'Edit Project Details';
+                idField.value = existingProject.id;
+                titleInput.value = existingProject.title || '';
+                subtitleInput.value = existingProject.subtitle || '';
+                descInput.value = existingProject.description || '';
+                coverSelect.value = existingProject.cover || 'images/spanish colonisation.png';
+
+                // Hide initial part section during edit (parts are managed in Table of Contents)
+                initialPartSection.style.display = 'none';
+
+                // Check categories
+                const cats = existingProject.categories || [];
+                document.querySelectorAll('input[name="projectCategory"]').forEach(cb => {
+                    cb.checked = cats.includes(cb.value);
+                });
+            } else {
+                titleEl.textContent = 'Create New Project';
+                idField.value = '';
+                titleInput.value = '';
+                subtitleInput.value = '';
+                descInput.value = '';
+                coverSelect.value = 'images/spanish colonisation.png';
+                collabSelect.value = '';
+
+                // Show initial part section (mandatory for creating a project)
+                initialPartSection.style.display = 'block';
+                document.getElementById('initialPartTitleInput').value = 'Part I: ';
+                document.getElementById('initialPartSubtitleInput').value = '';
+                document.getElementById('initialPartReadTimeInput').value = '5';
+                document.getElementById('initialPartBodyInput').value = '';
+                document.getElementById('initialPartBibliographyInput').value = '';
+
+                // Setup Part 1 Quick Import
+                populateInitialPartImport();
+
+                document.querySelectorAll('input[name="projectCategory"]').forEach((cb, idx) => {
+                    cb.checked = idx < 2;
+                });
+            }
+
+            overlay.classList.add('active');
+        }
+
+        function populateInitialPartImport() {
+            const select = document.getElementById('initialPartImportSelect');
+            select.innerHTML = '<option value="">-- Choose an existing article to pre-fill Part 1 --</option>';
+
+            const user = (typeof DB !== 'undefined' && DB.getCurrentUser) ? DB.getCurrentUser() : null;
+            let articles = [];
+            if (typeof DB !== 'undefined' && DB.getCustomArticles) {
+                articles = DB.getCustomArticles();
+            }
+
+            if (user && user.role !== 'admin') {
+                articles = articles.filter(a => a.authorId === user.id || (a.author && a.author.toLowerCase() === user.name.toLowerCase()));
+            }
+
+            if (!articles.length) {
+                fetch('articles.json')
+                    .then(res => res.json())
+                    .then(seedArticles => {
+                        seedArticles.forEach(a => {
+                            const opt = document.createElement('option');
+                            opt.value = JSON.stringify(a);
+                            opt.textContent = `${a.title} (${a.author})`;
+                            select.appendChild(opt);
+                        });
+                    })
+                    .catch(() => {});
+            } else {
+                articles.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = JSON.stringify(a);
+                    opt.textContent = `${a.title} (${a.author})`;
+                    select.appendChild(opt);
+                });
+            }
+
+            select.onchange = (e) => {
+                if (!e.target.value) return;
+                try {
+                    const a = JSON.parse(e.target.value);
+                    document.getElementById('initialPartTitleInput').value = a.title || '';
+                    document.getElementById('initialPartSubtitleInput').value = a.description || '';
+                    document.getElementById('initialPartReadTimeInput').value = a.readTime || 5;
+                    document.getElementById('initialPartBodyInput').value = a.body || '';
+                    document.getElementById('initialPartBibliographyInput').value = a.bibliography || '';
+                } catch (err) {}
+            };
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModalOverlay').classList.remove('active');
+        }
+
+        function handleSaveProject() {
+            const id = document.getElementById('projectIdField').value;
+            const title = document.getElementById('projectTitleInput').value.trim();
+            const subtitle = document.getElementById('projectSubtitleInput').value.trim();
+            const description = document.getElementById('projectDescriptionInput').value.trim();
+            const cover = document.getElementById('projectCoverSelect').value;
+
+            // Collaborator resolution
+            const collabSelect = document.getElementById('projectCollaboratorSelect');
+            const selectedCollabVal = collabSelect.value;
+            let collaboratorId = null;
+            let collaboratorName = null;
+            let collaboratorRole = null;
+
+            if (selectedCollabVal) {
+                const allUsers = (typeof DB !== 'undefined' && DB.getAllUsers) ? DB.getAllUsers() : [];
+                const foundUser = allUsers.find(u => u.id === selectedCollabVal || u.name === selectedCollabVal);
+                if (foundUser) {
+                    collaboratorId = foundUser.id;
+                    collaboratorName = foundUser.name;
+                    collaboratorRole = foundUser.role === 'admin' ? 'Founder & Editor-in-Chief' : (foundUser.role === 'co-founder' ? 'Co-Founder & Contributing Editor' : 'Co-Author & Contributor');
+                }
+            }
+
+            const selectedCats = [];
+            document.querySelectorAll('input[name="projectCategory"]:checked').forEach(cb => {
+                selectedCats.push(cb.value);
+            });
+
+            if (!selectedCats.length) selectedCats.push('General');
+
+            try {
+                if (id) {
+                    // Update existing project
+                    DB.updateProject(id, {
+                        title,
+                        subtitle,
+                        description,
+                        cover,
+                        categories: selectedCats,
+                        collaboratorId,
+                        collaboratorName,
+                        collaboratorRole
+                    });
+                    closeProjectModal();
+                    renderProjectDetail(id);
+                } else {
+                    // Create new project - enforce at least 1 essay part!
+                    const part1Title = document.getElementById('initialPartTitleInput').value.trim();
+                    const part1Subtitle = document.getElementById('initialPartSubtitleInput').value.trim();
+                    const part1ReadTime = parseInt(document.getElementById('initialPartReadTimeInput').value, 10) || 5;
+                    const part1Body = document.getElementById('initialPartBodyInput').value.trim();
+                    const part1Bib = document.getElementById('initialPartBibliographyInput').value.trim();
+
+                    if (!part1Title || !part1Body) {
+                        alert('Validation Error: A project must include at least one essay/article to be launched. Please provide Part 1 title and essay body.');
+                        return;
+                    }
+
+                    const initialPart = {
+                        id: 'part-1',
+                        title: part1Title,
+                        subtitle: part1Subtitle,
+                        readTime: part1ReadTime,
+                        body: part1Body,
+                        bibliography: part1Bib
+                    };
+
+                    const newProj = DB.saveProject({
+                        title,
+                        subtitle,
+                        description,
+                        cover,
+                        categories: selectedCats,
+                        collaboratorId,
+                        collaboratorName,
+                        collaboratorRole,
+                        parts: [initialPart]
+                    });
+
+                    closeProjectModal();
+                    navigateTo(newProj.id);
+                }
+            } catch (err) {
+                alert('Error saving project: ' + err.message);
+            }
+        }
+
+        function promptDeleteProject(projectId, projectTitle) {
+            if (confirm(`Are you sure you want to delete the series "${projectTitle}"? This cannot be undone.`)) {
+                try {
+                    DB.deleteProject(projectId);
+                    navigateTo();
+                } catch (err) {
+                    alert('Error deleting project: ' + err.message);
+                }
+            }
+        }
+
+        // ======================================================================
+        // Part Modal Handling & Article Import
+        // ======================================================================
+        let currentEditingPartIndex = null;
+
+        function openPartModal(projectId, partIndex = null) {
+            currentEditingPartIndex = partIndex;
+            const overlay = document.getElementById('partModalOverlay');
+            const modalTitle = document.getElementById('partModalTitle');
+            const projectIdField = document.getElementById('partProjectIdField');
+            const partIdField = document.getElementById('partIdField');
+            const titleInput = document.getElementById('partTitleInput');
+            const subtitleInput = document.getElementById('partSubtitleInput');
+            const readTimeInput = document.getElementById('partReadTimeInput');
+            const bodyInput = document.getElementById('partBodyInput');
+            const bibInput = document.getElementById('partBibliographyInput');
+
+            projectIdField.value = projectId;
+            const project = DB.getProjectById(projectId);
+            const importBox = document.getElementById('projectImportBox');
+
+            // Populate Quick Import dropdown
+            populateArticleImportDropdown();
+
+            if (partIndex !== null && project && project.parts && project.parts[partIndex]) {
+                const part = project.parts[partIndex];
+                modalTitle.textContent = 'Edit Essay Part';
+                partIdField.value = part.id;
+                titleInput.value = part.title || '';
+                subtitleInput.value = part.subtitle || '';
+                readTimeInput.value = part.readTime || 4;
+                bodyInput.value = part.body || '';
+                bibInput.value = part.bibliography || '';
+                importBox.style.display = 'none'; // Don't show import when editing
+            } else {
+                const nextPartNum = (project && project.parts) ? (project.parts.length + 1) : 1;
+                modalTitle.textContent = `Add Part ${nextPartNum} to Series`;
+                partIdField.value = '';
+                titleInput.value = `Part ${nextPartNum}: `;
+                subtitleInput.value = '';
+                readTimeInput.value = 5;
+                bodyInput.value = '';
+                bibInput.value = '';
+                importBox.style.display = 'block';
+            }
+
+            overlay.classList.add('active');
+        }
+
+        function closePartModal() {
+            document.getElementById('partModalOverlay').classList.remove('active');
+        }
+
+        function populateArticleImportDropdown() {
+            const select = document.getElementById('importArticleSelect');
+            select.innerHTML = '<option value="">-- Choose an article to populate fields --</option>';
+
+            const user = (typeof DB !== 'undefined' && DB.getCurrentUser) ? DB.getCurrentUser() : null;
+            let articles = [];
+
+            if (typeof DB !== 'undefined' && DB.getCustomArticles) {
+                articles = DB.getCustomArticles();
+            }
+
+            // If non-admin, filter to user's articles
+            if (user && user.role !== 'admin') {
+                articles = articles.filter(a => a.authorId === user.id || (a.author && a.author.toLowerCase() === user.name.toLowerCase()));
+            }
+
+            // Also include default seed articles for convenience if empty
+            if (!articles.length) {
+                fetch('articles.json')
+                    .then(res => res.json())
+                    .then(seedArticles => {
+                        seedArticles.forEach(a => {
+                            const opt = document.createElement('option');
+                            opt.value = JSON.stringify(a);
+                            opt.textContent = `${a.title} (${a.author})`;
+                            select.appendChild(opt);
+                        });
+                    })
+                    .catch(() => {});
+            } else {
+                articles.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = JSON.stringify(a);
+                    opt.textContent = `${a.title} (${a.author})`;
+                    select.appendChild(opt);
+                });
+            }
+
+            select.onchange = (e) => {
+                if (!e.target.value) return;
+                try {
+                    const article = JSON.parse(e.target.value);
+                    const titleInput = document.getElementById('partTitleInput');
+                    const subtitleInput = document.getElementById('partSubtitleInput');
+                    const readTimeInput = document.getElementById('partReadTimeInput');
+                    const bodyInput = document.getElementById('partBodyInput');
+                    const bibInput = document.getElementById('partBibliographyInput');
+
+                    titleInput.value = article.title || '';
+                    subtitleInput.value = article.description || '';
+                    readTimeInput.value = article.readTime || 5;
+                    bodyInput.value = article.body || '';
+                    bibInput.value = article.bibliography || '';
+                } catch (err) {}
+            };
+        }
+
+        function handleSavePart() {
+            const projectId = document.getElementById('partProjectIdField').value;
+            const partId = document.getElementById('partIdField').value;
+            const title = document.getElementById('partTitleInput').value.trim();
+            const subtitle = document.getElementById('partSubtitleInput').value.trim();
+            const readTime = parseInt(document.getElementById('partReadTimeInput').value, 10) || 4;
+            const body = document.getElementById('partBodyInput').value.trim();
+            const bibliography = document.getElementById('partBibliographyInput').value.trim();
+
+            const partData = { title, subtitle, readTime, body, bibliography };
+
+            try {
+                if (currentEditingPartIndex !== null) {
+                    DB.updateProjectPart(projectId, currentEditingPartIndex, partData);
+                } else {
+                    DB.addProjectPart(projectId, partData);
+                }
+                closePartModal();
+                renderProjectDetail(projectId);
+            } catch (err) {
+                alert('Error saving part: ' + err.message);
+            }
+        }
+
+        function promptDeletePart(projectId, partIndex, partTitle) {
+            if (confirm(`Are you sure you want to remove "${partTitle}" from this project?`)) {
+                try {
+                    DB.deleteProjectPart(projectId, partIndex);
+                    renderProjectDetail(projectId);
+                } catch (err) {
+                    alert('Error removing part: ' + err.message);
+                }
+            }
+        }
+
+        // ======================================================================
+        // Utility Helpers
+        // ======================================================================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function escapeQuotes(str) {
+            if (!str) return '';
+            return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
+

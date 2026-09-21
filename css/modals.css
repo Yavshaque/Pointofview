@@ -1,0 +1,837 @@
+/* ==========================================================================
+   Admin Console & Modal Styles (Exclusive to Ali Mert Bayar)
+   ========================================================================== */
+.adminBadgeBtn {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #f59e0b;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.adminBadgeBtn:hover {
+    background: #f59e0b;
+    color: #0f172a;
+    border-color: #f59e0b;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.adminModalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.adminModalBackdrop.visible {
+    display: flex;
+}
+
+.adminModalCard {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 860px;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    padding: 32px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.adminModalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 18px;
+}
+
+.adminBadgeRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.adminCrownBadge {
+    background-color: #fef3c7;
+    color: #b45309;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.adminUserTag {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.adminModalHeader h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.adminCloseBtn {
+    background: transparent;
+    border: none;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.15s ease;
+    padding: 4px;
+}
+
+.adminCloseBtn:hover {
+    color: var(--text-primary);
+}
+
+.adminModalTabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 8px;
+}
+
+.adminTabBtn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 18px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.adminTabBtn:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.adminTabBtn.active {
+    background: #2563eb;
+    border: 1px solid #3b82f6;
+    color: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+}
+
+.adminTabContent {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.adminTableHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.adminSectionLabel {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.adminAddBtn {
+    background: var(--grad-orange);
+    color: #ffffff !important;
+    text-decoration: none !important;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(136, 0, 3, 0.35);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.adminAddBtn:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(136, 0, 3, 0.5);
+    color: #ffffff !important;
+}
+
+.adminTableWrap {
+    overflow-x: auto;
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+}
+
+.adminTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    text-align: left;
+}
+
+.adminTable th {
+    background-color: var(--bg-surface-secondary);
+    padding: 12px 16px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.adminTable td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+}
+
+.adminTable tr:last-child td {
+    border-bottom: none;
+}
+
+.adminArticleTitleLink {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.15s ease;
+}
+
+.adminArticleTitleLink:hover {
+    color: var(--accent-primary);
+}
+
+.adminTopicBadge {
+    background-color: var(--bg-surface-secondary);
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+}
+
+.adminRoleBadge {
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.adminRoleBadge.admin {
+    background-color: rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #fbbf24;
+}
+
+.adminRoleBadge.writer {
+    background-color: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.45);
+    color: #93c5fd;
+}
+
+.adminProtectedTag {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.adminActionsCell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.adminEditLink {
+    background-color: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.45);
+    color: #93c5fd !important;
+    text-decoration: none !important;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.adminEditLink:hover {
+    background-color: #2563eb;
+    border-color: #3b82f6;
+    color: #ffffff !important;
+}
+
+.adminDeleteBtn {
+    background-color: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    color: #fca5a5;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.adminDeleteBtn:hover {
+    background-color: #dc2626;
+    border-color: #ef4444;
+    color: #ffffff !important;
+}
+
+.adminToolsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.adminToolCard {
+    background-color: var(--bg-surface-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.adminToolCard h4 {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.adminToolCard p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.adminOutlineBtn {
+    margin-top: 10px;
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #f1f5f9;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.adminOutlineBtn:hover {
+    border-color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.25);
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Editorial Inquiries Modal (Co-Founder & Leadership Desk)
+   ========================================================================== */
+.inquiriesModalBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 17, 15, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.inquiriesModalContent {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 22px;
+    width: 100%;
+    max-width: 780px;
+    max-height: 86vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(20, 18, 15, 0.25);
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    animation: modalSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.inquiriesModalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 16px;
+}
+
+.inquiriesHeaderLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.inquiriesHeaderBadge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--accent-primary);
+    background-color: var(--accent-subtle);
+    padding: 2px 9px;
+    border-radius: 999px;
+    width: fit-content;
+}
+
+.inquiriesModalHeader h2 {
+    font-size: 1.45rem;
+    font-weight: 750;
+    margin: 2px 0 0 0;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.inquiriesHeaderCount {
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+.inquiriesHeaderActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.inquiriesMarkAllBtn {
+    background: var(--bg-surface-secondary);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.inquiriesMarkAllBtn:hover {
+    background: var(--button-bg);
+    color: var(--button-text);
+}
+
+.inquiriesCloseBtn {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: color 0.15s ease;
+}
+
+.inquiriesCloseBtn:hover {
+    color: var(--text-primary);
+}
+
+.inquiriesModalList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 4px;
+}
+
+.inquiryCard {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.inquiryCard.isUnread {
+    background: #fdfcf9;
+    border-color: #e8c9b9;
+    border-left: 4px solid var(--accent-primary);
+    box-shadow: 0 4px 14px rgba(168, 66, 43, 0.06);
+}
+
+.inquiryCard.isRead {
+    opacity: 0.88;
+    background: var(--bg-surface-secondary);
+}
+
+.inquiryCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.inquirySenderMeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 13px;
+}
+
+.inquirySenderName {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.inquirySenderEmail {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.inquiryDate {
+    font-size: 11.5px;
+    color: var(--text-muted);
+}
+
+.inquiryCardActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.inquiryActionBtn {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.inquiryActionBtn:hover {
+    border-color: var(--text-primary);
+}
+
+.inquiryActionBtn.markReadBtn {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.inquiryActionBtn.replyBtn {
+    background: var(--accent-subtle);
+    color: var(--accent-primary);
+    border-color: transparent;
+}
+
+.inquiryActionBtn.replyBtn:hover {
+    background: var(--accent-primary);
+    color: #ffffff;
+}
+
+.inquiryActionBtn.deleteBtn {
+    color: #dc2626;
+    border-color: transparent;
+    padding: 4px 6px;
+}
+
+.inquiryActionBtn.deleteBtn:hover {
+    background: #fef2f2;
+}
+
+.inquirySubjectRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.inquirySubjectTag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-primary);
+    background: var(--bg-surface-secondary);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.inquiryMessageBody {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--text-secondary);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 12px 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.inquiriesEmptyState {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.inquiriesEmptyIcon {
+    font-size: 42px;
+    margin-bottom: 8px;
+}
+
+.inquiriesEmptyState h3 {
+    margin: 0 0 6px 0;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.inquiriesEmptyState p {
+    margin: 0;
+    font-size: 13px;
+}
+
+
+/* ==========================================================================
+   Editorial Picks — Settings Button & Modal Components
+   ========================================================================== */
+.epEditHeaderBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface-secondary);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.epEditHeaderBtn:hover {
+    background: var(--accent-subtle);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    transform: rotate(30deg);
+}
+
+/* Active pick slot rows */
+.epSlotRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface-secondary);
+    transition: border-color 0.15s ease;
+}
+
+.epSlotRow:hover {
+    border-color: var(--border-contrast);
+}
+
+.epRankBadge {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent-primary);
+    background: var(--accent-subtle);
+    border-radius: 8px;
+    padding: 3px 8px;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    min-width: 30px;
+    text-align: center;
+}
+
+.epSlotInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.epSlotTag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+}
+
+.epSlotTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.epSlotAuthor {
+    font-size: 11.5px;
+    color: var(--text-muted);
+}
+
+.epSlotActions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.epMoveBtn {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.epMoveBtn:hover {
+    background: var(--bg-surface-secondary);
+    border-color: var(--border-contrast);
+    color: var(--text-primary);
+}
+
+.epRemoveBtn {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.epRemoveBtn:hover {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+
+.epMovePlaceholder {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+/* All articles list rows */
+.epArticleRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.epArticleRow:hover {
+    background: var(--bg-surface-secondary);
+    border-color: var(--border-subtle);
+}
+
+.epArticleRowPicked {
+    background: var(--accent-subtle);
+    border-color: rgba(37, 99, 235, 0.15);
+}
+
+.epArticleInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.epArticleTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.epAddBtn {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.epAddBtn:not(:disabled):hover {
+    background: var(--button-bg);
+    border-color: var(--button-bg);
+    color: var(--button-text);
+}
+
+.epAddBtn:disabled {
+    cursor: default;
+    opacity: 0.45;
+}
+

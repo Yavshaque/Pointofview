@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Writer Profile - Article Website</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="db.js"></script>
+</head>
+<body class="profilePageBody">
+    <header>
+        <div class="headers" id="headerLeft">
+            <a href="index.html" class="logoLink" title="Home">
+                <img src="images/logo.png" alt="Logo" id="logo">
+            </a>
+        </div>
+        <div class="headers" id="headerCenter">
+            <ul id="headerUL">
+                <li><a href="index.html#mainContent">Home</a></li>
+                <li><a href="index.html#content">Articles</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="publish.html">Publish</a></li>
+                <li><a href="index.html#ourTeam">About</a></li>
+                <li><a href="index.html#contactSection">Contact</a></li>
+            </ul>
+        </div>
+        <div class="headers" id="headerRight">
+            <a href="publish.html" id="publishNavBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Write Article
+            </a>
+            <a href="auth.html" id="signInButton">Sign In</a>
+        </div>
+    </header>
+
+    <main class="profilePageContainer">
+        <!-- Writer Profile Hero Card -->
+        <div class="profileHeroCard" id="profileHeroCard">
+            <div class="profileAvatarContainer">
+                <div id="profileAvatarSlot">
+                    <div class="profileAvatarFallback" id="profileAvatarFallback">A</div>
+                </div>
+                <button type="button" class="avatarUploadBtn hidden" id="avatarUploadBtn" onclick="triggerProfilePhotoUpload()" title="Upload profile photo from computer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                </button>
+                <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoUpload(event)">
+            </div>
+
+            <div class="profileHeaderInfo">
+                <div class="profileNameRow">
+                    <h1 class="profileAuthorName" id="profileAuthorName">Writer Profile</h1>
+                    <span class="profileRoleBadge" id="profileRoleBadge">Writer</span>
+                    <div class="profileRoleAdminWrap" id="profileRoleAdminWrap" style="display:none; align-items:center; gap:6px; margin-left:8px;">
+                        <label for="profileRoleSelect" style="font-size:12px; font-weight:600; color:var(--text-muted);">Change Role:</label>
+                        <select id="profileRoleSelect" onchange="handleRoleChange(this.value)" style="font-size:12px; font-weight:600; padding:4px 10px; border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-surface); color:var(--text-primary); cursor:pointer;">
+                            <option value="Writer">Writer</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Co-Founder">Co-Founder</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="profileBioContainer">
+                    <p class="profileBioText" id="profileBioDisplay">Loading writer profile...</p>
+                    <button type="button" class="editBioBtn hidden" id="editBioBtn" onclick="startEditBio()">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        Edit Explanation
+                    </button>
+
+                    <div class="bioEditForm hidden" id="bioEditForm">
+                        <textarea id="bioInput" rows="3" maxlength="280" placeholder="Write a brief explanation about yourself and your research interests..."></textarea>
+                        <div class="bioActionButtons">
+                            <button type="button" class="saveBioBtn" onclick="saveBioChanges()">Save Explanation</button>
+                            <button type="button" class="cancelBioBtn" onclick="cancelEditBio()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profileStatsRow">
+                    <div class="profileStatItem">
+                        <span class="profileStatNum" id="statArticlesCount">0</span>
+                        <span class="profileStatLabel">Published Articles</span>
+                    </div>
+                    <div class="profileStatItem">
+                        <span class="profileStatNum" id="statMemberSince">2024</span>
+                        <span class="profileStatLabel">Member Since</span>
+                    </div>
+                    <div class="profileStatItem">
+                        <span class="profileStatNum" id="statRole">Co-Founder</span>
+                        <span class="profileStatLabel">Role</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authored Articles Feed -->
+        <section class="profileFeedSection">
+            <div class="profileFeedHeader">
+                <div class="profileFeedTitleRow">
+                    <h2 class="profileFeedTitle" id="profileFeedTitle">Published Articles</h2>
+                    <span class="profileArticlesCountBadge" id="feedCountBadge">0</span>
+                </div>
+                <a href="publish.html" class="adminAddBtn" id="profileWriteBtn" style="padding: 8px 16px; font-size: 13px; text-decoration: none;">+ Write New Dispatch</a>
+            </div>
+
+            <div class="profileArticlesGrid" id="profileArticlesGrid">
+                <!-- Injected via JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footerContainer">
+            <div class="footerTop">
+                <div class="footerBrand">
+                    <img src="images/logo.png" alt="Logo">
+                    <p>Exploring global history, economic shifts, and transformative ideas through engaging articles and research.</p>
+                </div>
+                <div class="footerNav">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="index.html#mainContent">Home</a></li>
+                        <li><a href="index.html#ourTeam">About Us</a></li>
+                        <li><a href="index.html#content">Latest Articles</a></li>
+                        <li><a href="index.html#contactSection">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footerSocial">
+                    <h4>Connect</h4>
+                    <div class="socialIcons">
+                        <a href="#"><img src="images/instagram logo.png" alt="instagram" class="social-icon"></a>
+                        <a href="#"><img src="images/linkedin logo.png" alt="linkedin" class="social-icon"></a>
+                        <a href="#"><img src="images/email logo.png" alt="email" class="social-icon"></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footerBottom">
+                <p>&copy; 2026 Article Website. All rights reserved.</p>
+                <p>Designed with a minimalist, high-contrast aesthetic.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentAuthorName = '';
+        let currentProfile = null;
+        let authorArticles = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let author = urlParams.get('author');
+
+            if (!author || !author.trim()) {
+                const currentUser = typeof DB !== 'undefined' && DB.getCurrentUser ? DB.getCurrentUser() : null;
+                if (currentUser && currentUser.name) {
+                    author = currentUser.name;
+                } else {
+                    author = 'Ali Mert Bayar';
+                }
+            }
+
+            currentAuthorName = author.trim();
+            await loadProfile(currentAuthorName);
+        });
+
+        async function loadProfile(authorName) {
+            document.title = `${authorName} - Writer Profile - Article Website`;
+
+            // Load author profile details
+            currentProfile = typeof DB !== 'undefined' && DB.getAuthorProfile ? DB.getAuthorProfile(authorName) : {
+                name: authorName,
+                bio: 'Contributing writer and researcher sharing dispatches, essays, and critical insights.',
+                role: 'Contributing Writer',
+                avatar: null,
+                joinedDate: 'September 2024',
+                canEdit: false
+            };
+
+            // Update Author Name & Badge
+            const nameEl = document.getElementById('profileAuthorName');
+            nameEl.textContent = currentProfile.name;
+
+            const badgeEl = document.getElementById('profileRoleBadge');
+            badgeEl.textContent = currentProfile.role;
+            if (currentProfile.role.includes('Admin')) {
+                badgeEl.classList.add('adminBadge');
+            } else {
+                badgeEl.classList.remove('adminBadge');
+            }
+
+            // Update Bio
+            const bioEl = document.getElementById('profileBioDisplay');
+            bioEl.textContent = currentProfile.bio || 'Contributing writer and researcher sharing dispatches, essays, and critical insights.';
+
+            // Render Avatar
+            renderAvatar(currentProfile.avatar, currentProfile.name);
+
+            // Show Edit Controls if authorized
+            const currentUser = typeof DB !== 'undefined' && DB.getCurrentUser ? DB.getCurrentUser() : null;
+            const isAdmin = typeof DB !== 'undefined' && DB.isAdmin ? DB.isAdmin() : false;
+            const isSelf = currentUser && currentUser.name && currentUser.name.trim().toLowerCase() === currentProfile.name.trim().toLowerCase();
+            const canEdit = isSelf || isAdmin;
+
+            const avatarUploadBtn = document.getElementById('avatarUploadBtn');
+            const editBioBtn = document.getElementById('editBioBtn');
+
+            if (canEdit) {
+                avatarUploadBtn.classList.remove('hidden');
+                editBioBtn.classList.remove('hidden');
+            } else {
+                avatarUploadBtn.classList.add('hidden');
+                editBioBtn.classList.add('hidden');
+            }
+
+            // Role Management for Co-Founders & Admins
+            const isViewerAdmin = typeof DB !== 'undefined' && DB.isAdmin && DB.isAdmin();
+            const isTargetPrimaryFounder = currentProfile.name.toLowerCase() === 'ali mert bayar';
+            const roleAdminWrap = document.getElementById('profileRoleAdminWrap');
+            if (roleAdminWrap) {
+                if (isViewerAdmin && !isTargetPrimaryFounder) {
+                    roleAdminWrap.style.display = 'inline-flex';
+                    const roleSelect = document.getElementById('profileRoleSelect');
+                    if (roleSelect) {
+                        const cur = (currentProfile.role || '').toLowerCase();
+                        if (cur.includes('co-founder')) roleSelect.value = 'Co-Founder';
+                        else if (cur.includes('admin')) roleSelect.value = 'Admin';
+                        else roleSelect.value = 'Writer';
+                    }
+                } else {
+                    roleAdminWrap.style.display = 'none';
+                }
+            }
+
+            // Update Member stats
+            document.getElementById('statMemberSince').textContent = currentProfile.joinedDate || '2024';
+            document.getElementById('statRole').textContent = (currentProfile.name.toLowerCase() === 'ali mert bayar') ? 'Co-Founder' : (currentProfile.role || 'Writer');
+
+            // Load Authored Articles
+            await loadAuthorArticles(authorName);
+        }
+
+        function handleRoleChange(newRole) {
+            if (!currentAuthorName) return;
+            if (!confirm(`Are you sure you want to change ${currentAuthorName}'s role to "${newRole}"?\n\nNote: Co-Founder and Admin accounts can manage articles, editorial picks, and author permissions.`)) {
+                loadProfile(currentAuthorName);
+                return;
+            }
+            if (typeof DB !== 'undefined' && DB.assignAuthorRole) {
+                const res = DB.assignAuthorRole(currentAuthorName, newRole.toLowerCase());
+                if (!res.success) {
+                    alert(res.error || 'Failed to update role.');
+                }
+            }
+            loadProfile(currentAuthorName);
+        }
+
+        function renderAvatar(avatarSrc, name) {
+            const avatarSlot = document.getElementById('profileAvatarSlot');
+            if (avatarSrc) {
+                avatarSlot.innerHTML = `<img src="${avatarSrc}" alt="${name}" class="profileAvatarImg" id="profileAvatarImg">`;
+            } else {
+                const initial = name ? name.charAt(0).toUpperCase() : 'A';
+                const isAdmin = name.toLowerCase() === 'ali mert bayar';
+                avatarSlot.innerHTML = `<div class="profileAvatarFallback ${isAdmin ? 'adminAvatar' : ''}" id="profileAvatarFallback">${initial}</div>`;
+            }
+        }
+
+        function triggerProfilePhotoUpload() {
+            const fileInput = document.getElementById('profilePhotoInput');
+            if (fileInput) fileInput.click();
+        }
+
+        async function handleProfilePhotoUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            try {
+                // Compress image to keep localStorage lean (400px width, 0.85 quality)
+                const compressedBase64 = await DB.compressImage(file, 400, 0.85);
+
+                // Save to DB
+                if (typeof DB !== 'undefined' && DB.saveAuthorProfile) {
+                    DB.saveAuthorProfile(currentAuthorName, { avatar: compressedBase64 });
+                }
+
+                // Update Profile Hero Avatar
+                renderAvatar(compressedBase64, currentAuthorName);
+
+                // Re-render header auth to reflect new avatar in the header pill & dropdown
+                if (typeof DB !== 'undefined' && DB.renderHeaderAuth) {
+                    DB.renderHeaderAuth('headerRight');
+                }
+
+                // Notify other open tabs (e.g. index.html Our Team section)
+                try {
+                    const bc = new BroadcastChannel('profile_updates');
+                    bc.postMessage({ type: 'avatar_updated', name: currentAuthorName });
+                    bc.close();
+                } catch (_) {}
+            } catch (err) {
+                console.error('Failed to update profile photo:', err);
+                alert('Could not update profile photo. Please try a different image.');
+            }
+        }
+
+        function startEditBio() {
+            const bioText = document.getElementById('profileBioDisplay').textContent;
+            document.getElementById('bioInput').value = bioText;
+            document.getElementById('profileBioDisplay').classList.add('hidden');
+            document.getElementById('editBioBtn').classList.add('hidden');
+            document.getElementById('bioEditForm').classList.remove('hidden');
+            document.getElementById('bioInput').focus();
+        }
+
+        function cancelEditBio() {
+            document.getElementById('bioEditForm').classList.add('hidden');
+            document.getElementById('profileBioDisplay').classList.remove('hidden');
+            document.getElementById('editBioBtn').classList.remove('hidden');
+        }
+
+        function saveBioChanges() {
+            const newBio = document.getElementById('bioInput').value.trim();
+            if (!newBio) {
+                alert('Please enter a brief explanation/bio.');
+                return;
+            }
+
+            if (typeof DB !== 'undefined' && DB.saveAuthorProfile) {
+                DB.saveAuthorProfile(currentAuthorName, { bio: newBio });
+            }
+
+            document.getElementById('profileBioDisplay').textContent = newBio;
+            cancelEditBio();
+        }
+
+        async function loadAuthorArticles(authorName) {
+            let baseArticles = [];
+            try {
+                const res = await fetch('articles.json');
+                baseArticles = await res.json();
+            } catch (e) {
+                baseArticles = [];
+            }
+
+            const custom = typeof DB !== 'undefined' && DB.getCustomArticles ? DB.getCustomArticles() : [];
+            const deletedIds = typeof DB !== 'undefined' && DB.getDeletedArticleIds ? DB.getDeletedArticleIds() : new Set();
+            const customIds = new Set(custom.map(a => String(a.id)));
+            const filteredBase = baseArticles.filter(a => !customIds.has(String(a.id)));
+            const allArticles = [...custom, ...filteredBase].filter(a => !deletedIds.has(String(a.id)));
+
+            const cleanAuthor = authorName.trim().toLowerCase();
+            authorArticles = allArticles.filter(a => {
+                const artAuthor = (a.author || '').trim().toLowerCase();
+                return artAuthor === cleanAuthor;
+            });
+
+            // Update Counters
+            document.getElementById('statArticlesCount').textContent = authorArticles.length;
+            document.getElementById('feedCountBadge').textContent = `${authorArticles.length} pieces`;
+            document.getElementById('profileFeedTitle').textContent = `Dispatches by ${authorName}`;
+
+            renderArticlesGrid(authorArticles);
+        }
+
+        function renderArticlesGrid(articles) {
+            const grid = document.getElementById('profileArticlesGrid');
+            if (!grid) return;
+
+            if (articles.length === 0) {
+                grid.innerHTML = `
+                    <div class="profileEmptyState">
+                        <div style="font-size: 38px; margin-bottom: 10px;">📰</div>
+                        <h3 style="margin: 0; font-size: 1.25rem;">No Published Articles Yet</h3>
+                        <p>This author has not published any public dispatches to the platform yet.</p>
+                        <a href="publish.html" class="adminAddBtn" style="display: inline-block; padding: 10px 22px; text-decoration: none;">+ Write New Article</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const currentUser = typeof DB !== 'undefined' && DB.getCurrentUser ? DB.getCurrentUser() : null;
+
+            grid.innerHTML = articles.map(art => {
+                const canEdit = typeof DB !== 'undefined' && DB.canEditArticle ? DB.canEditArticle(art) : false;
+                const canDelete = typeof DB !== 'undefined' && DB.canDeleteArticle ? DB.canDeleteArticle(art) : false;
+                const coverImg = art.image || 'images/spanish colonisation.png';
+                const topics = (art.keywords || []).filter(k => k.toLowerCase() !== 'published');
+
+                return `
+                    <article class="profileArticleCard">
+                        <a href="article.html?id=${encodeURIComponent(art.id)}" class="profileArticleCoverLink">
+                            <img src="${coverImg}" alt="${escapeHtml(art.title)}" loading="lazy">
+                        </a>
+                        <div class="profileArticleContent">
+                            <div class="profileArticleTopics">
+                                ${topics.map(t => `<span class="profileArticleTopicChip">${escapeHtml(t)}</span>`).join('')}
+                            </div>
+                            <h3 class="profileArticleTitle">
+                                <a href="article.html?id=${encodeURIComponent(art.id)}">${escapeHtml(art.title)}</a>
+                            </h3>
+                            <p class="profileArticleExcerpt">${escapeHtml(art.description || '')}</p>
+                            <div class="profileArticleFooter">
+                                <a href="article.html?id=${encodeURIComponent(art.id)}" class="profileReadBtn">Read Article &rarr;</a>
+                                ${(canEdit || canDelete) ? `
+                                    <div class="profileArticleActions">
+                                        ${canEdit ? `<a href="publish.html?edit=${encodeURIComponent(art.id)}" class="profileEditBtn">Edit</a>` : ''}
+                                        ${canDelete ? `<button type="button" class="profileDeleteBtn" onclick="handleDeleteArticle('${art.id}', '${escapeQuotes(art.title)}')">Delete</button>` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function handleDeleteArticle(id, title) {
+            if (confirm(`Are you sure you want to delete "${title}"?`)) {
+                try {
+                    if (typeof DB !== 'undefined' && DB.deleteArticle) {
+                        DB.deleteArticle(id);
+                        loadAuthorArticles(currentAuthorName);
+                    }
+                } catch (e) {
+                    alert(e.message || 'Error deleting article.');
+                }
+            }
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function escapeQuotes(str) {
+            return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+/* ==========================================================================
+   Writer Profile Page Styles
+   ========================================================================== */
+.profilePageBody {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-primary);
+}
+
+.profilePageContainer {
+    max-width: 1080px;
+    width: 100%;
+    margin: 40px auto 80px;
+    padding: 0 24px;
+    box-sizing: border-box;
+    flex: 1;
+}
+
+.profileHeroCard {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    padding: 40px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    gap: 36px;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+}
+
+.profileHeroCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b7cf4, #880003);
+}
+
+.profileAvatarContainer {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profileAvatarImg {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    display: block;
+    background-color: var(--bg-surface-secondary);
+}
+
+.profileAvatarFallback {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #ffffff;
+    font-size: 42px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.profileAvatarFallback.adminAvatar {
+    background: linear-gradient(135deg, #d97706, #b45309);
+}
+
+.avatarUploadBtn {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--accent-primary);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.avatarUploadBtn:hover {
+    transform: scale(1.1);
+    background-color: var(--accent-hover);
+}
+
+.profileHeaderInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.profileNameRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.profileAuthorName {
+    margin: 0;
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.profileRoleBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(59, 124, 244, 0.14);
+    color: var(--accent-primary);
+    border: 1px solid rgba(59, 124, 244, 0.28);
+}
+
+.profileRoleBadge.adminBadge {
+    background: rgba(136, 0, 3, 0.14);
+    color: #fb923c;
+    border-color: rgba(136, 0, 3, 0.3);
+}
+
+.profileBioContainer {
+    margin-top: 4px;
+}
+
+.profileBioText {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 680px;
+    margin: 0 0 10px 0;
+}
+
+.editBioBtn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #f1f5f9;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.editBioBtn:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+}
+
+.bioEditForm {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 680px;
+}
+
+.bioEditForm textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.bioEditForm textarea:focus {
+    border-color: rgba(136, 0, 3, 0.5);
+    box-shadow: 0 0 0 3px rgba(136, 0, 3, 0.12);
+}
+
+.bioActionButtons {
+    display: flex;
+    gap: 8px;
+}
+
+.saveBioBtn {
+    background: var(--grad-orange);
+    color: #ffffff;
+    border: none;
+    border-radius: 999px;
+    padding: 7px 18px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--orange-glow);
+}
+
+.saveBioBtn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.cancelBioBtn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 7px 18px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.cancelBioBtn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.profileStatsRow {
+    display: flex;
+    gap: 24px;
+    margin-top: 14px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profileStatItem {
+    display: flex;
+    flex-direction: column;
+}
+
+.profileStatNum {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.profileStatLabel {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+}
+
+/* Authored Articles Feed */
+.profileFeedSection {
+    margin-top: 48px;
+}
+
+.profileFeedHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.profileFeedTitleRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profileFeedTitle {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.profileArticlesCountBadge {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.profileArticlesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 24px;
+}
+
+.profileArticleCard {
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.profileArticleCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    border-color: rgba(136, 0, 3, 0.35);
+}
+
+.profileArticleCoverLink {
+    display: block;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.profileArticleCoverLink img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.profileArticleCard:hover .profileArticleCoverLink img {
+    transform: scale(1.03);
+}
+
+.profileArticleContent {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.profileArticleTopics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.profileArticleTopicChip {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-primary);
+    background: rgba(59, 124, 244, 0.14);
+    border: 1px solid rgba(59, 124, 244, 0.25);
+    padding: 3px 10px;
+    border-radius: 999px;
+}
+
+.profileArticleTitle {
+    margin: 0 0 8px 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.profileArticleTitle a {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.15s;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.profileArticleTitle a:hover {
+    color: var(--accent-primary);
+}
+
+.profileArticleExcerpt {
+    margin: 0 0 16px 0;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.profileArticleFooter {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.profileReadBtn {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: all 0.15s;
+}
+
+.profileReadBtn:hover {
+    color: var(--accent-hover);
+    transform: translateX(2px);
+}
+
+.profileArticleActions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.profileEditBtn {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #2563eb;
+    border: 1px solid #3b82f6;
+    padding: 5px 14px;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+}
+
+.profileEditBtn:hover {
+    background: #1d4ed8;
+    border-color: #2563eb;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.profileDeleteBtn {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #dc2626;
+    border: 1px solid #ef4444;
+    padding: 5px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+
+.profileDeleteBtn:hover {
+    background: #b91c1c;
+    border-color: #dc2626;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.profileEmptyState {
+    background: var(--glass-bg);
+    border: 1px dashed var(--glass-border);
+    border-radius: 24px;
+    padding: 60px 24px;
+    text-align: center;
+    grid-column: 1 / -1;
+}
+
+.profileEmptyState p {
+    color: var(--text-secondary);
+    margin: 8px 0 20px;
+    font-size: 14.5px;
+}
+
+@media (max-width: 768px) {
+    .profileHeroCard {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 30px 20px;
+    }
+
+    .profileHeaderInfo {
+        align-items: center;
+    }
+
+    .profileNameRow {
+        justify-content: center;
+    }
+
+    .profileStatsRow {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   Account Settings Equalized Buttons
+   ========================================================================== */
+.accountSettingsBtnRow {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.settingsCancelBtn,
+.settingsSaveBtn {
+    height: 42px;
+    min-width: 130px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    text-align: center;
+    line-height: 1;
+}
+
+.settingsCancelBtn {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #f1f5f9;
+}
+
+.settingsCancelBtn:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+.settingsSaveBtn {
+    background: var(--grad-orange);
+    border: none;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(136, 0, 3, 0.38);
+}
+
+.settingsSaveBtn:hover {
+    opacity: 0.94;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(136, 0, 3, 0.55);
+}
+

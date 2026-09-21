@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editorial Studio - Publish Article</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="db.js"></script>
+</head>
+<body class="publishStudioBody">
+    <!-- Studio Header -->
+    <header class="studioHeader">
+        <div class="studioHeaderLeft">
+            <a href="index.html" class="logoLink" title="Home"><img src="images/logo.png" alt="Logo" id="logo"></a>
+        </div>
+        <div class="studioHeaderRight" id="studioHeaderRight">
+            <a href="projects.html" class="backHomeBtn" style="margin-right: 2px;">Projects &amp; Series</a>
+            <a href="index.html" class="backHomeBtn">&larr; Back to Website</a>
+            <button type="button" class="studioTopPublishBtn" id="studioTopPublishBtn" onclick="document.getElementById('publishForm').requestSubmit()">
+                Publish Article &rarr;
+            </button>
+            <div id="studioAccountDropdownSlot"></div>
+        </div>
+    </header>
+
+    <!-- Studio Layout -->
+    <main class="studioLayout">
+        <!-- Editor Column -->
+        <div class="studioEditorPane">
+            <div class="studioCard">
+                <div class="studioHeaderIntro">
+                    <span class="sectionBadge" id="studioBadge">Editorial Desk</span>
+                    <h1 id="studioHeading">Publish New Article</h1>
+                    <p id="studioSubtitle">Compose your analysis or essay. Once published, it immediately integrates into the hero carousel, articles grid, and dedicated reading page.</p>
+                </div>
+
+                <form id="publishForm" onsubmit="handlePublish(event)">
+                    <!-- Topic Selection Chips (Multi-select) -->
+                    <div class="formGroup">
+                        <div class="labelRow">
+                            <label>Topics / Categories <span class="requiredAsterisk">*</span> <span style="font-size: 12px; font-weight: 400; color: var(--text-muted);">(Select one or more)</span></label>
+                            <span class="charCounter" id="topicsCount">1 selected</span>
+                        </div>
+                        <div class="categoryChipsGrid" id="categoryChips">
+                            <button type="button" class="categoryChip active" data-val="World" onclick="toggleTopic('World')"><span class="chipCheck">✓</span> World</button>
+                            <button type="button" class="categoryChip" data-val="History" onclick="toggleTopic('History')"><span class="chipCheck"></span> History</button>
+                            <button type="button" class="categoryChip" data-val="Economy" onclick="toggleTopic('Economy')"><span class="chipCheck"></span> Economy</button>
+                            <button type="button" class="categoryChip" data-val="Sociology" onclick="toggleTopic('Sociology')"><span class="chipCheck"></span> Sociology</button>
+                            <button type="button" class="categoryChip" data-val="Political Science" onclick="toggleTopic('Political Science')"><span class="chipCheck"></span> Political Science</button>
+                            <button type="button" class="categoryChip" data-val="Philosophy" onclick="toggleTopic('Philosophy')"><span class="chipCheck"></span> Philosophy</button>
+                            <button type="button" class="categoryChip" data-val="Culture" onclick="toggleTopic('Culture')"><span class="chipCheck"></span> Culture</button>
+                            <button type="button" class="categoryChip" data-val="Cinematography" onclick="toggleTopic('Cinematography')"><span class="chipCheck"></span> Cinematography</button>
+                            <button type="button" class="categoryChip" data-val="Archaeology" onclick="toggleTopic('Archaeology')"><span class="chipCheck"></span> Archaeology</button>
+                            <button type="button" class="categoryChip" data-val="Psychology" onclick="toggleTopic('Psychology')"><span class="chipCheck"></span> Psychology</button>
+                            <button type="button" class="categoryChip" data-val="Technology" onclick="toggleTopic('Technology')"><span class="chipCheck"></span> Technology</button>
+                            <button type="button" class="categoryChip" data-val="Science" onclick="toggleTopic('Science')"><span class="chipCheck"></span> Science</button>
+                            <button type="button" class="categoryChip" data-val="Computer Science" onclick="toggleTopic('Computer Science')"><span class="chipCheck"></span> Computer Science</button>
+                            <button type="button" class="categoryChip" data-val="Neuroscience" onclick="toggleTopic('Neuroscience')"><span class="chipCheck"></span> Neuroscience</button>
+                            <button type="button" class="categoryChip" data-val="Environmental Science" onclick="toggleTopic('Environmental Science')"><span class="chipCheck"></span> Environmental Science</button>
+                            <button type="button" class="categoryChip" data-val="Biology" onclick="toggleTopic('Biology')"><span class="chipCheck"></span> Biology</button>
+                            <button type="button" class="categoryChip" data-val="Physics" onclick="toggleTopic('Physics')"><span class="chipCheck"></span> Physics</button>
+                            <button type="button" class="categoryChip" data-val="Social Sciences" onclick="toggleTopic('Social Sciences')"><span class="chipCheck"></span> Social Sciences</button>
+                        </div>
+                        <input type="hidden" id="articleCategory" name="category" value="World">
+                    </div>
+
+                    <!-- Article Title (Max 120 chars) -->
+                    <div class="formGroup">
+                        <div class="labelRow">
+                            <label for="articleTitle">Article Title <span class="requiredAsterisk">*</span></label>
+                            <span class="charCounter" id="titleCounter">0 / 120</span>
+                        </div>
+                        <input type="text" id="articleTitle" name="title" maxlength="120" placeholder="e.g. Maritime Empires and Global Commerce" required oninput="handleTitleInput(this.value)">
+                        <div class="progressTrack"><div class="progressBar" id="titleBar"></div></div>
+                    </div>
+
+                    <!-- Author Name (Max 50 chars) -->
+                    <div class="formGroup">
+                        <div class="labelRow">
+                            <label for="articleAuthor">Author Name <span class="requiredAsterisk">*</span></label>
+                            <span class="charCounter" id="authorCounter">0 / 50</span>
+                        </div>
+                        <input type="text" id="articleAuthor" name="author" maxlength="50" placeholder="e.g. Ali Mert Bayar" required oninput="handleAuthorInput(this.value)">
+                        <div class="progressTrack"><div class="progressBar" id="authorBar"></div></div>
+                    </div>
+
+                    <!-- Cover Image Picker (Preset, Upload from Computer & Custom URL) -->
+                    <div class="formGroup">
+                        <label>Cover Image <span class="requiredAsterisk">*</span></label>
+                        <div class="visualImagePicker">
+                            <div class="imagePickerOption active" id="optionPreset1" onclick="selectPresetImage('images/spanish colonisation.png', 'optionPreset1')">
+                                <img src="images/spanish colonisation.png" alt="Spanish Colonization">
+                                <span class="pickerOptionTitle">Spanish Colonization</span>
+                            </div>
+                            <div class="imagePickerOption" id="optionUpload" onclick="triggerArticleImageUpload()">
+                                <div class="customOptionIcon" id="uploadOptionPreview">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                </div>
+                                <span class="pickerOptionTitle" id="uploadOptionLabel">Upload Photo</span>
+                                <input type="file" id="articleImageFile" accept="image/*" style="display:none;" onchange="handleArticleImageFile(event)">
+                            </div>
+                            <div class="imagePickerOption" id="optionCustom" onclick="selectCustomImageOption()">
+                                <div class="customOptionIcon">
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                </div>
+                                <span class="pickerOptionTitle">Custom Image URL</span>
+                            </div>
+                        </div>
+
+                        <!-- Custom Image URL Input -->
+                        <div id="customUrlContainer" class="customUrlContainer hidden">
+                            <input type="url" id="customImageUrl" placeholder="https://images.unsplash.com/.../photo.jpg" oninput="handleCustomUrlInput(this.value)">
+                        </div>
+
+                        <!-- Active Image Preview -->
+                        <div class="studioCoverPreview">
+                            <img id="liveCoverImg" src="images/spanish colonisation.png" alt="Cover preview">
+                            <span class="previewBadge">Selected Cover</span>
+                        </div>
+                    </div>
+
+                    <!-- Short Summary / Description (Max 280 chars) -->
+                    <div class="formGroup">
+                        <div class="labelRow">
+                            <label for="articleSummary">Summary / Hook <span class="requiredAsterisk">*</span></label>
+                            <span class="charCounter" id="summaryCounter">0 / 280</span>
+                        </div>
+                        <textarea id="articleSummary" name="summary" rows="3" maxlength="280" placeholder="A concise, compelling overview for the hero carousel and article card..." required oninput="handleSummaryInput(this.value)"></textarea>
+                        <div class="progressTrack"><div class="progressBar" id="summaryBar"></div></div>
+                    </div>
+
+                    <!-- Full Article Body -->
+                    <div class="formGroup">
+                        <div class="labelRow">
+                            <label for="articleBody">Full Article Content <span class="requiredAsterisk">*</span></label>
+                            <span class="charCounter" id="bodyWordCounter">0 words &bull; 0 chars</span>
+                        </div>
+                        <div class="studioBodyToolbar">
+                            <div class="toolbarGroup">
+                                <span class="toolbarLabel">Styles:</span>
+                                <button type="button" class="toolbarFormatBtn" onclick="applyFormat('bold')" title="Bold (Ctrl+B / Cmd+B)">
+                                    <strong style="font-size: 13px;">B</strong>
+                                </button>
+                                <button type="button" class="toolbarFormatBtn" onclick="applyFormat('italic')" title="Italic (Ctrl+I / Cmd+I)">
+                                    <em style="font-size: 13px; font-family: 'Times New Roman', Georgia, serif;">I</em>
+                                </button>
+                                <button type="button" class="toolbarFormatBtn" onclick="applyFormat('underline')" title="Underline (Ctrl+U / Cmd+U)">
+                                    <u style="font-size: 13px;">U</u>
+                                </button>
+                            </div>
+                            <div class="toolbarDivider"></div>
+                            <div class="toolbarGroup">
+                                <span class="toolbarLabel">Structure:</span>
+                                <button type="button" class="toolbarBtn" onclick="applyFormat('heading')" title="Insert Subheading">## Heading</button>
+                                <button type="button" class="toolbarBtn" onclick="applyFormat('quote')" title="Insert Blockquote">&ldquo; Quote</button>
+                                <button type="button" class="toolbarBtn" onclick="insertSnippet('\n\n')" title="Add paragraph break">+ Paragraph</button>
+                            </div>
+                        </div>
+                        <textarea id="articleBody" name="body" rows="12" placeholder="Write your full article content here. Separate paragraphs with double line breaks..." required oninput="handleBodyInput(this.value)"></textarea>
+                    </div>
+
+                    <!-- Bibliography & References (Optional) -->
+                    <div class="formGroup">
+                        <div class="labelRow">
+                            <label for="articleBibliography">Bibliography & References <span style="font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: none;">(Optional)</span></label>
+                            <span class="charCounter" id="bibCounter">0 / 1500</span>
+                        </div>
+                        <textarea id="articleBibliography" name="bibliography" rows="4" maxlength="1500" placeholder="List academic papers, book citations, primary sources, or web links cited in this research (one citation per line)..." oninput="handleBibInput(this.value)"></textarea>
+                        <div class="progressTrack"><div class="progressBar" id="bibBar"></div></div>
+                        <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">Enter each citation or source on a new line. Standard citation styles (APA, MLA, Chicago) and web URLs are supported.</span>
+                    </div>
+
+                    <!-- Read time preview -->
+                    <div class="studioMetaBar">
+                        <span class="metaMetric">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            Estimated Read Time: <strong id="readTimeDisplay">1 min read</strong>
+                        </span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="studioActions">
+                        <a href="index.html" class="studioCancelBtn" id="studioCancelBtn">Cancel</a>
+                        <button type="button" class="studioDeleteBtn hidden" id="studioDeleteBtn" onclick="handleStudioDelete()">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            Delete Article
+                        </button>
+                        <button type="submit" id="publishBtn" class="studioPrimarySubmitBtn">
+                            Publish Article &rarr;
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sticky Live Preview Column -->
+        <aside class="studioPreviewPane">
+            <div class="previewStickyCard">
+                <div class="previewCardHeader">
+                    <div>
+                        <span class="previewSmallTag">Real-Time Simulation</span>
+                        <h3>Live Preview</h3>
+                    </div>
+                    <div class="previewTypeToggle">
+                        <button type="button" class="previewToggleBtn active" id="btnPreviewCard" onclick="switchPreviewMode('card')">Grid Card</button>
+                        <button type="button" class="previewToggleBtn" id="btnPreviewHero" onclick="switchPreviewMode('hero')">Hero Slide</button>
+                    </div>
+                </div>
+
+                <!-- Live Grid Card Simulation -->
+                <div id="simCardView" class="simulationContainer">
+                    <div class="articleCard simArticleCard">
+                        <div id="articleCardImage" class="simCardImage">
+                            <img id="simCardImg" src="images/spanish colonisation.png" alt="Preview">
+                        </div>
+                        <div id="articleCardContent" class="simCardContent">
+                            <div class="cardMeta"><span class="cardMetaCat" id="simCategoryBadge">History</span><span class="cardMetaSep">·</span><span id="simCardReadTime">4 min read</span></div>
+                            <h2 id="simCardTitle">Maritime Empires and Global Commerce</h2>
+                            <p id="simCardDesc">A concise 1-2 sentence hook for the hero carousel and article card...</p>
+                        </div>
+                        <div id="articleCardInfo" class="simCardInfo articleCardFooter">
+                            <div class="cardAuthorRow">
+                                <div class="cardAuthorLink">
+                                    <img id="simCardAvatar" src="images/mert_img.png" alt="Author" class="cardAuthorAvatar">
+                                    <span class="cardAuthorName" id="simCardAuthor">Ali Mert Bayar</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Hero Slide Simulation (Matches main site .article exactly!) -->
+                <div id="simHeroView" class="simulationContainer hidden">
+                    <div class="simMainArticle">
+                        <div class="simHeroThumbnailWrap">
+                            <img id="simHeroImg" src="images/spanish colonisation.png" alt="Hero Preview">
+                            <div class="simHeroBackdropGradient"></div>
+                        </div>
+                        <div class="simHeroNavButtons">
+                            <span class="simNavBtn"><img src="images/left arrow.png" alt="left"></span>
+                            <span class="simNavBtn"><img src="images/right arrow.png" alt="right"></span>
+                        </div>
+                        <div class="simHeroOverlayContent">
+                            <div class="simHeroTextWrap">
+                                <div class="simHeroTitleRow">
+                                    <h2 id="simHeroTitle">Maritime Empires and Global Commerce</h2>
+                                    <span class="simHeroArrow"><img src="images/arrow.png" alt="arrow"></span>
+                                </div>
+                                <div class="simHeroDescWrap">
+                                    <p id="simHeroDesc">A concise 1-2 sentence hook for the hero carousel and article card...</p>
+                                </div>
+                            </div>
+                            <div class="simHeroInfoRow">
+                                <div class="simHeroParams">
+                                    <span class="simHeroPill heroAuthorPill" id="simHeroAuthorPill">
+                                        <img id="simHeroAvatar" src="images/mert_img.png" alt="Author" class="heroAuthorAvatar">
+                                        <span id="simHeroAuthor">By Ali Mert Bayar</span>
+                                    </span>
+                                    <span class="simHeroPill" id="simHeroReadTime">1 min read</span>
+                                </div>
+                                <div class="simHeroKeys">
+                                    <span class="simHeroPill" id="simHeroCategory">History</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checklist -->
+                <div class="readinessChecklist">
+                    <h4>Publishing Checklist</h4>
+                    <div class="checkItem" id="checkTitle">
+                        <span class="checkIcon">&bull;</span> Title provided (max 70 chars)
+                    </div>
+                    <div class="checkItem" id="checkAuthor">
+                        <span class="checkIcon">&bull;</span> Author byline provided (max 30 chars)
+                    </div>
+                    <div class="checkItem" id="checkSummary">
+                        <span class="checkIcon">&bull;</span> Card summary provided (max 120 chars)
+                    </div>
+                    <div class="checkItem" id="checkBody">
+                        <span class="checkIcon">&bull;</span> Full article content drafted
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <footer class="studioFooter">
+        <p>&copy; 2026 Article Website. Editorial Management Studio.</p>
+    </footer>
+
+    <script>
+        let isEditMode = false;
+        let editArticleId = null;
+        let originalArticleData = null;
+
+        // Enforce Authentication: user must be signed in to publish or edit
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('edit');
+
+            if (!DB.isAuthenticated()) {
+                const redirectParam = editId ? `publish.html?edit=${encodeURIComponent(editId)}` : 'publish.html';
+                window.location.href = `auth.html?redirect=${encodeURIComponent(redirectParam)}&reason=auth_required`;
+                return;
+            }
+
+            const currentUser = DB.getCurrentUser();
+            const studioUserEl = document.getElementById('studioUserName');
+            if (currentUser && studioUserEl) {
+                studioUserEl.textContent = currentUser.name;
+            }
+
+            if (editId !== null && editId !== undefined && editId !== '') {
+                isEditMode = true;
+                editArticleId = editId;
+                await initEditMode(editId);
+            } else {
+                if (currentUser) {
+                    const authorInput = document.getElementById('articleAuthor');
+                    if (!authorInput.value) {
+                        authorInput.value = currentUser.name;
+                        handleAuthorInput(currentUser.name);
+                    }
+                }
+            }
+
+            // Keyboard shortcuts for formatting (Bold: Cmd/Ctrl+B, Italic: Cmd/Ctrl+I, Underline: Cmd/Ctrl+U)
+            const bodyTextarea = document.getElementById('articleBody');
+            if (bodyTextarea) {
+                bodyTextarea.addEventListener('keydown', (e) => {
+                    if (e.metaKey || e.ctrlKey) {
+                        const key = e.key.toLowerCase();
+                        if (key === 'b') {
+                            e.preventDefault();
+                            applyFormat('bold');
+                        } else if (key === 'i') {
+                            e.preventDefault();
+                            applyFormat('italic');
+                        } else if (key === 'u') {
+                            e.preventDefault();
+                            applyFormat('underline');
+                        }
+                    }
+                });
+            }
+        });
+
+        async function initEditMode(id) {
+            let article = typeof DB.getArticleById === 'function' ? DB.getArticleById(id) : null;
+            if (!article) {
+                try {
+                    const res = await fetch('articles.json');
+                    const baseArticles = await res.json();
+                    article = baseArticles.find(a => String(a.id) === String(id)) || null;
+                } catch (e) {
+                    console.error('Error fetching base articles:', e);
+                }
+            }
+
+            if (!article) {
+                alert('Article not found.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Verify permission
+            if (typeof DB.canEditArticle === 'function' && !DB.canEditArticle(article)) {
+                alert('Permission denied: You can only edit articles that you have written.');
+                window.location.href = `article.html?id=${encodeURIComponent(id)}`;
+                return;
+            }
+
+            originalArticleData = article;
+
+            // Update UI for Edit Mode
+            document.title = `Edit: ${article.title} - Article Website`;
+            const statusText = document.getElementById('studioStatusText');
+            if (statusText) statusText.textContent = 'Editing Article';
+
+            const statusDot = document.getElementById('studioStatusDot');
+            if (statusDot) statusDot.style.backgroundColor = '#2563eb';
+
+            const badge = document.getElementById('studioBadge');
+            if (badge) badge.textContent = 'Editor Mode';
+
+            document.getElementById('studioHeading').textContent = 'Edit Article';
+            document.getElementById('studioSubtitle').textContent = 'Update and refine your published dispatch.';
+            document.getElementById('studioTopPublishBtn').textContent = 'Save Changes \u2192';
+            document.getElementById('publishBtn').textContent = 'Save Changes \u2192';
+
+            const cancelBtn = document.getElementById('studioCancelBtn');
+            if (cancelBtn) {
+                cancelBtn.href = `article.html?id=${encodeURIComponent(id)}`;
+            }
+
+            const deleteBtn = document.getElementById('studioDeleteBtn');
+            if (deleteBtn && typeof DB !== 'undefined' && DB.canDeleteArticle && DB.canDeleteArticle(article)) {
+                deleteBtn.classList.remove('hidden');
+            }
+
+            // Topics / Categories
+            if (article.keywords && Array.isArray(article.keywords)) {
+                const cleaned = article.keywords.filter(k => k.toLowerCase() !== 'published');
+                selectedTopics = cleaned.length ? cleaned : ['World'];
+            } else {
+                selectedTopics = ['World'];
+            }
+            updateTopicChipsUI();
+
+            // Populate form fields
+            document.getElementById('articleTitle').value = article.title || '';
+            handleTitleInput(article.title || '');
+
+            document.getElementById('articleAuthor').value = article.author || '';
+            handleAuthorInput(article.author || '');
+
+            document.getElementById('articleSummary').value = article.description || '';
+            handleSummaryInput(article.description || '');
+
+            document.getElementById('articleBody').value = article.body || article.description || '';
+            handleBodyInput(article.body || article.description || '');
+
+            const bibEl = document.getElementById('articleBibliography');
+            if (bibEl) {
+                bibEl.value = article.bibliography || '';
+                handleBibInput(bibEl.value);
+            }
+
+            // Populate cover image
+            const img = article.image || 'images/spanish colonisation.png';
+            if (img === 'images/spanish colonisation.png') {
+                selectPresetImage('images/spanish colonisation.png', 'optionPreset1');
+            } else if (img.startsWith('data:image/')) {
+                selectedCover = img;
+                document.querySelectorAll('.imagePickerOption').forEach(opt => opt.classList.remove('active'));
+                const uploadOption = document.getElementById('optionUpload');
+                if (uploadOption) uploadOption.classList.add('active');
+                document.getElementById('customUrlContainer').classList.add('hidden');
+                const uploadPreview = document.getElementById('uploadOptionPreview');
+                if (uploadPreview) {
+                    uploadPreview.innerHTML = `<img src="${img}" alt="Uploaded Cover" style="width:100%; height:80px; object-fit:cover; display:block;">`;
+                }
+                const uploadLabel = document.getElementById('uploadOptionLabel');
+                if (uploadLabel) uploadLabel.textContent = 'Uploaded Cover';
+                updateCoverPreviews(img);
+            } else {
+                selectCustomImageOption();
+                document.getElementById('customImageUrl').value = img;
+                handleCustomUrlInput(img);
+            }
+        }
+
+        let selectedTopics = ['World'];
+        let selectedCover = 'images/spanish colonisation.png';
+
+        function toggleTopic(val) {
+            const idx = selectedTopics.indexOf(val);
+            if (idx !== -1) {
+                if (selectedTopics.length <= 1) {
+                    return; // keep at least 1 topic selected
+                }
+                selectedTopics.splice(idx, 1);
+            } else {
+                selectedTopics.push(val);
+            }
+            updateTopicChipsUI();
+        }
+
+        function updateTopicChipsUI() {
+            document.querySelectorAll('.categoryChip').forEach(chip => {
+                const val = chip.getAttribute('data-val');
+                const check = chip.querySelector('.chipCheck');
+                if (selectedTopics.includes(val)) {
+                    chip.classList.add('active');
+                    if (check) check.textContent = '✓';
+                } else {
+                    chip.classList.remove('active');
+                    if (check) check.textContent = '';
+                }
+            });
+
+            const countEl = document.getElementById('topicsCount');
+            if (countEl) {
+                countEl.textContent = `${selectedTopics.length} selected`;
+            }
+
+            const catInput = document.getElementById('articleCategory');
+            if (catInput) {
+                catInput.value = selectedTopics.join(', ');
+            }
+
+            const cardBadge = document.getElementById('simCategoryBadge');
+            if (cardBadge) {
+                cardBadge.textContent = selectedTopics[0] || 'Article';
+            }
+
+            const simHeroKeys = document.querySelector('.simHeroKeys');
+            if (simHeroKeys) {
+                simHeroKeys.innerHTML = selectedTopics
+                    .map(t => `<span class="simHeroPill">${t}</span>`)
+                    .join('');
+            }
+        }
+
+        function handleStudioDelete() {
+            if (!isEditMode || !editArticleId) return;
+            const title = document.getElementById('articleTitle').value || 'this article';
+            if (confirm(`Are you sure you want to permanently delete "${title}"? This action cannot be undone.`)) {
+                try {
+                    DB.deleteArticle(editArticleId);
+                    window.location.href = 'index.html';
+                } catch (e) {
+                    alert(e.message || 'Error deleting article.');
+                }
+            }
+        }
+
+        function applyFormat(type) {
+            const textarea = document.getElementById('articleBody');
+            if (!textarea) return;
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            const selected = text.substring(start, end);
+
+            let prefix = '';
+            let suffix = '';
+            let placeholder = '';
+
+            switch (type) {
+                case 'bold':
+                    prefix = '**';
+                    suffix = '**';
+                    placeholder = 'Bold text';
+                    break;
+                case 'italic':
+                    prefix = '*';
+                    suffix = '*';
+                    placeholder = 'Italic text';
+                    break;
+                case 'underline':
+                    prefix = '<u>';
+                    suffix = '</u>';
+                    placeholder = 'Underlined text';
+                    break;
+                case 'heading':
+                    prefix = '\n\n## ';
+                    suffix = '\n\n';
+                    placeholder = 'Section Subheading';
+                    break;
+                case 'quote':
+                    prefix = '\n\n> ';
+                    suffix = '\n\n';
+                    placeholder = 'Quotation text here';
+                    break;
+                default:
+                    return;
+            }
+
+            const before = text.substring(0, start);
+            const after = text.substring(end);
+
+            if (selected.length > 0) {
+                textarea.value = before + prefix + selected + suffix + after;
+                textarea.selectionStart = start + prefix.length;
+                textarea.selectionEnd = end + prefix.length;
+            } else {
+                textarea.value = before + prefix + placeholder + suffix + after;
+                textarea.selectionStart = start + prefix.length;
+                textarea.selectionEnd = start + prefix.length + placeholder.length;
+            }
+
+            textarea.focus();
+            handleBodyInput(textarea.value);
+        }
+
+        function selectPresetImage(src, optionId) {
+            selectedCover = src;
+            document.querySelectorAll('.imagePickerOption').forEach(opt => opt.classList.remove('active'));
+            const target = document.getElementById(optionId);
+            if (target) target.classList.add('active');
+            document.getElementById('customUrlContainer').classList.add('hidden');
+
+            updateCoverPreviews(src);
+        }
+
+        function triggerArticleImageUpload() {
+            const fileInput = document.getElementById('articleImageFile');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+
+        async function handleArticleImageFile(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            try {
+                // Compress desktop/camera photos to keep localStorage lean
+                const compressedBase64 = await DB.compressImage(file, 1200, 0.82);
+                selectedCover = compressedBase64;
+
+                document.querySelectorAll('.imagePickerOption').forEach(opt => opt.classList.remove('active'));
+                const uploadOption = document.getElementById('optionUpload');
+                if (uploadOption) uploadOption.classList.add('active');
+                document.getElementById('customUrlContainer').classList.add('hidden');
+
+                const uploadPreview = document.getElementById('uploadOptionPreview');
+                if (uploadPreview) {
+                    uploadPreview.innerHTML = `<img src="${compressedBase64}" alt="Uploaded Cover" style="width:100%; height:80px; object-fit:cover; display:block;">`;
+                }
+                const uploadLabel = document.getElementById('uploadOptionLabel');
+                if (uploadLabel) {
+                    uploadLabel.textContent = file.name.length > 14 ? file.name.substring(0, 11) + '...' : file.name;
+                }
+
+                updateCoverPreviews(compressedBase64);
+            } catch (err) {
+                console.error('Failed to compress/load image:', err);
+                alert('Could not process this image file. Please try another image.');
+            }
+        }
+
+        function selectCustomImageOption() {
+            document.querySelectorAll('.imagePickerOption').forEach(opt => opt.classList.remove('active'));
+            document.getElementById('optionCustom').classList.add('active');
+            const customContainer = document.getElementById('customUrlContainer');
+            customContainer.classList.remove('hidden');
+            const input = document.getElementById('customImageUrl');
+            input.focus();
+            if (input.value.trim()) {
+                updateCoverPreviews(input.value.trim());
+            }
+        }
+
+        function handleCustomUrlInput(val) {
+            if (val.trim()) {
+                selectedCover = val.trim();
+                updateCoverPreviews(val.trim());
+            }
+        }
+
+        function updateCoverPreviews(src) {
+            document.getElementById('liveCoverImg').src = src;
+            document.getElementById('simCardImg').src = src;
+            document.getElementById('simHeroImg').src = src;
+        }
+
+        function handleTitleInput(val) {
+            const max = 120;
+            const counter = document.getElementById('titleCounter');
+            counter.textContent = `${val.length} / ${max}`;
+            const pct = Math.min(100, (val.length / max) * 100);
+            const bar = document.getElementById('titleBar');
+            bar.style.width = `${pct}%`;
+
+            if (val.length >= max) {
+                counter.classList.add('limitReached');
+                bar.style.backgroundColor = '#880003';
+            } else {
+                counter.classList.remove('limitReached');
+                bar.style.backgroundColor = 'var(--text-primary)';
+            }
+
+            const previewText = val.trim() || 'Maritime Empires and Global Commerce';
+            document.getElementById('simCardTitle').textContent = previewText;
+            document.getElementById('simHeroTitle').textContent = previewText;
+
+            updateChecklistItem('checkTitle', val.trim().length > 0);
+        }
+
+        function handleAuthorInput(val) {
+            const max = 50;
+            const counter = document.getElementById('authorCounter');
+            counter.textContent = `${val.length} / ${max}`;
+            const pct = Math.min(100, (val.length / max) * 100);
+            const bar = document.getElementById('authorBar');
+            bar.style.width = `${pct}%`;
+
+            if (val.length >= max) {
+                counter.classList.add('limitReached');
+                bar.style.backgroundColor = '#880003';
+            } else {
+                counter.classList.remove('limitReached');
+                bar.style.backgroundColor = 'var(--text-primary)';
+            }
+
+            const previewText = val.trim() || 'Ali Mert Bayar';
+            document.getElementById('simCardAuthor').textContent = previewText;
+            document.getElementById('simHeroAuthor').textContent = `By ${previewText}`;
+
+            const avatarSrc = (typeof DB !== 'undefined' && DB.getAuthorAvatar) ? DB.getAuthorAvatar(previewText) : (previewText.toLowerCase() === 'ali mert bayar' ? 'images/mert_img.png' : null);
+            const cardAvatar = document.getElementById('simCardAvatar');
+            const heroAvatar = document.getElementById('simHeroAvatar');
+            if (cardAvatar) cardAvatar.src = avatarSrc || 'images/mert_img.png';
+            if (heroAvatar) heroAvatar.src = avatarSrc || 'images/mert_img.png';
+
+            updateChecklistItem('checkAuthor', val.trim().length > 0);
+        }
+
+        function handleSummaryInput(val) {
+            const max = 280;
+            const counter = document.getElementById('summaryCounter');
+            counter.textContent = `${val.length} / ${max}`;
+            const pct = Math.min(100, (val.length / max) * 100);
+            const bar = document.getElementById('summaryBar');
+            bar.style.width = `${pct}%`;
+
+            if (val.length >= max) {
+                counter.classList.add('limitReached');
+                bar.style.backgroundColor = '#880003';
+            } else {
+                counter.classList.remove('limitReached');
+                bar.style.backgroundColor = 'var(--text-primary)';
+            }
+
+            const previewText = val.trim() || 'A concise 1-2 sentence hook for the hero carousel and article card...';
+            document.getElementById('simCardDesc').textContent = previewText;
+            document.getElementById('simHeroDesc').textContent = previewText;
+
+            updateChecklistItem('checkSummary', val.trim().length > 0);
+        }
+
+        function handleBibInput(val) {
+            const max = 1500;
+            const counter = document.getElementById('bibCounter');
+            if (counter) counter.textContent = `${val.length} / ${max}`;
+            const pct = Math.min(100, (val.length / max) * 100);
+            const bar = document.getElementById('bibBar');
+            if (bar) {
+                bar.style.width = `${pct}%`;
+                if (val.length >= max) {
+                    bar.style.backgroundColor = '#880003';
+                } else {
+                    bar.style.backgroundColor = 'var(--text-primary)';
+                }
+            }
+        }
+
+        function handleBodyInput(text) {
+            const charCount = text.length;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            document.getElementById('bodyWordCounter').textContent = `${words} words • ${charCount} chars`;
+
+            const estMinutes = Math.max(1, Math.ceil(words / 200));
+            document.getElementById('readTimeDisplay').textContent = `${estMinutes} min read`;
+            document.getElementById('simHeroReadTime').textContent = `${estMinutes} min read`;
+            const simCardRead = document.getElementById('simCardReadTime');
+            if (simCardRead) simCardRead.textContent = `${estMinutes} min read`;
+
+            updateChecklistItem('checkBody', text.trim().length > 10);
+        }
+
+        function insertSnippet(snippet) {
+            const textarea = document.getElementById('articleBody');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + snippet + text.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + snippet.length;
+            textarea.focus();
+            handleBodyInput(textarea.value);
+        }
+
+        function updateChecklistItem(id, isDone) {
+            const item = document.getElementById(id);
+            if (isDone) {
+                item.classList.add('done');
+                item.querySelector('.checkIcon').textContent = '✓';
+            } else {
+                item.classList.remove('done');
+                item.querySelector('.checkIcon').textContent = '•';
+            }
+        }
+
+        function switchPreviewMode(mode) {
+            const btnCard = document.getElementById('btnPreviewCard');
+            const btnHero = document.getElementById('btnPreviewHero');
+            const simCard = document.getElementById('simCardView');
+            const simHero = document.getElementById('simHeroView');
+
+            if (mode === 'card') {
+                btnCard.classList.add('active');
+                btnHero.classList.remove('active');
+                simCard.classList.remove('hidden');
+                simHero.classList.add('hidden');
+            } else {
+                btnHero.classList.add('active');
+                btnCard.classList.remove('active');
+                simHero.classList.remove('hidden');
+                simCard.classList.add('hidden');
+            }
+        }
+
+        function handlePublish(event) {
+            event.preventDefault();
+
+            if (!DB.isAuthenticated()) {
+                const redirectParam = (isEditMode && editArticleId) ? `publish.html?edit=${encodeURIComponent(editArticleId)}` : 'publish.html';
+                alert('You must be signed in to perform this action.');
+                window.location.href = `auth.html?redirect=${encodeURIComponent(redirectParam)}&reason=auth_required`;
+                return;
+            }
+
+            const title = document.getElementById('articleTitle').value.trim();
+            const author = document.getElementById('articleAuthor').value.trim();
+            const category = document.getElementById('articleCategory').value;
+            const description = document.getElementById('articleSummary').value.trim();
+            const body = document.getElementById('articleBody').value.trim();
+            const bibliography = (document.getElementById('articleBibliography')?.value || '').trim();
+
+            if (!title || !author || !description || !body) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const words = body ? body.split(/\s+/).length : 0;
+            const readTime = Math.max(1, Math.ceil(words / 200));
+
+            // EDIT MODE: Update existing article
+            if (isEditMode && editArticleId !== null) {
+                const now = new Date();
+                const fallbackDate = `${now.getFullYear()}-${now.getDate()}-${now.getMonth() + 1}`;
+                const updatedArticleData = {
+                    title: title,
+                    author: author,
+                    date: (originalArticleData && originalArticleData.date) ? originalArticleData.date : fallbackDate,
+                    image: selectedCover,
+                    readTime: readTime,
+                    description: description,
+                    body: body,
+                    keywords: [...selectedTopics],
+                    bibliography: bibliography
+                };
+
+                try {
+                    DB.updateArticle(editArticleId, updatedArticleData);
+                } catch (err) {
+                    alert(err.message || 'Error updating article.');
+                    return;
+                }
+
+                // Seamless redirect back to article reader
+                window.location.href = `article.html?id=${encodeURIComponent(editArticleId)}`;
+                return;
+            }
+
+            // CREATE MODE: Save new article
+            const now = new Date();
+            const formattedDate = `${now.getFullYear()}-${now.getDate()}-${now.getMonth() + 1}`;
+            const newArticleId = 'custom-' + Date.now();
+
+            const newArticle = {
+                id: newArticleId,
+                title: title,
+                author: author,
+                date: formattedDate,
+                image: selectedCover,
+                readTime: readTime,
+                description: description,
+                body: body,
+                keywords: [...selectedTopics],
+                bibliography: bibliography
+            };
+
+            // Save to database via DB engine
+            try {
+                DB.saveArticle(newArticle);
+            } catch (err) {
+                alert(err.message || 'Error saving article.');
+                return;
+            }
+
+            // Seamless redirect without window.alert
+            window.location.href = `article.html?id=${newArticleId}`;
+        }
+    </script>
+</body>
+</html>

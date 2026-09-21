@@ -1,0 +1,529 @@
+/* ==========================================================================
+   Article Reader Page (article.html)
+   ========================================================================== */
+.readerPageBody {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-primary);
+}
+
+.articleReaderContainer {
+    flex: 1;
+    width: 100%;
+    max-width: 1080px;
+    margin: 40px auto 80px auto;
+    padding: 0 24px;
+    box-sizing: border-box;
+}
+
+.readerStateMessage {
+    text-align: center;
+    padding: 80px 30px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    box-shadow: var(--card-shadow);
+    margin-top: 20px;
+}
+
+.readerStateMessage h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 12px 0 8px 0;
+    color: #ffffff;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.readerStateMessage p {
+    color: var(--text-secondary);
+    font-size: 15px;
+    margin: 0;
+}
+
+.readerArticle {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    padding: 52px 56px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    box-sizing: border-box;
+}
+
+.readerCategoryRow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.readerTitle {
+    font-size: 2.7rem;
+    line-height: 1.25;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: -0.025em;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.readerLead {
+    font-size: 1.2rem;
+    line-height: 1.65;
+    color: #94a3b8;
+    margin: 4px 0 8px 0;
+    font-weight: 400;
+}
+
+.readerMeta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+}
+
+.metaLabel {
+    color: var(--text-muted);
+}
+
+.authorName {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.readerMetaDivider {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 14px;
+}
+
+.readTimeBadge {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+#readerEditSlot {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.editArticleBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(59, 130, 246, 0.45);
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+}
+
+.editArticleBtn:hover {
+    background: #2563eb;
+    border-color: #3b82f6;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
+}
+
+.deleteArticleBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.deleteArticleBtn:hover {
+    border-color: #ef4444;
+    color: #ffffff !important;
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45);
+}
+
+.studioDeleteBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    background-color: transparent;
+    color: #dc2626;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-block;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.sharePills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sharePillBtn {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.sharePillBtn:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+    color: #ffffff;
+}
+
+.sharePillBtn.shareX:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.sharePillBtn.shareLinkedin:hover {
+    color: #60a5fa;
+    border-color: rgba(59, 124, 244, 0.4);
+}
+
+.sharePillBtn.shareWhatsapp:hover {
+    color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.4);
+}
+
+/* Reader Cover Image */
+.readerCoverWrapper {
+    width: 100%;
+    height: 440px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    margin: 8px 0 24px 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#readerCover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Dedicated Article Text Zone (Independent of Cover Image Width) */
+.readerTextZone {
+    width: 100%;
+    max-width: 840px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.readerHeaderZone {
+    gap: 16px;
+    margin-bottom: 6px;
+}
+
+.readerBodyText {
+    width: 100%;
+    max-width: 100%;
+    font-size: 1.15rem;
+    line-height: 1.9;
+    color: #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    box-sizing: border-box;
+}
+
+.readerBodyText p {
+    margin: 0;
+    color: #e2e8f0;
+}
+
+.readerBodyText strong,
+.readerBodyText b {
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.readerBodyText em,
+.readerBodyText i {
+    font-style: italic;
+    color: #cbd5e1;
+}
+
+.readerBodyText u {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3.5px;
+}
+
+.readerBodyText h2,
+.readerBodyText h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 24px 0 4px 0;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+}
+
+.readerBodyText blockquote {
+    margin: 14px 0;
+    padding: 16px 24px;
+    border-left: 3px solid #880003;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 0 14px 14px 0;
+    font-style: italic;
+    color: #cbd5e1;
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.readerBodyText blockquote p {
+    margin: 0;
+    color: #cbd5e1;
+}
+
+/* Article Share Card (Bottom) */
+.articleShareCard {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 30px 32px;
+    margin: 36px 0 16px 0;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.shareCardText h3 {
+    margin: 8px 0 4px 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffffff;
+    font-family: 'Playfair Display', Georgia, serif;
+}
+
+.shareCardText p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.bottomSharePills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.readerBottomNav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 36px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.backToArticlesBtn {
+    text-decoration: none !important;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+}
+
+.backToArticlesBtn:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.publishAnotherBtn {
+    text-decoration: none !important;
+    color: #ffffff;
+    background: var(--grad-orange);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 24px;
+    border-radius: 999px;
+    border: none;
+    box-shadow: var(--orange-glow);
+    transition: all 0.2s ease;
+}
+
+.publishAnotherBtn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(136, 0, 3, 0.45);
+}
+
+.readerFooter {
+    background-color: #06060c;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 30px 40px;
+    margin-top: auto;
+    color: var(--text-muted);
+}
+
+
+/* ==========================================================================
+   Article Bibliography Section
+   ========================================================================== */
+.articleBibliographySection {
+    margin-top: 40px;
+    padding: 28px 32px;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.bibliographyHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bibTitleGroup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #f1f5f9;
+}
+
+.bibTitleGroup svg {
+    color: #b91c1c;
+    flex-shrink: 0;
+}
+
+.bibTitleGroup h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.bibCountBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 20px;
+}
+
+.bibliographyList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bibItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.bibItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(185, 28, 28, 0.35);
+}
+
+.bibIndex {
+    flex-shrink: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #b91c1c;
+    margin-top: 1px;
+}
+
+.bibText {
+    flex: 1;
+    word-break: break-word;
+}
+
+.bibLink {
+    color: #3b7cf4;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.15s ease;
+}
+
+.bibLink:hover {
+    color: #5b92ff;
+}
+

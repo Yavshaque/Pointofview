@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Read Article - Article Website</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="db.js"></script>
+</head>
+<body class="readerPageBody">
+    <header class="authHeader">
+        <div class="headers" id="headerLeft">
+            <a href="index.html" class="logoLink" title="Home"><img src="images/logo.png" alt="Logo" id="logo"></a>
+        </div>
+        <div class="headers" id="headerRight" style="display: flex; gap: 12px; align-items: center;">
+            <a href="projects.html" class="backHomeBtn">Projects</a>
+            <a href="index.html" class="backHomeBtn">&larr; Back to Website</a>
+            <div id="authHeaderSlot" style="display: flex; gap: 10px; align-items: center;"></div>
+        </div>
+    </header>
+
+    <main class="articleReaderContainer" id="articleReaderMain">
+        <div id="loadingState" class="readerStateMessage">
+            <p>Loading article...</p>
+        </div>
+
+        <div id="notFoundState" class="readerStateMessage hidden">
+            <span class="sectionBadge">Notice</span>
+            <h2>Article Not Found</h2>
+            <p>The article you are searching for does not exist or may have been removed.</p>
+            <a href="index.html" class="backHomeBtn" style="margin-top: 20px; display: inline-block;">&larr; Return to Home Page</a>
+        </div>
+
+        <article id="articleContentWrapper" class="readerArticle hidden">
+            <!-- Article Header Text Zone -->
+            <div class="readerTextZone readerHeaderZone">
+                <!-- Badges & Category -->
+                <div class="readerCategoryRow" id="readerCategories"></div>
+
+                <!-- Headline -->
+                <h1 id="readerTitle" class="readerTitle"></h1>
+
+                <!-- Summary / Lead -->
+                <p id="readerSummary" class="readerLead"></p>
+
+                <!-- Meta information -->
+                <div class="readerMeta">
+                    <div class="readerAuthorInfo">
+                        <span class="metaLabel">Written by</span>
+                        <a id="readerAuthorLink" href="profile.html" style="color: inherit; text-decoration: none;" title="View writer profile">
+                            <strong id="readerAuthor" class="authorName"></strong>
+                        </a>
+                    </div>
+                    <div class="readerMetaDivider">&bull;</div>
+                    <div class="readerDateInfo">
+                        <span id="readerDate"></span>
+                    </div>
+                    <div class="readerMetaDivider">&bull;</div>
+                    <div class="readerReadTimeInfo">
+                        <span class="readTimeBadge" id="readerReadTime"></span>
+                    </div>
+                    <div id="readerEditSlot"></div>
+                </div>
+            </div>
+
+            <!-- Cover Image (Cinematic Width) -->
+            <div class="readerCoverWrapper">
+                <img id="readerCover" src="" alt="">
+            </div>
+
+            <!-- Article Body Text Zone (Independent of Cover Image Width) -->
+            <div class="readerTextZone">
+                <!-- Full Article Body -->
+                <div id="readerBody" class="readerBodyText"></div>
+
+                <!-- Bibliography & Sources Section -->
+                <section id="readerBibliography" class="articleBibliographySection hidden">
+                    <div class="bibliographyHeader">
+                        <div class="bibTitleGroup">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            <h3>Bibliography &amp; References</h3>
+                        </div>
+                        <span class="bibCountBadge" id="bibCountBadge">0 sources</span>
+                    </div>
+                    <div class="bibliographyList" id="readerBibliographyList"></div>
+                </section>
+
+                <!-- Share card (Bottom) -->
+                <div class="articleShareCard">
+                    <div class="shareCardText">
+                        <span class="sectionBadge">Spread the Word</span>
+                        <h3>Share this article</h3>
+                        <p>Found this piece insightful? Share it with colleagues, friends, or across your network.</p>
+                    </div>
+                    <div class="sharePills bottomSharePills">
+                        <button type="button" class="sharePillBtn shareX" onclick="shareArticle('x')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            <span>Share on X</span>
+                        </button>
+                        <button type="button" class="sharePillBtn shareLinkedin" onclick="shareArticle('linkedin')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.62 1.62 0 1 0 0 3.24 1.62 1.62 0 0 0 0-3.24z"/></svg>
+                            <span>Share on LinkedIn</span>
+                        </button>
+                        <button type="button" class="sharePillBtn shareWhatsapp" onclick="shareArticle('whatsapp')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm5.79 14.07c-.24.68-1.22 1.25-1.74 1.31-.49.06-1.12.09-3.28-.79-2.77-1.13-4.54-3.95-4.68-4.14-.14-.19-1.12-1.49-1.12-2.84 0-1.35.7-2.01.95-2.29.25-.28.55-.35.73-.35.18 0 .37 0 .53.01.17.01.4.06.61.57.24.58.82 2 .89 2.15.07.15.12.33.02.53-.1.2-.15.32-.3.5-.15.18-.31.39-.45.53-.15.15-.3.32-.13.62.17.3.76 1.26 1.63 2.04 1.12 1 2.07 1.32 2.37 1.47.3.15.48.13.66-.08.18-.21.78-.91.99-1.22.21-.31.42-.26.7-.16.28.1.1.79.89 2.38.89.18 0 .34 0 .47-.02.13-.02.39-.08.57-.45.24-.68.24-1.26.17-1.38z"/></svg>
+                            <span>Share on WhatsApp</span>
+                        </button>
+                        <button type="button" class="sharePillBtn shareCopy" onclick="copyArticleLink(this)">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                            <span class="copyText">Copy Link</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Navigation -->
+            <div class="readerBottomNav">
+                <a href="index.html#content" class="backToArticlesBtn">&larr; Browse All Articles</a>
+                <a href="publish.html" class="publishAnotherBtn">Write a New Article &rarr;</a>
+            </div>
+        </article>
+    </main>
+
+    <footer class="readerFooter">
+        <div class="footerContainer">
+            <div class="footerBottom" style="border-top: none; padding-top: 0;">
+                <p>&copy; 2026 Article Website. All rights reserved.</p>
+                <div class="socialIcons">
+                    <a href="#"><img src="images/instagram logo.png" alt="instagram" class="social-icon"></a>
+                    <a href="#"><img src="images/linkedin logo.png" alt="linkedin" class="social-icon"></a>
+                    <a href="#"><img src="images/email logo.png" alt="email" class="social-icon"></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleId = urlParams.get('id');
+
+            if (!articleId && articleId !== '0') {
+                showNotFound();
+                return;
+            }
+
+            // 0. Check if article is in deleted blacklist
+            if (typeof DB !== 'undefined' && DB.getDeletedArticleIds && DB.getDeletedArticleIds().has(String(articleId))) {
+                showNotFound();
+                return;
+            }
+
+            // 1. Check custom articles in localStorage first
+            let customArticles = [];
+            try {
+                const stored = localStorage.getItem('custom_articles');
+                if (stored) {
+                    customArticles = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.error('Error reading localStorage:', e);
+            }
+
+            const foundCustom = customArticles.find(a => String(a.id) === String(articleId));
+            if (foundCustom) {
+                displayArticle(foundCustom);
+                return;
+            }
+
+            // 2. Fallback to articles.json or built-in DEFAULT_ARTICLES
+            fetch('articles.json')
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    const foundDefault = data.find(a => String(a.id) === String(articleId));
+                    if (foundDefault) {
+                        displayArticle(foundDefault);
+                    } else {
+                        showNotFound();
+                    }
+                })
+                .catch(err => {
+                    console.warn('articles.json fetch failed, searching default articles:', err);
+                    const defaultSeed = [
+                        {
+                            id: 0,
+                            title: "Demographic collapse to the formation of new racial classes?",
+                            author: "Ali Mert Bayar",
+                            date: "2026-16-9",
+                            image: "images/spanish colonisation.png",
+                            readTime: 5,
+                            description: "The Spanish and Portuguese monarchies' pursuit of short-term wealth during the Age of Exploration had profound and far-reaching consequences. This quest for riches, driven by the desire for gold, silver, and other valuable resources, led to a series of events that reshaped societies across the globe.",
+                            body: "The Spanish and Portuguese monarchies' pursuit of short-term wealth during the Age of Exploration had profound and far-reaching consequences. This quest for riches, driven by the desire for gold, silver, and other valuable resources, led to a series of events that reshaped societies across the globe.\n\nUpon arriving in the Americas, European powers encountered established empires and indigenous populations. Through warfare, forced labor systems such as the encomienda, and crucially, the introduction of Old World pathogens like smallpox, measles, and typhus, native populations suffered unprecedented demographic collapse.\n\nIn response to labor shortages and the desire to maintain extractive economies in silver mines and sugar plantations, imperial powers turned to the transatlantic slave trade. This convergence of indigenous, European, and African populations under stratified colonial systems gradually gave rise to intricate socio-racial classification hierarchies, notably the casta system.\n\nThese structures not only dictated social mobility, taxation, and legal rights in colonial Latin America, but established enduring socioeconomic inequalities that persisted long after the collapse of imperial rule.",
+                            keywords: ["History", "World"],
+                            bibliography: "Crosby, Alfred W. (1972). The Columbian Exchange: Biological and Cultural Consequences of 1492. Greenwood Publishing Group.\nLockhart, James, & Schwartz, Stuart B. (1983). Early Latin America: A History of Colonial Spanish America and Brazil. Cambridge University Press.\nCook, Noble David (1998). Born to Die: Disease and New World Conquest, 1492–1650. Cambridge University Press."
+                        },
+                        {
+                            id: 1,
+                            title: "Mercantilism and the Global Silver Trade",
+                            author: "Ali Mert Bayar",
+                            date: "2026-16-9",
+                            image: "images/spanish colonisation.png",
+                            readTime: 4,
+                            description: "How the flow of silver from Potosí transformed European monarchies, altered international trade balances with Ming dynasty China, and spurred early modern global capitalism.",
+                            body: "During the sixteenth and seventeenth centuries, the mountain of Potosí in Upper Peru yielded silver in quantities unimaginable to earlier generations. Under mercantilist economic doctrine, European powers measured sovereign strength by their bullion reserves.\n\nHowever, the sudden influx of precious metals triggered the infamous Price Revolution across Europe, eroding wages and inflating commodity prices. Simultaneously, silver became the lifeblood of Pacific trade via the Manila Galleons, flowing directly into China where Ming fiscal reforms demanded tax payments in pure silver.\n\nThis global circuit of wealth stimulated early financial markets, joint-stock enterprises, and maritime insurance systems, demonstrating that the globalized economy began far earlier than the Industrial Revolution.",
+                            keywords: ["Economy", "World"],
+                            bibliography: "Flynn, Dennis O., & Giráldez, Arturo (1995). Born with a 'Silver Spoon': The Origin of World Trade in 1571. Journal of World History, 6(2), 201-221.\nFrank, Andre Gunder (1998). ReORIENT: Global Economy in the Asian Age. University of California Press.\nElliott, John H. (2006). Empires of the Atlantic World: Britain and Spain in America 1492–1830. Yale University Press."
+                        },
+                        {
+                            id: 2,
+                            title: "Racial classes and social stratification in colonial societies",
+                            author: "Ceren Onursal",
+                            date: "2026-16-9",
+                            image: "images/orthaxis.jpg",
+                            readTime: 5,
+                            description: "This quest for riches, driven by the desire for gold, silver, and other valuable resources, led to a series of events that reshaped societies across the globe.",
+                            body: "Colonial expansion did not merely extract resources; it radically restructured human relationships. In the Spanish viceroyalties, colonial authorities sought to categorize and regulate the emerging multi-ethnic population through legal codes and artistic representations known as casta paintings.\n\nThese detailed depictions illustrated families of mixed heritage—peninsulares, criollos, mestizos, mulattos, and indios—each assigned distinct societal roles and privileges. While intended to enforce rigid hierarchies, everyday life often saw individuals negotiating, challenging, and subverting these boundaries through marriage, commerce, and legal appeals.\n\nUnderstanding these mechanisms provides vital insights into modern institutional patterns across the Americas and how cultural identities coalesce in times of rapid geopolitical upheaval.",
+                            keywords: ["Culture", "World"],
+                            bibliography: "Katzew, Ilona (2004). Casta Painting: Images of Race in Eighteenth-Century Mexico. Yale University Press.\nSeed, Patricia (1988). To Love, Honor, and Obey in Colonial Mexico: Conflicts over Marriage Choice, 1574–1821. Stanford University Press."
+                        },
+                        {
+                            id: 3,
+                            title: "Technological and Cultural Exchanges in Maritime Empires",
+                            author: "Ceren Onursal",
+                            date: "2026-16-9",
+                            image: "images/orthaxis.jpg",
+                            readTime: 4,
+                            description: "Navigational breakthroughs, astrolabes, and the blending of architectural traditions that emerged along transatlantic and transpacific trade networks.",
+                            body: "The expansion of maritime empires relied on a synthesis of technological knowledge from across the Mediterranean, Arab, and Asian worlds. Caravel designs, lateen sails, and refined astrolabes allowed navigators to traverse open oceans with newfound reliability.\n\nAlongside navigation, cultural syncretism flourished in port cities and inland capitals. Baroque architecture incorporated indigenous motifs, while botanical exchanges fundamentally altered agricultural practices and diets across Europe, Africa, and the Americas.\n\nExamining these exchanges highlights how modern globalization is rooted in centuries of reciprocal—though often coerced—cultural and scientific integration.",
+                            keywords: ["Culture", "Technology"],
+                            bibliography: "Parry, J. H. (1981). The Age of Reconnaissance: Discovery, Exploration, and Settlement, 1450 to 1650. University of California Press.\nChaudhuri, K. N. (1985). Trade and Civilisation in the Indian Ocean: An Economic History from the Rise of Islam to 1750. Cambridge University Press."
+                        }
+                    ];
+                    const foundDefault = defaultSeed.find(a => String(a.id) === String(articleId));
+                    if (foundDefault) {
+                        displayArticle(foundDefault);
+                    } else {
+                        showNotFound();
+                    }
+                });
+        });
+
+        function displayArticle(article) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('notFoundState').classList.add('hidden');
+            const wrapper = document.getElementById('articleContentWrapper');
+            wrapper.classList.remove('hidden');
+
+            document.title = `${article.title} - Article Website`;
+
+            // Categories / Keywords (Exclude internal 'Published' tag)
+            const categoriesContainer = document.getElementById('readerCategories');
+            categoriesContainer.innerHTML = '';
+            if (article.keywords && Array.isArray(article.keywords)) {
+                const displayKeywords = article.keywords.filter(k => k.toLowerCase() !== 'published');
+                (displayKeywords.length ? displayKeywords : article.keywords).forEach(keyword => {
+                    const badge = document.createElement('span');
+                    badge.classList.add('sectionBadge');
+                    badge.textContent = keyword;
+                    categoriesContainer.appendChild(badge);
+                });
+            } else {
+                const badge = document.createElement('span');
+                badge.classList.add('sectionBadge');
+                badge.textContent = 'Article';
+                categoriesContainer.appendChild(badge);
+            }
+
+            // Title
+            document.getElementById('readerTitle').textContent = article.title;
+
+            // Summary
+            const summaryEl = document.getElementById('readerSummary');
+            if (article.description) {
+                summaryEl.textContent = article.description;
+                summaryEl.classList.remove('hidden');
+            } else {
+                summaryEl.classList.add('hidden');
+            }
+
+            // Author, Date, Read Time
+            const author = article.author || 'Editorial Staff';
+            document.getElementById('readerAuthor').textContent = author;
+            const authorLink = document.getElementById('readerAuthorLink');
+            if (authorLink) {
+                authorLink.href = `profile.html?author=${encodeURIComponent(author)}`;
+            }
+            document.getElementById('readerDate').textContent = formatDate(article.date) || 'Recent';
+            document.getElementById('readerReadTime').textContent = `${article.readTime || 3} min read`;
+
+            // Cover Image
+            const coverImg = document.getElementById('readerCover');
+            coverImg.src = article.image || 'images/spanish colonisation.png';
+            coverImg.alt = article.title;
+
+            // Full Body Paragraphs (Rich Text Formatted)
+            const bodyContainer = document.getElementById('readerBody');
+            const contentText = article.body || article.description || '';
+            renderFormattedArticle(bodyContainer, contentText);
+
+            // Bibliography & References
+            const bibSection = document.getElementById('readerBibliography');
+            const bibList = document.getElementById('readerBibliographyList');
+            const bibBadge = document.getElementById('bibCountBadge');
+
+            if (bibSection && bibList) {
+                if (article.bibliography && article.bibliography.trim()) {
+                    const rawLines = article.bibliography.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                    if (rawLines.length > 0) {
+                        bibList.innerHTML = '';
+                        rawLines.forEach((line, idx) => {
+                            // Strip leading [1], 1., 1) or - if user already typed it
+                            const cleanLine = line.replace(/^(\[\d+\]|\d+[\.\)]|\-|\*)\s*/, '');
+                            const item = document.createElement('div');
+                            item.className = 'bibItem';
+
+                            // Detect URLs and make them clickable
+                            const urlRegex = /(https?:\/\/[^\s]+)/g;
+                            const formattedText = cleanLine.replace(urlRegex, url => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="bibLink">${url}</a>`);
+
+                            item.innerHTML = `
+                                <span class="bibIndex">[${idx + 1}]</span>
+                                <span class="bibText">${formattedText}</span>
+                            `;
+                            bibList.appendChild(item);
+                        });
+                        if (bibBadge) {
+                            bibBadge.textContent = `${rawLines.length} reference${rawLines.length > 1 ? 's' : ''}`;
+                        }
+                        bibSection.classList.remove('hidden');
+                    } else {
+                        bibSection.classList.add('hidden');
+                    }
+                } else {
+                    bibSection.classList.add('hidden');
+                }
+            }
+
+            // Check if current user can edit or delete this article
+            const canEdit = typeof DB !== 'undefined' && DB.canEditArticle ? DB.canEditArticle(article) : false;
+            const canDelete = typeof DB !== 'undefined' && DB.canDeleteArticle ? DB.canDeleteArticle(article) : false;
+            const readerEditSlot = document.getElementById('readerEditSlot');
+
+            let headerActionsHtml = '';
+
+            if (canEdit) {
+                const editUrl = `publish.html?edit=${encodeURIComponent(article.id)}`;
+                headerActionsHtml += `
+                    <a href="${editUrl}" class="editArticleBtn" id="editArticleHeaderBtn" title="Edit your article">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Edit Article
+                    </a>
+                `;
+            }
+
+            if (canDelete) {
+                const safeTitle = (article.title || '').replace(/'/g, "\\'");
+                headerActionsHtml += `
+                    <button type="button" class="deleteArticleBtn" onclick="handleReaderDelete('${article.id}', '${safeTitle}')" title="Delete this article">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        Delete Article
+                    </button>
+                `;
+            }
+
+            if (readerEditSlot) readerEditSlot.innerHTML = headerActionsHtml;
+        }
+
+        function handleReaderDelete(id, title) {
+            const displayName = title ? `"${title}"` : 'this article';
+            if (confirm(`Are you sure you want to permanently delete ${displayName}? This action cannot be undone.`)) {
+                try {
+                    if (typeof DB !== 'undefined' && DB.deleteArticle) {
+                        DB.deleteArticle(id);
+                    }
+                    window.location.href = 'index.html';
+                } catch (e) {
+                    alert(e.message || 'Error deleting article.');
+                }
+            }
+        }
+
+        function showNotFound() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('notFoundState').classList.remove('hidden');
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split(/[-/.]/);
+            if (parts.length === 3 && parts[0].length === 4) {
+                const year = parseInt(parts[0], 10);
+                let month, day;
+                if (parseInt(parts[1], 10) > 12) {
+                    day = parseInt(parts[1], 10);
+                    month = parseInt(parts[2], 10) - 1;
+                } else {
+                    month = parseInt(parts[1], 10) - 1;
+                    day = parseInt(parts[2], 10);
+                }
+                const parsedDate = new Date(year, month, day);
+                if (!isNaN(parsedDate.getTime())) {
+                    return parsedDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                }
+            }
+            const d = new Date(dateStr);
+            if (!isNaN(d.getTime())) {
+                return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            }
+            return dateStr;
+        }
+
+        // Share on ... handlers
+        function shareArticle(platform) {
+            const currentUrl = window.location.href;
+            const title = document.getElementById('readerTitle').textContent || document.title;
+            const encodedUrl = encodeURIComponent(currentUrl);
+            const encodedTitle = encodeURIComponent(title);
+
+            let shareUrl = '';
+            if (platform === 'x') {
+                shareUrl = `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
+            } else if (platform === 'linkedin') {
+                shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+            } else if (platform === 'whatsapp') {
+                shareUrl = `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`;
+            }
+
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=500,noopener,noreferrer');
+            }
+        }
+
+        function copyArticleLink(btn) {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                const copyText = btn.querySelector('.copyText');
+                const prev = copyText ? copyText.textContent : 'Copy Link';
+                if (copyText) copyText.textContent = 'Copied!';
+                btn.style.borderColor = 'var(--text-primary)';
+                btn.style.backgroundColor = 'var(--bg-surface-secondary)';
+                setTimeout(() => {
+                    if (copyText) copyText.textContent = prev;
+                    btn.style.borderColor = '';
+                    btn.style.backgroundColor = '';
+                }, 2000);
+            }).catch(err => {
+                prompt('Copy article link below:', url);
+            });
+        }
+
+        function renderFormattedArticle(container, text) {
+            container.innerHTML = '';
+            if (!text) return;
+
+            // Split into paragraphs / blocks by double line breaks
+            const blocks = text.split(/\n\s*\n/);
+
+            blocks.forEach(block => {
+                const trimmed = block.trim();
+                if (!trimmed) return;
+
+                // 1. Subheading (## Heading)
+                if (trimmed.startsWith('## ')) {
+                    const h3 = document.createElement('h3');
+                    h3.innerHTML = formatInlineText(trimmed.substring(3).trim());
+                    container.appendChild(h3);
+                    return;
+                }
+
+                // 2. Blockquote (> Quote)
+                if (trimmed.startsWith('> ')) {
+                    const bq = document.createElement('blockquote');
+                    const quoteText = trimmed.replace(/^>\s*/gm, '').trim();
+                    const p = document.createElement('p');
+                    p.innerHTML = formatInlineText(quoteText);
+                    bq.appendChild(p);
+                    container.appendChild(bq);
+                    return;
+                }
+
+                // 3. Regular paragraph
+                const p = document.createElement('p');
+                p.innerHTML = formatInlineText(trimmed);
+                container.appendChild(p);
+            });
+        }
+
+        function formatInlineText(str) {
+            if (!str) return '';
+
+            // Step 1: Escape HTML entities for XSS safety
+            let safe = str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            // Step 2: Restore and parse Underline tags (<u>...</u> or <ins>...</ins>)
+            safe = safe.replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/gi, '<u>$1</u>');
+            safe = safe.replace(/&lt;ins&gt;(.*?)&lt;\/ins&gt;/gi, '<u>$1</u>');
+
+            // Step 3: Restore and parse HTML bold (<b> / <strong>)
+            safe = safe.replace(/&lt;b&gt;(.*?)&lt;\/b&gt;/gi, '<strong>$1</strong>');
+            safe = safe.replace(/&lt;strong&gt;(.*?)&lt;\/strong&gt;/gi, '<strong>$1</strong>');
+
+            // Step 4: Restore and parse HTML italic (<i> / <em>)
+            safe = safe.replace(/&lt;i&gt;(.*?)&lt;\/i&gt;/gi, '<em>$1</em>');
+            safe = safe.replace(/&lt;em&gt;(.*?)&lt;\/em&gt;/gi, '<em>$1</em>');
+
+            // Step 5: Parse Markdown Bold (**text** or __text__)
+            safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            safe = safe.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+            // Step 6: Parse Markdown Italic (*text* or _text_)
+            safe = safe.replace(/(^|[^\*])\*([^\*]+?)\*([^\*]|$)/g, '$1<em>$2</em>$3');
+            safe = safe.replace(/(^|[^_])_([^_]+?)_([^_]|$)/g, '$1<em>$2</em>$3');
+
+            // Step 7: Handle single line breaks inside paragraph blocks
+            safe = safe.replace(/\n/g, '<br>');
+
+            return safe;
+        }
+    </script>
+</body>
+</html>

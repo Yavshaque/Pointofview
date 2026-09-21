@@ -1,0 +1,74 @@
+/* ==========================================================================
+   Consolidated Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 1024px) {
+    #heroSection {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        margin-bottom: 36px;
+        height: auto;
+        min-height: auto;
+        padding: 20px 0;
+    }
+
+    .article {
+        aspect-ratio: 16/9;
+        height: auto;
+    }
+
+    .heroCompanion {
+        height: auto;
+    }
+}
+
+@media (max-width: 960px) {
+    .studioLayout {
+        grid-template-columns: 1fr;
+    }
+
+    .studioPreviewPane {
+        position: static;
+        order: -1;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 820px) {
+    .contactLayout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .readerArticle {
+        padding: 32px 20px;
+        border-radius: 20px;
+    }
+
+    .readerTextZone {
+        max-width: 100%;
+        gap: 20px;
+    }
+
+    .studioCard {
+        padding: 24px 20px;
+    }
+
+    .visualImagePicker {
+        grid-template-columns: 1fr;
+    }
+
+    .readerCoverWrapper {
+        height: 260px;
+    }
+
+    .readerTitle {
+        font-size: 1.85rem;
+    }
+
+    .publishBannerLayout {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+

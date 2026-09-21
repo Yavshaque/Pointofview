@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="db.js"></script>
+</head>
+<body>
+    <header>
+        <div class="headers" id="headerLeft">
+            <a href="index.html" class="logoLink" title="Home">
+                <img src="images/logo.png" alt="Logo" id="logo">
+            </a>
+        </div>
+        <div class="headers" id="headerCenter">
+            <ul id="headerUL">
+                <li><a href="#mainContent">Home</a></li>
+                <li><a href="#content">Articles</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="#publishSection">Publish</a></li>
+                <li><a href="#ourTeam">About</a></li>
+                <li><a href="#contactSection">Contact</a></li>
+            </ul>
+        </div>
+        <div class="headers" id="headerRight">
+            <a href="publish.html" id="publishNavBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Write Article
+            </a>
+            <a href="auth.html" id="signInButton">Sign In</a>
+        </div>
+
+    </header>
+    <div id="mainContent">
+        <section id="heroSection" class="heroSection">
+            <div id="leftContent">
+                <div class="article">
+                    <div id="thumbnailImage">
+                        <img src="images/spanish colonisation.png" alt="colonisation">
+                    </div>
+                    <div id="buttonsContainer">
+                        <button id="leftButton" class="buttons"> <img src="images/left arrow.png" alt="left arrow"> </button>
+                        <button id="rightButton" class="buttons"> <img src="images/right arrow.png" alt="right arrow"> </button>
+                    </div>
+                    <div id="articleContent">
+                        <div id="articleText">
+                            <div id="articleTitle"> 
+                                <h2>How did the search for wealth by the Spanish cause the formation of new racial classes?</h2>
+                                <a href="article.html?id=0" id="heroArrowLink"><img src="images/arrow.png" alt="arrow" id="arrowIcon"></a>
+                            </div> 
+                            <div id="articleDescription">
+                                <p>This is a brief description of the article content.</p>
+                            </div> 
+                        </div> 
+                        <div id="articleInfo">
+                            <div id="parameters">
+                                <div class="infoCard heroAuthorPill" id="infoCard">
+                                    <a href="profile.html?author=Ali%20Mert%20Bayar" class="heroAuthorLink" title="View Ali Mert Bayar's profile">
+                                        <img src="images/mert_img.png" alt="Ali Mert Bayar" class="heroAuthorAvatar">
+                                        <span class="heroAuthorName">By Ali Mert Bayar</span>
+                                    </a>
+                                </div>
+                                <p class="infoCard" id="readTime">5 min read</p>
+                            </div>
+                            <div id="keyInfo">
+                                <p class="infoCard">History</p>
+                                <p class="infoCard">World</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Companion: Editor's Picks & Trending Dispatches -->
+            <aside id="heroCompanion" class="heroCompanion">
+                <div class="companionHeader" id="companionHeader">
+                    <div class="companionBadgeRow">
+                        <span class="companionPulseDot"></span>
+                        <span class="companionBadge">Editor's Picks</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="companionSubtext">Curated Insights</span>
+                        <button id="editPicksBtn" class="epEditHeaderBtn" onclick="DB.openEditorialPicksModal()" title="Edit Editor's Picks" style="display:none;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="companionList" id="companionList">
+                    <a href="article.html?id=1" class="companionCard">
+                        <div class="companionRank">01</div>
+                        <div class="companionBody">
+                            <div class="companionMetaRow">
+                                <span class="companionTag">Economy</span>
+                                <span class="companionReadTime">4 min read</span>
+                            </div>
+                            <h3 class="companionTitle">Mercantilism and the Global Silver Trade</h3>
+                            <p class="companionAuthor">By Ali Mert Bayar</p>
+                        </div>
+                    </a>
+
+                    <a href="article.html?id=2" class="companionCard">
+                        <div class="companionRank">02</div>
+                        <div class="companionBody">
+                            <div class="companionMetaRow">
+                                <span class="companionTag">Culture</span>
+                                <span class="companionReadTime">5 min read</span>
+                            </div>
+                            <h3 class="companionTitle">Racial classes and social stratification in colonial societies</h3>
+                            <p class="companionAuthor">By Ceren Onursal</p>
+                        </div>
+                    </a>
+
+                    <a href="article.html?id=3" class="companionCard">
+                        <div class="companionRank">03</div>
+                        <div class="companionBody">
+                            <div class="companionMetaRow">
+                                <span class="companionTag">Technology</span>
+                                <span class="companionReadTime">4 min read</span>
+                            </div>
+                            <h3 class="companionTitle">Technological and Cultural Exchanges in Maritime Empires</h3>
+                            <p class="companionAuthor">By Ceren Onursal</p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="companionFooter">
+                    <a href="#content" class="companionViewAll">
+                        Explore all dispatches
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 13l5 5 5-5M12 4v14"/></svg>
+                    </a>
+                </div>
+            </aside>
+        </section>
+
+        <div id="content">                      
+            <div class="sectionHeaderRow">
+                <div>
+                    <span class="sectionBadge">Curated</span>
+                    <h1 class="sectionTitle">Latest Articles</h1>
+                </div>
+                <div class="categoryFilters" id="categoryFilters">
+                    <button type="button" class="filterBtn active" data-category="all">All</button>
+                    <button type="button" class="filterBtn" data-category="World">World</button>
+                    <button type="button" class="filterBtn" data-category="History">History</button>
+                    <button type="button" class="filterBtn" data-category="Economy">Economy</button>
+                    <button type="button" class="filterBtn" data-category="Culture">Culture</button>
+                    <button type="button" class="filterBtn" data-category="Technology">Technology</button>
+                </div>
+            </div>
+            <div id="latestArticles">
+                <div class="articleCard">
+                    <a href="article.html?id=0" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex: 1;">
+                        <div class="articleCardImage">
+                            <img src="images/spanish colonisation.png" alt="Demographic collapse to the formation of new racial classes?">
+                        </div>
+                        <div class="articleCardContent">
+                            <div class="cardMeta"><span class="cardMetaCat">History</span><span class="cardMetaSep">·</span>5 min read</div>
+                            <h2>Demographic collapse to the formation of new racial classes?</h2>
+                            <p>The Spanish and Portuguese monarchies' pursuit of short-term wealth during the Age of Exploration had profound and far-reaching consequences.</p>
+                        </div>
+                    </a>
+                    <div class="articleCardFooter" style="margin-top: auto;">
+                        <div class="cardAuthorRow">
+                            <a href="profile.html?author=Ali%20Mert%20Bayar" class="cardAuthorLink" title="View writer profile">
+                                <img src="images/mert_img.png" alt="Ali Mert Bayar" class="cardAuthorAvatar">
+                                <span class="cardAuthorName">Ali Mert Bayar</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="articleCard">
+                    <a href="article.html?id=1" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex: 1;">
+                        <div class="articleCardImage">
+                            <img src="images/spanish colonisation.png" alt="Mercantilism and the Global Silver Trade">
+                        </div>
+                        <div class="articleCardContent">
+                            <div class="cardMeta"><span class="cardMetaCat">Economy</span><span class="cardMetaSep">·</span>4 min read</div>
+                            <h2>Mercantilism and the Global Silver Trade</h2>
+                            <p>How the flow of silver from Potosí transformed European monarchies, altered international trade balances with Ming dynasty China, and spurred early modern global capitalism.</p>
+                        </div>
+                    </a>
+                    <div class="articleCardFooter" style="margin-top: auto;">
+                        <div class="cardAuthorRow">
+                            <a href="profile.html?author=Ali%20Mert%20Bayar" class="cardAuthorLink" title="View writer profile">
+                                <img src="images/mert_img.png" alt="Ali Mert Bayar" class="cardAuthorAvatar">
+                                <span class="cardAuthorName">Ali Mert Bayar</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="articleCard">
+                    <a href="article.html?id=2" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex: 1;">
+                        <div class="articleCardImage">
+                            <img src="images/orthaxis.jpg" alt="Racial classes and social stratification in colonial societies">
+                        </div>
+                        <div class="articleCardContent">
+                            <div class="cardMeta"><span class="cardMetaCat">Culture</span><span class="cardMetaSep">·</span>5 min read</div>
+                            <h2>Racial classes and social stratification in colonial societies</h2>
+                            <p>This quest for riches, driven by the desire for gold, silver, and other valuable resources, led to a series of events that reshaped societies across the globe.</p>
+                        </div>
+                    </a>
+                    <div class="articleCardFooter" style="margin-top: auto;">
+                        <div class="cardAuthorRow">
+                            <a href="profile.html?author=Ceren%20Onursal" class="cardAuthorLink" title="View writer profile">
+                                <span class="cardAuthorAvatar cardAuthorAvatarFallback">C</span>
+                                <span class="cardAuthorName">Ceren Onursal</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="articleCard">
+                    <a href="article.html?id=3" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex: 1;">
+                        <div class="articleCardImage">
+                            <img src="images/orthaxis.jpg" alt="Technological and Cultural Exchanges in Maritime Empires">
+                        </div>
+                        <div class="articleCardContent">
+                            <div class="cardMeta"><span class="cardMetaCat">Technology</span><span class="cardMetaSep">·</span>4 min read</div>
+                            <h2>Technological and Cultural Exchanges in Maritime Empires</h2>
+                            <p>Navigational breakthroughs, astrolabes, and the blending of architectural traditions that emerged along transatlantic and transpacific trade networks.</p>
+                        </div>
+                    </a>
+                    <div class="articleCardFooter" style="margin-top: auto;">
+                        <div class="cardAuthorRow">
+                            <a href="profile.html?author=Ceren%20Onursal" class="cardAuthorLink" title="View writer profile">
+                                <span class="cardAuthorAvatar cardAuthorAvatarFallback">C</span>
+                                <span class="cardAuthorName">Ceren Onursal</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="publishSection">
+            <div class="publishBannerLayout">
+                <div class="publishBannerLeft">
+                    <span class="sectionBadge">Editorial Desk</span>
+                    <h2>Publish your perspectives & research.</h2>
+                    <p>Contribute to our publication. Draft deep-dive historical analyses, economic essays, and cultural commentary with strict character limits and real-time live preview simulation.</p>
+                    <div class="publishPillsRow">
+                        <span class="featurePill">✦ Real-time Live Preview</span>
+                        <span class="featurePill">✦ Automatic Carousel & Grid Sync</span>
+                        <span class="featurePill">✦ Dedicated Reader Page & Social Sharing</span>
+                    </div>
+                </div>
+                <div class="publishBannerRight">
+                    <a href="publish.html" class="publishBannerBtn" onclick="return DB.handleWriteClick(event)">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        Open Publishing Studio &rarr;
+                    </a>
+                    <span class="publishBannerHint">Live publishing open to signed-in editors & contributors</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="ourTeam">
+            <span class="sectionBadge">Editorial & Leadership</span>
+            <h1>Our Team</h1>
+            <p class="teamSubtitle">The passionate writers, editors, and researchers behind our publications.</p>
+            <div id="teamMembers">
+                <div class="teamMember">
+                    <a href="profile.html?author=Ali%20Mert%20Bayar" class="memberImageLink" title="View Ali Mert Bayar's Profile">
+                        <img class="memberImage" src="images/mert_img.png" alt="Ali Mert Bayar">
+                    </a>
+                    <a href="profile.html?author=Ali%20Mert%20Bayar" style="text-decoration: none; color: inherit;" title="View Ali Mert Bayar's Profile">
+                        <h2>Ali Mert Bayar</h2>
+                    </a>
+                    <p class="memberRoleRow"><span class="memberRoleBadge">Co-Founder</span></p>
+                    <div id="socialIcons">
+                        <a href="#"><img src="images/instagram logo.png" alt="instagram" class="social-icon"></a>
+                        <a href="#"><img src="images/linkedin logo.png" alt="linkedin" class="social-icon"></a>
+                        <a href="#"><img src="images/email logo.png" alt="email" class="social-icon"></a>
+                    </div>
+                </div>
+            </div>
+        </div>                    
+
+        <div id="contactSection">
+            <div class="contactLayout">
+                <div class="contactInfoCol">
+                    <span class="sectionBadge">Get in Touch</span>
+                    <h1>Let's start a conversation.</h1>
+                    <p class="contactSubtitle">Have questions, feedback, or want to publish your research? Send us a message and our team will get back to you promptly.</p>
+                    <div class="contactPerks">
+                        <div class="perkItem">
+                            <span class="perkDot"></span>
+                            <div>
+                                <strong>Fast Response</strong>
+                                <p>We typically respond in less than 24 hours.</p>
+                            </div>
+                        </div>
+                        <div class="perkItem">
+                            <span class="perkDot"></span>
+                            <div>
+                                <strong>Direct Inquiries</strong>
+                                <p>contact@articlewebsite.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contactFormCol">
+                    <form id="contactForm">
+                        <div class="formGroup">
+                            <label for="contactName">Name</label>
+                            <input type="text" id="contactName" name="name" placeholder="Your name" required>
+                        </div>
+                        <div class="formGroup">
+                            <label for="contactEmail">Email</label>
+                            <input type="email" id="contactEmail" name="email" placeholder="you@example.com" required>
+                        </div>
+                        <div class="formGroup">
+                            <label for="contactSubject">Subject</label>
+                            <input type="text" id="contactSubject" name="subject" placeholder="What is this regarding?">
+                        </div>
+                        <div class="formGroup">
+                            <label for="contactMessage">Message</label>
+                            <textarea id="contactMessage" name="message" placeholder="Write your message here..." rows="4" required></textarea>
+                        </div>
+                        <button type="submit" id="contactSubmitBtn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <div class="footerContainer">
+            <div class="footerTop">
+                <div class="footerBrand">
+                    <img src="images/logo.png" alt="Logo">
+                    <p>Exploring global history, economic shifts, and transformative ideas through engaging articles and research.</p>
+                </div>
+                <div class="footerNav">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="#mainContent">Home</a></li>
+                        <li><a href="#content">Latest Articles</a></li>
+                        <li><a href="projects.html">Projects &amp; Series</a></li>
+                        <li><a href="#ourTeam">About Us</a></li>
+                        <li><a href="#contactSection">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footerSocial">
+                    <h4>Connect</h4>
+                    <div class="socialIcons">
+                        <a href="#"><img src="images/instagram logo.png" alt="instagram" class="social-icon"></a>
+                        <a href="#"><img src="images/linkedin logo.png" alt="linkedin" class="social-icon"></a>
+                        <a href="#"><img src="images/email logo.png" alt="email" class="social-icon"></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footerBottom">
+                <p>&copy; 2026 LoreGround. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="script.js"></script>
+    <script>
+        // ── Our Team: sync member profile photos from localStorage ──────────
+        function syncTeamMemberPhotos() {
+            if (typeof DB === 'undefined' || !DB.getAuthorProfile) return;
+            document.querySelectorAll('#teamMembers .teamMember').forEach(card => {
+                const imgEl = card.querySelector('.memberImage');
+                const h2El  = card.querySelector('h2');
+                if (!imgEl || !h2El) return;
+                const name = h2El.textContent.trim();
+                const profile = DB.getAuthorProfile(name);
+                if (profile && profile.avatar) {
+                    imgEl.src = profile.avatar;
+                    imgEl.style.objectFit = 'cover';
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', syncTeamMemberPhotos);
+        // Re-sync whenever a profile is saved from another context
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'article_website_profiles' || e.key === 'article_website_users') {
+                syncTeamMemberPhotos();
+            }
+        });
+        // Re-sync from BroadcastChannel (profile.html open in another tab)
+        try {
+            const _bc = new BroadcastChannel('profile_updates');
+            _bc.onmessage = (e) => { if (e.data && e.data.type === 'avatar_updated') syncTeamMemberPhotos(); };
+        } catch (_) {}
+    </script>
+</body>
+</html>
