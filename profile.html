@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="articles-data.js"></script>
     <script src="db.js"></script>
 </head>
 <body class="profilePageBody">
@@ -340,12 +341,20 @@
         }
 
         async function loadAuthorArticles(authorName) {
-            let baseArticles = [];
+            let baseArticles = (typeof window.ARTICLES_DATABASE !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE))
+                ? [...window.ARTICLES_DATABASE]
+                : [];
             try {
                 const res = await fetch('articles.json');
-                baseArticles = await res.json();
+                const fetched = await res.json();
+                if (Array.isArray(fetched) && fetched.length) {
+                    const map = new Map();
+                    baseArticles.forEach(a => map.set(String(a.id), a));
+                    fetched.forEach(a => map.set(String(a.id), a));
+                    baseArticles = Array.from(map.values());
+                }
             } catch (e) {
-                baseArticles = [];
+                // Keep synchronous baseline
             }
 
             const custom = typeof DB !== 'undefined' && DB.getCustomArticles ? DB.getCustomArticles() : [];

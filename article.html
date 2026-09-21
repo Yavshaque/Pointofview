@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="articles-data.js"></script>
     <script src="db.js"></script>
 </head>
 <body class="readerPageBody">
@@ -170,7 +171,16 @@
                 return;
             }
 
-            // 2. Fallback to articles.json or built-in DEFAULT_ARTICLES
+            // 2. Check window.ARTICLES_DATABASE (instant synchronous baseline)
+            if (typeof window.ARTICLES_DATABASE !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE)) {
+                const foundBase = window.ARTICLES_DATABASE.find(a => String(a.id) === String(articleId));
+                if (foundBase) {
+                    displayArticle(foundBase);
+                    return;
+                }
+            }
+
+            // 3. Fallback to articles.json or built-in DEFAULT_ARTICLES
             fetch('articles.json')
                 .then(res => {
                     if (!res.ok) throw new Error('HTTP ' + res.status);

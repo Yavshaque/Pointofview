@@ -64,8 +64,18 @@ const DEFAULT_ARTICLES = [
     }
 ];
 
+const baselineArticles = (typeof window !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE) && window.ARTICLES_DATABASE.length > 0)
+    ? window.ARTICLES_DATABASE
+    : DEFAULT_ARTICLES;
+
 function initializeArticles(baseData) {
-    const defaultData = (Array.isArray(baseData) && baseData.length > 0) ? baseData : DEFAULT_ARTICLES;
+    const map = new Map();
+    baselineArticles.forEach(a => map.set(String(a.id), a));
+    if (Array.isArray(baseData)) {
+        baseData.forEach(a => map.set(String(a.id), a));
+    }
+    const defaultData = Array.from(map.values());
+
     let customArticles = [];
     try {
         if (typeof DB !== 'undefined' && DB.getCustomArticles) {
@@ -84,7 +94,7 @@ function initializeArticles(baseData) {
     articlesData = [...customArticles, ...filteredBase].filter(a => !deletedIds.has(String(a.id)));
 
     if (articlesData.length === 0) {
-        articlesData = [...DEFAULT_ARTICLES];
+        articlesData = [...baselineArticles];
     }
 
     updateDOM(currentIndex);
@@ -111,7 +121,10 @@ function initializeArticles(baseData) {
     startAutoSlide();
 }
 
-// Fetch base articles and merge with custom articles from database
+// Immediate initial render using baseline synchronous articles
+initializeArticles(baselineArticles);
+
+// Also fetch base articles and merge with custom articles from database
 fetch('articles.json')
     .then(response => {
         if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -121,8 +134,8 @@ fetch('articles.json')
         initializeArticles(data);
     })
     .catch(error => {
-        console.warn('articles.json fetch failed (using built-in default articles):', error);
-        initializeArticles(DEFAULT_ARTICLES);
+        // Safe fallback - articles already initialized from baseline
+        console.info('articles.json fetch info:', error.message);
     });
 
 function startAutoSlide() {
@@ -163,8 +176,12 @@ function getAuthorAvatar(authorName) {
         const av = DB.getAuthorAvatar(clean);
         if (av) return av;
     }
-    if (clean.toLowerCase() === 'ali mert bayar') {
+    const lower = clean.toLowerCase();
+    if (lower === 'ali mert bayar') {
         return 'images/mert_img.png';
+    }
+    if (lower === 'ceren onursal') {
+        return 'images/orthaxis.jpg';
     }
     return null;
 }
@@ -498,20 +515,20 @@ function renderTeamMembers() {
     let coFounders = [];
     if (typeof DB !== 'undefined' && DB.getCoFounders) {
         coFounders = DB.getCoFounders();
-    } else {
-        coFounders = [{
-            name: 'Ali Mert Bayar',
-            avatar: 'images/mert_img.png',
-            role: 'Co-Founder'
-        }];
     }
-
     if (!coFounders || coFounders.length === 0) {
-        coFounders = [{
-            name: 'Ali Mert Bayar',
-            avatar: 'images/mert_img.png',
-            role: 'Co-Founder'
-        }];
+        coFounders = [
+            {
+                name: 'Ali Mert Bayar',
+                avatar: 'images/mert_img.png',
+                role: 'Co-Founder'
+            },
+            {
+                name: 'Ceren Onursal',
+                avatar: 'images/orthaxis.jpg',
+                role: 'Co-Founder'
+            }
+        ];
     }
 
     container.innerHTML = coFounders.map(member => {

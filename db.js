@@ -76,7 +76,7 @@ const DB = (function() {
         }
 
         const cerenEmail = 'ceren@articlewebsite.com';
-        const cerenUser = users.find(u => u.email.toLowerCase() === cerenEmail.toLowerCase());
+        const cerenUser = users.find(u => (u.email && u.email.toLowerCase() === cerenEmail.toLowerCase()) || (u.name && u.name.trim().toLowerCase() === 'ceren onursal'));
         if (!cerenUser) {
             users.push({
                 id: 'user-ceren-02',
@@ -87,6 +87,10 @@ const DB = (function() {
                 avatar: 'images/orthaxis.jpg',
                 createdAt: new Date().toISOString()
             });
+        } else {
+            // Guarantee co-founder role and default avatar are never lost on legacy data
+            if (!cerenUser.avatar) cerenUser.avatar = 'images/orthaxis.jpg';
+            if (!cerenUser.role || cerenUser.role.toLowerCase() === 'editor') cerenUser.role = 'co-founder';
         }
 
         try {
@@ -1614,7 +1618,8 @@ const DB = (function() {
             defaultAvatar = 'images/mert_img.png';
         } else if (cleanName.toLowerCase() === 'ceren onursal') {
             defaultBio = 'Senior Research Fellow and Historian specializing in colonial institutions, cultural diplomacy, and trans-Atlantic interactions.';
-            defaultRole = 'Writer';
+            defaultRole = 'Co-Founder';
+            defaultAvatar = 'images/orthaxis.jpg';
         }
 
         const currentUser = getCurrentUser();
@@ -1730,6 +1735,15 @@ const DB = (function() {
                 seen.add(key);
             }
         });
+
+        // Ensure baseline Co-Founder Ceren Onursal is always present
+        if (!seen.has('ceren onursal')) {
+            const cerenProf = getAuthorProfile('Ceren Onursal');
+            cerenProf.role = 'Co-Founder';
+            if (!cerenProf.avatar) cerenProf.avatar = 'images/orthaxis.jpg';
+            list.push(cerenProf);
+            seen.add('ceren onursal');
+        }
 
         // 3. Query custom profiles in PROFILES_KEY
         try {
@@ -2056,7 +2070,9 @@ const DB = (function() {
         if (!authorName) return null;
         const profile = getAuthorProfile(authorName);
         if (profile && profile.avatar) return profile.avatar;
-        if (authorName.trim().toLowerCase() === 'ali mert bayar') return 'images/mert_img.png';
+        const clean = authorName.trim().toLowerCase();
+        if (clean === 'ali mert bayar') return 'images/mert_img.png';
+        if (clean === 'ceren onursal') return 'images/orthaxis.jpg';
         return null;
     }
 

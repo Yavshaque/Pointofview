@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="articles-data.js"></script>
     <script src="db.js"></script>
 </head>
 <body class="projectsPageBody">
@@ -1036,6 +1037,10 @@
 
             if (user && user.role !== 'admin') {
                 articles = articles.filter(a => a.authorId === user.id || (a.author && a.author.toLowerCase() === user.name.toLowerCase()));
+            }
+
+            if (!articles.length && typeof window.ARTICLES_DATABASE !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE)) {
+                articles = window.ARTICLES_DATABASE;
             }
 
             if (!articles.length) {

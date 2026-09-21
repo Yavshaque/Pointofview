@@ -1,4 +1,9 @@
-[
+/**
+ * Point of View / Article Website
+ * Central articles database - available synchronously to all pages.
+ * Compatible with static hosts (GitHub Pages) and local environments.
+ */
+window.ARTICLES_DATABASE = [
     {
         "id": 0,
         "title": "Demographic collapse to the formation of new racial classes?",
@@ -47,4 +52,5 @@
         "keywords": ["Culture", "Technology"],
         "bibliography": "Parry, J. H. (1981). The Age of Reconnaissance: Discovery, Exploration, and Settlement, 1450 to 1650. University of California Press.\nChaudhuri, K. N. (1985). Trade and Civilisation in the Indian Ocean: An Economic History from the Rise of Islam to 1750. Cambridge University Press."
     }
-]
+];
+

@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="articles-data.js"></script>
     <script src="db.js"></script>
 </head>
 <body class="publishStudioBody">
@@ -798,7 +799,101 @@
             }
         }
 
-        function handlePublish(event) {
+        // Synchronize published article to local backend if server.py is active
+        async function syncArticleToBackend(articleData) {
+            try {
+                const res = await fetch('/api/save-article', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(articleData)
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    return data.success === true;
+                }
+            } catch (err) {
+                // Server not reachable (static GitHub Pages or file:// mode)
+            }
+            return false;
+        }
+
+        function getCombinedArticlesList(newArticle) {
+            const base = (typeof window.ARTICLES_DATABASE !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE))
+                ? window.ARTICLES_DATABASE
+                : [];
+            let custom = [];
+            try {
+                if (typeof DB !== 'undefined' && DB.getCustomArticles) {
+                    custom = DB.getCustomArticles();
+                } else {
+                    const stored = localStorage.getItem('custom_articles');
+                    if (stored) custom = JSON.parse(stored);
+                }
+            } catch (e) {}
+
+            const map = new Map();
+            base.forEach(a => map.set(String(a.id), a));
+            custom.forEach(a => map.set(String(a.id), a));
+            if (newArticle && newArticle.id) {
+                map.set(String(newArticle.id), newArticle);
+            }
+            return Array.from(map.values());
+        }
+
+        function downloadUpdatedData(type, targetArticle) {
+            const allArticles = getCombinedArticlesList(targetArticle);
+            if (type === 'json') {
+                const content = JSON.stringify(allArticles, null, 4);
+                triggerFileDownload('articles.json', content, 'application/json');
+            } else if (type === 'js') {
+                const content = '/**\n * Point of View / Article Website\n * Central articles database - available synchronously to all pages.\n * Compatible with static hosts (GitHub Pages) and local environments.\n */\nwindow.ARTICLES_DATABASE = ' + JSON.stringify(allArticles, null, 4) + ';\n';
+                triggerFileDownload('articles-data.js', content, 'application/javascript');
+            }
+        }
+
+        function triggerFileDownload(filename, text, mimeType) {
+            const blob = new Blob([text], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        let pendingRedirectUrl = null;
+
+        function showSyncModal(targetArticle, redirectUrl) {
+            pendingRedirectUrl = redirectUrl;
+            const modal = document.getElementById('syncModalOverlay');
+            if (!modal) {
+                window.location.href = redirectUrl;
+                return;
+            }
+
+            const downloadJsBtn = document.getElementById('syncDownloadJsBtn');
+            const downloadJsonBtn = document.getElementById('syncDownloadJsonBtn');
+            const continueBtn = document.getElementById('syncContinueBtn');
+
+            if (downloadJsBtn) {
+                downloadJsBtn.onclick = () => downloadUpdatedData('js', targetArticle);
+            }
+            if (downloadJsonBtn) {
+                downloadJsonBtn.onclick = () => downloadUpdatedData('json', targetArticle);
+            }
+            if (continueBtn) {
+                continueBtn.onclick = () => {
+                    modal.classList.remove('active');
+                    window.location.href = pendingRedirectUrl;
+                };
+            }
+
+            modal.classList.add('active');
+        }
+
+        async function handlePublish(event) {
             event.preventDefault();
 
             if (!DB.isAuthenticated()) {
@@ -828,6 +923,7 @@
                 const now = new Date();
                 const fallbackDate = `${now.getFullYear()}-${now.getDate()}-${now.getMonth() + 1}`;
                 const updatedArticleData = {
+                    id: editArticleId,
                     title: title,
                     author: author,
                     date: (originalArticleData && originalArticleData.date) ? originalArticleData.date : fallbackDate,
@@ -846,8 +942,13 @@
                     return;
                 }
 
-                // Seamless redirect back to article reader
-                window.location.href = `article.html?id=${encodeURIComponent(editArticleId)}`;
+                const synced = await syncArticleToBackend(updatedArticleData);
+                const redirectUrl = `article.html?id=${encodeURIComponent(editArticleId)}`;
+                if (synced) {
+                    window.location.href = redirectUrl;
+                } else {
+                    showSyncModal(updatedArticleData, redirectUrl);
+                }
                 return;
             }
 
@@ -877,9 +978,45 @@
                 return;
             }
 
-            // Seamless redirect without window.alert
-            window.location.href = `article.html?id=${newArticleId}`;
+            const synced = await syncArticleToBackend(newArticle);
+            const redirectUrl = `article.html?id=${encodeURIComponent(newArticleId)}`;
+            if (synced) {
+                window.location.href = redirectUrl;
+            } else {
+                showSyncModal(newArticle, redirectUrl);
+            }
         }
     </script>
+
+    <!-- GitHub Pages Sync Modal -->
+    <div class="syncModalOverlay" id="syncModalOverlay">
+        <div class="syncModalCard">
+            <div class="syncModalHeader">
+                <h3>Article Published!</h3>
+                <span class="syncModalBadge">✓ Saved Locally</span>
+            </div>
+            <div class="syncModalBody">
+                <p>Your article is live in your browser. Since GitHub Pages is a static server, to ensure all visitors on the web can read it, download the updated files below and push them to your repository:</p>
+                <div class="syncModalDownloadRow">
+                    <button type="button" class="syncDownloadBtn" id="syncDownloadJsBtn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download articles-data.js
+                    </button>
+                    <button type="button" class="syncDownloadBtn" id="syncDownloadJsonBtn">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download articles.json
+                    </button>
+                </div>
+                <div class="syncModalHint">
+                    💡 <strong>Tip:</strong> If you run <code>python3 server.py</code> while writing, all articles are automatically saved to these files without needing manual downloads!
+                </div>
+            </div>
+            <div class="syncModalFooter">
+                <button type="button" class="syncModalPrimaryBtn" id="syncContinueBtn">
+                    View Published Article &rarr;
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
