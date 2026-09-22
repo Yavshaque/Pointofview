@@ -194,35 +194,44 @@ const DB = (function() {
         isSyncingCloud = true;
         try {
             // 1. Articles Sync
+            const dummyArticleIds = new Set(['0', '1', '2', '3']);
             const { data: cloudArticles, error: artError } = await client.from('articles').select('*');
             if (!artError && Array.isArray(cloudArticles)) {
-                if (cloudArticles.length > 0) {
+                // Proactively delete any legacy dummy seed rows found in cloud
+                const foundDummyArticles = cloudArticles.filter(row => dummyArticleIds.has(String(row.id)));
+                if (foundDummyArticles.length > 0) {
+                    client.from('articles').delete().in('id', Array.from(dummyArticleIds)).then(() => {});
+                }
+
+                const validCloud = cloudArticles.filter(row => !dummyArticleIds.has(String(row.id)));
+                if (validCloud.length > 0) {
                     const localArticles = getCustomArticles();
                     const localMap = new Map();
                     localArticles.forEach(a => localMap.set(String(a.id), a));
-                    cloudArticles.forEach(row => {
+                    validCloud.forEach(row => {
                         const mapped = rowToArticle(row);
                         localMap.set(String(mapped.id), mapped);
                     });
-                    const mergedArticles = Array.from(localMap.values());
+                    const mergedArticles = Array.from(localMap.values()).filter(a => !dummyArticleIds.has(String(a.id)));
                     try {
                         localStorage.setItem(ARTICLES_KEY, JSON.stringify(mergedArticles));
                     } catch (e) {}
-                } else {
-                    // Seed cloud if empty
-                    const localArticles = getCustomArticles();
-                    if (localArticles.length > 0) {
-                        const rows = localArticles.map(articleToRow);
-                        await client.from('articles').upsert(rows, { onConflict: 'id' });
-                    }
                 }
             }
 
             // 2. Projects Sync
+            const dummyProjectIds = new Set(['proj-atlantic-world', 'proj-colonial-culture']);
             const { data: cloudProjects, error: projError } = await client.from('projects').select('*');
             if (!projError && Array.isArray(cloudProjects)) {
-                if (cloudProjects.length > 0) {
-                    const mappedProjects = cloudProjects.map(rowToProject);
+                // Proactively delete any legacy dummy seed projects found in cloud
+                const foundDummyProjects = cloudProjects.filter(row => dummyProjectIds.has(String(row.id)));
+                if (foundDummyProjects.length > 0) {
+                    client.from('projects').delete().in('id', Array.from(dummyProjectIds)).then(() => {});
+                }
+
+                const validCloudProjects = cloudProjects.filter(row => !dummyProjectIds.has(String(row.id)));
+                if (validCloudProjects.length > 0) {
+                    const mappedProjects = validCloudProjects.map(rowToProject);
                     const localProjects = getProjects();
                     const projMap = new Map();
                     mappedProjects.forEach(p => projMap.set(String(p.id), p));
@@ -231,16 +240,10 @@ const DB = (function() {
                             projMap.set(String(p.id), p);
                         }
                     });
-                    const finalProjects = Array.from(projMap.values());
+                    const finalProjects = Array.from(projMap.values()).filter(p => !dummyProjectIds.has(String(p.id)));
                     try {
                         localStorage.setItem(PROJECTS_KEY, JSON.stringify(finalProjects));
                     } catch (e) {}
-                } else {
-                    const localProjects = getProjects();
-                    if (localProjects.length > 0) {
-                        const rows = localProjects.map(projectToRow);
-                        await client.from('projects').upsert(rows, { onConflict: 'id' });
-                    }
                 }
             }
 
@@ -348,6 +351,27 @@ const DB = (function() {
         users = users.filter(u => u.name !== 'Google Editor' && u.email !== 'google.editor@articlewebsite.com');
         try {
             localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        } catch (e) {}
+
+        // Proactively cleanse any stale dummy articles or projects from localStorage
+        try {
+            const rawProj = localStorage.getItem(PROJECTS_KEY);
+            if (rawProj) {
+                const parsed = JSON.parse(rawProj);
+                if (Array.isArray(parsed)) {
+                    const clean = parsed.filter(p => p.id !== 'proj-atlantic-world' && p.id !== 'proj-colonial-culture');
+                    localStorage.setItem(PROJECTS_KEY, JSON.stringify(clean));
+                }
+            }
+            const rawArts = localStorage.getItem(ARTICLES_KEY);
+            if (rawArts) {
+                const parsed = JSON.parse(rawArts);
+                if (Array.isArray(parsed)) {
+                    const dummyIds = new Set(['0', '1', '2', '3']);
+                    const clean = parsed.filter(a => !dummyIds.has(String(a.id)));
+                    localStorage.setItem(ARTICLES_KEY, JSON.stringify(clean));
+                }
+            }
         } catch (e) {}
 
         const seedEmail = 'editor@articlewebsite.com';
@@ -513,7 +537,19 @@ const DB = (function() {
 
     function getCustomArticles() {
         try {
-            return JSON.parse(localStorage.getItem(ARTICLES_KEY) || '[]');
+            const raw = localStorage.getItem(ARTICLES_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                    const dummyIds = new Set(['0', '1', '2', '3']);
+                    const sanitized = parsed.filter(a => !dummyIds.has(String(a.id)));
+                    if (sanitized.length !== parsed.length) {
+                        localStorage.setItem(ARTICLES_KEY, JSON.stringify(sanitized));
+                    }
+                    return sanitized;
+                }
+            }
+            return [];
         } catch (e) {
             return [];
         }
@@ -648,81 +684,7 @@ const DB = (function() {
     // Editorial Projects & Multi-Part Series Engine
     // ==========================================================================
     function getSeedProjects() {
-        return [
-            {
-                id: 'proj-atlantic-world',
-                title: 'The Atlantic World: Demographics, Trade, and Imperial Rule',
-                subtitle: 'A three-part inquiry into early modern transatlantic transformation, the global silver circuit, and lasting institutional hierarchies.',
-                description: "Between the late fifteenth and eighteenth centuries, the convergence of European empires, indigenous civilizations, and enslaved African populations created a new Atlantic world system. This curated project investigates the structural mechanics of that transformative era: from the biological disruptions of the Columbian Exchange, to the mountain of Potosí whose silver underpinned global trade, and the institutional codification of socio-racial hierarchies in colonial viceroyalties.",
-                author: 'Ali Mert Bayar',
-                authorId: 'user-editor-01',
-                authorRole: 'Founder & Editor-in-Chief',
-                cover: 'images/spanish colonisation.png',
-                categories: ['History', 'World', 'Economy'],
-                createdAt: '2026-09-18T10:00:00.000Z',
-                updatedAt: '2026-09-20T12:00:00.000Z',
-                parts: [
-                    {
-                        id: 'part-1',
-                        title: 'Part I: Demographic Collapse and the Formation of Racial Classes',
-                        subtitle: 'Pathogens, forced labor, and the emergence of the casta system.',
-                        readTime: 5,
-                        body: "The Spanish and Portuguese monarchies' pursuit of short-term wealth during the Age of Exploration had profound and far-reaching consequences. This quest for riches, driven by the desire for gold, silver, and other valuable resources, led to a series of events that reshaped societies across the globe.\\n\\nUpon arriving in the Americas, European powers encountered established empires and diverse indigenous populations. Through warfare, forced labor systems such as the encomienda, and crucially, the introduction of Old World pathogens like smallpox, measles, and typhus, native populations suffered unprecedented demographic collapse.\\n\\nIn response to severe labor shortages and the urgent desire to maintain extractive economies in silver mines and sugar plantations, imperial powers accelerated the transatlantic slave trade. This convergence of indigenous, European, and African populations under stratified colonial systems gradually gave rise to intricate socio-racial classification hierarchies, notably the casta system.\\n\\nThese structures not only dictated social mobility, taxation, and legal rights in colonial Latin America, but established enduring socioeconomic inequalities that persisted long after the collapse of imperial rule.",
-                        bibliography: "Crosby, Alfred W. (1972). The Columbian Exchange: Biological and Cultural Consequences of 1492. Greenwood Publishing Group.\\nLockhart, James, & Schwartz, Stuart B. (1983). Early Latin America: A History of Colonial Spanish America and Brazil. Cambridge University Press.\\nCook, Noble David (1998). Born to Die: Disease and New World Conquest, 1492–1650. Cambridge University Press."
-                    },
-                    {
-                        id: 'part-2',
-                        title: 'Part II: Mercantilism and the Global Silver Trade',
-                        subtitle: 'How Potosí bullion linked Andean mines to Ming Dynasty fiscal reforms and European markets.',
-                        readTime: 4,
-                        body: "During the sixteenth and seventeenth centuries, the mountain of Potosí in Upper Peru yielded silver in quantities unimaginable to earlier generations. Under mercantilist economic doctrine, European powers measured sovereign strength primarily by their bullion reserves.\\n\\nHowever, the sudden influx of precious metals triggered the infamous Price Revolution across Western Europe, eroding real wages and inflating commodity prices. Simultaneously, silver became the lifeblood of Pacific trade routes via the Manila Galleons, flowing directly into China where Ming fiscal reforms demanded all tax payments in pure silver.\\n\\nThis global circuit of wealth stimulated early financial markets, joint-stock enterprises, and maritime insurance syndicates, demonstrating that the modern globalized economy began far earlier than the Industrial Revolution.",
-                        bibliography: "Flynn, Dennis O., & Giráldez, Arturo (1995). Born with a 'Silver Spoon': The Origin of World Trade in 1571. Journal of World History, 6(2), 201-221.\\nFrank, Andre Gunder (1998). ReORIENT: Global Economy in the Asian Age. University of California Press.\\nElliott, John H. (2006). Empires of the Atlantic World: Britain and Spain in America 1492–1830. Yale University Press."
-                    },
-                    {
-                        id: 'part-3',
-                        title: 'Part III: Institutional Legacies of Transatlantic Extraction',
-                        subtitle: 'Property rights, state monopolies, and developmental divergence in post-colonial economies.',
-                        readTime: 5,
-                        body: "The economic architectures forged in the sixteenth-century Atlantic world did not vanish with independence. Rather, the extractive institutions designed to funnel mineral and agricultural surpluses to metropolitan centers established path-dependent trajectories that conditioned Latin American development for centuries.\\n\\nColonial charters granted exclusive monopolies over key commodities, land distributions favored large haciendas at the expense of communal peasant holdings, and judicial institutions prioritized imperial revenues over general contract enforcement.\\n\\nWhen new republics emerged in the nineteenth century, political elites frequently preserved these centralized, extractive frameworks under new constitutional facades. Analyzing these historical persistence mechanisms clarifies why economic divergence between Atlantic economies expanded markedly throughout the nineteenth and twentieth centuries.",
-                        bibliography: "Acemoglu, D., Johnson, S., & Robinson, J. A. (2001). The Colonial Origins of Comparative Development: An Empirical Investigation. American Economic Review, 91(5), 1369-1401.\\nEngerman, Stanley L., & Sokoloff, Kenneth L. (1997). Factor Endowments, Institutions, and Differential Paths of Growth Among New World Economies. Journal of Economic Perspectives.\\nBulmer-Thomas, Victor (2003). The Economic History of Latin America Since Independence. Cambridge University Press."
-                    }
-                ]
-            },
-            {
-                id: 'proj-colonial-culture',
-                title: 'Colonial Social Orders & Cultural Syntheses',
-                subtitle: 'A two-part investigation into racial stratification, casta art, and maritime technological assimilation in early modern viceroyalties.',
-                description: 'Colonial expansion was not merely an economic and territorial venture; it thoroughly restructured human relationships, material culture, and knowledge systems. This project examines how imperial authorities attempted to categorize and quantify human identities through visual codes, and how transoceanic voyages generated complex syntheses in art, architecture, and navigation.',
-                author: 'Ceren Onursal',
-                authorId: 'user-ceren-02',
-                authorRole: 'Co-Founder & Contributing Editor',
-                collaboratorId: 'user-editor-01',
-                collaboratorName: 'Ali Mert Bayar',
-                collaboratorRole: 'Founder & Editor-in-Chief',
-                cover: 'images/spanish colonisation.png',
-                categories: ['Culture', 'Technology', 'World'],
-                createdAt: '2026-09-17T14:30:00.000Z',
-                updatedAt: '2026-09-20T11:00:00.000Z',
-                parts: [
-                    {
-                        id: 'part-1',
-                        title: 'Part I: Racial Classes and Social Stratification in Colonial Societies',
-                        subtitle: 'Casta paintings, legal status, and the negotiation of identity in Spanish viceroyalties.',
-                        readTime: 5,
-                        body: "Colonial expansion did not merely extract resources; it radically restructured human relationships. In the Spanish viceroyalties, colonial authorities sought to categorize and regulate the emerging multi-ethnic population through legal codes and artistic representations known as casta paintings.\\n\\nThese detailed depictions illustrated families of mixed heritage—peninsulares, criollos, mestizos, mulattos, and indios—each assigned distinct societal roles and privileges. While intended to enforce rigid hierarchies, everyday life often saw individuals negotiating, challenging, and subverting these boundaries through marriage, commerce, and legal appeals.\\n\\nUnderstanding these mechanisms provides vital insights into modern institutional patterns across the Americas and how cultural identities coalesce in times of rapid geopolitical upheaval.",
-                        bibliography: "Katzew, Ilona (2004). Casta Painting: Images of Race in Eighteenth-Century Mexico. Yale University Press.\\nSeed, Patricia (1988). To Love, Honor, and Obey in Colonial Mexico: Conflicts over Marriage Choice, 1574–1821. Stanford University Press."
-                    },
-                    {
-                        id: 'part-2',
-                        title: 'Part II: Technological and Cultural Exchanges in Maritime Empires',
-                        subtitle: 'Navigational breakthroughs, astrolabes, and architectural syncretism in ocean networks.',
-                        readTime: 4,
-                        body: "The expansion of maritime empires relied on a synthesis of technological knowledge from across the Mediterranean, Arab, and Asian worlds. Caravel designs, lateen sails, and refined astrolabes allowed navigators to traverse open oceans with newfound reliability.\\n\\nAlongside navigation, cultural syncretism flourished in port cities and inland capitals. Baroque architecture incorporated indigenous motifs, while botanical exchanges fundamentally altered agricultural practices and diets across Europe, Africa, and the Americas.\\n\\nExamining these exchanges highlights how modern globalization is rooted in centuries of reciprocal—though often coerced—cultural and scientific integration.",
-                        bibliography: "Parry, J. H. (1981). The Age of Reconnaissance: Discovery, Exploration, and Settlement, 1450 to 1650. University of California Press.\\nChaudhuri, K. N. (1985). Trade and Civilisation in the Indian Ocean: An Economic History from the Rise of Islam to 1750. Cambridge University Press."
-                    }
-                ]
-            }
-        ];
+        return [];
     }
 
     function getProjects() {
@@ -730,20 +692,18 @@ const DB = (function() {
             const raw = localStorage.getItem(PROJECTS_KEY);
             if (raw) {
                 const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    return parsed;
+                if (Array.isArray(parsed)) {
+                    const sanitized = parsed.filter(p => p.id !== 'proj-atlantic-world' && p.id !== 'proj-colonial-culture');
+                    if (sanitized.length !== parsed.length) {
+                        localStorage.setItem(PROJECTS_KEY, JSON.stringify(sanitized));
+                    }
+                    return sanitized;
                 }
             }
         } catch (e) {
             console.error('Error reading projects:', e);
         }
-        const seeds = (typeof window !== 'undefined' && Array.isArray(window.PROJECTS_DATABASE) && window.PROJECTS_DATABASE.length)
-            ? window.PROJECTS_DATABASE
-            : getSeedProjects();
-        try {
-            localStorage.setItem(PROJECTS_KEY, JSON.stringify(seeds));
-        } catch (e) {}
-        return seeds;
+        return [];
     }
 
     function getProjectById(id) {
