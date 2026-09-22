@@ -60,7 +60,19 @@ function initializeArticles(baseData) {
         });
     }
 
-    articlesData = [...activeProjects, ...customArticles, ...filteredBase].filter(a => !deletedIds.has(String(a.id)));
+    articlesData = [...activeProjects, ...customArticles, ...filteredBase].filter(a => {
+        if (!a) return false;
+        if (deletedIds.has(String(a.id))) return false;
+        if (typeof DB !== 'undefined' && DB.isDummyItem && DB.isDummyItem(a)) return false;
+        const title = (a.title || '').trim().toLowerCase();
+        if (title.includes('demographic collapse')) return false;
+        if (title.includes('mercantilism')) return false;
+        if (title.includes('racial classes and social stratification')) return false;
+        if (title.includes('technological and cultural exchanges')) return false;
+        if (title.includes('the atlantic world')) return false;
+        if (title.includes('colonial social orders')) return false;
+        return true;
+    });
 
     updateDOM(currentIndex);
     renderHeroCompanion(articlesData);
@@ -88,6 +100,16 @@ function initializeArticles(baseData) {
 
 // Initial render using database articles
 initializeArticles(baselineArticles);
+
+// Re-render when background cloud synchronization completes
+if (typeof window !== 'undefined') {
+    window.addEventListener('cloud_data_synced', () => {
+        const base = (typeof window !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE))
+            ? window.ARTICLES_DATABASE
+            : [];
+        initializeArticles(base);
+    });
+}
 
 function startAutoSlide() {
     if (slideInterval) clearInterval(slideInterval);

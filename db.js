@@ -184,6 +184,20 @@ const DB = (function() {
         };
     }
 
+    function isDummyItem(item) {
+        if (!item) return false;
+        const strId = String(item.id || '').trim();
+        if (['0', '1', '2', '3', 'proj-atlantic-world', 'proj-colonial-culture'].includes(strId)) return true;
+        const title = (item.title || '').trim().toLowerCase();
+        if (title.includes('demographic collapse')) return true;
+        if (title.includes('mercantilism')) return true;
+        if (title.includes('racial classes and social stratification')) return true;
+        if (title.includes('technological and cultural exchanges')) return true;
+        if (title.includes('the atlantic world')) return true;
+        if (title.includes('colonial social orders')) return true;
+        return false;
+    }
+
     // Cloud background sync
     let isSyncingCloud = false;
     async function syncCloudData() {
@@ -194,57 +208,57 @@ const DB = (function() {
         isSyncingCloud = true;
         try {
             // 1. Articles Sync
-            const dummyArticleIds = new Set(['0', '1', '2', '3']);
             const { data: cloudArticles, error: artError } = await client.from('articles').select('*');
             if (!artError && Array.isArray(cloudArticles)) {
-                // Proactively delete any legacy dummy seed rows found in cloud
-                const foundDummyArticles = cloudArticles.filter(row => dummyArticleIds.has(String(row.id)));
-                if (foundDummyArticles.length > 0) {
-                    client.from('articles').delete().in('id', Array.from(dummyArticleIds)).then(() => {});
+                // Delete dummy articles from Supabase Cloud
+                for (const row of cloudArticles) {
+                    if (isDummyItem(row)) {
+                        console.log('Purging dummy article from Supabase cloud:', row.id, row.title);
+                        client.from('articles').delete().eq('id', row.id).then(() => {});
+                    }
                 }
 
-                const validCloud = cloudArticles.filter(row => !dummyArticleIds.has(String(row.id)));
-                if (validCloud.length > 0) {
-                    const localArticles = getCustomArticles();
-                    const localMap = new Map();
-                    localArticles.forEach(a => localMap.set(String(a.id), a));
-                    validCloud.forEach(row => {
-                        const mapped = rowToArticle(row);
+                const validCloud = cloudArticles.filter(row => !isDummyItem(row));
+                const localArticles = getCustomArticles();
+                const localMap = new Map();
+                localArticles.forEach(a => localMap.set(String(a.id), a));
+                validCloud.forEach(row => {
+                    const mapped = rowToArticle(row);
+                    if (!isDummyItem(mapped)) {
                         localMap.set(String(mapped.id), mapped);
-                    });
-                    const mergedArticles = Array.from(localMap.values()).filter(a => !dummyArticleIds.has(String(a.id)));
-                    try {
-                        localStorage.setItem(ARTICLES_KEY, JSON.stringify(mergedArticles));
-                    } catch (e) {}
-                }
+                    }
+                });
+                const mergedArticles = Array.from(localMap.values()).filter(a => !isDummyItem(a));
+                try {
+                    localStorage.setItem(ARTICLES_KEY, JSON.stringify(mergedArticles));
+                } catch (e) {}
             }
 
             // 2. Projects Sync
-            const dummyProjectIds = new Set(['proj-atlantic-world', 'proj-colonial-culture']);
             const { data: cloudProjects, error: projError } = await client.from('projects').select('*');
             if (!projError && Array.isArray(cloudProjects)) {
-                // Proactively delete any legacy dummy seed projects found in cloud
-                const foundDummyProjects = cloudProjects.filter(row => dummyProjectIds.has(String(row.id)));
-                if (foundDummyProjects.length > 0) {
-                    client.from('projects').delete().in('id', Array.from(dummyProjectIds)).then(() => {});
+                // Delete dummy projects from Supabase Cloud
+                for (const row of cloudProjects) {
+                    if (isDummyItem(row)) {
+                        console.log('Purging dummy project from Supabase cloud:', row.id, row.title);
+                        client.from('projects').delete().eq('id', row.id).then(() => {});
+                    }
                 }
 
-                const validCloudProjects = cloudProjects.filter(row => !dummyProjectIds.has(String(row.id)));
-                if (validCloudProjects.length > 0) {
-                    const mappedProjects = validCloudProjects.map(rowToProject);
-                    const localProjects = getProjects();
-                    const projMap = new Map();
-                    mappedProjects.forEach(p => projMap.set(String(p.id), p));
-                    localProjects.forEach(p => {
-                        if (!projMap.has(String(p.id))) {
-                            projMap.set(String(p.id), p);
-                        }
-                    });
-                    const finalProjects = Array.from(projMap.values()).filter(p => !dummyProjectIds.has(String(p.id)));
-                    try {
-                        localStorage.setItem(PROJECTS_KEY, JSON.stringify(finalProjects));
-                    } catch (e) {}
-                }
+                const validCloudProjects = cloudProjects.filter(row => !isDummyItem(row));
+                const mappedProjects = validCloudProjects.map(rowToProject).filter(p => !isDummyItem(p));
+                const localProjects = getProjects();
+                const projMap = new Map();
+                mappedProjects.forEach(p => projMap.set(String(p.id), p));
+                localProjects.forEach(p => {
+                    if (!projMap.has(String(p.id)) && !isDummyItem(p)) {
+                        projMap.set(String(p.id), p);
+                    }
+                });
+                const finalProjects = Array.from(projMap.values()).filter(p => !isDummyItem(p));
+                try {
+                    localStorage.setItem(PROJECTS_KEY, JSON.stringify(finalProjects));
+                } catch (e) {}
             }
 
             // 3. Profiles Sync
@@ -294,6 +308,9 @@ const DB = (function() {
             console.warn('Supabase cloud sync notification:', syncErr.message || syncErr);
         } finally {
             isSyncingCloud = false;
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('cloud_data_synced'));
+            }
         }
     }
 
@@ -302,8 +319,8 @@ const DB = (function() {
         if (!client) {
             throw new Error('Supabase client is not configured. Please paste your anon key in db.js.');
         }
-        const articles = getCustomArticles().map(articleToRow);
-        const projects = getProjects().map(projectToRow);
+        const articles = getCustomArticles().filter(a => !isDummyItem(a)).map(articleToRow);
+        const projects = getProjects().filter(p => !isDummyItem(p)).map(projectToRow);
         const users = getAllUsers().map(u => profileToRow(u, u));
 
         let res = { articles: 0, projects: 0, profiles: 0 };
@@ -359,7 +376,7 @@ const DB = (function() {
             if (rawProj) {
                 const parsed = JSON.parse(rawProj);
                 if (Array.isArray(parsed)) {
-                    const clean = parsed.filter(p => p.id !== 'proj-atlantic-world' && p.id !== 'proj-colonial-culture');
+                    const clean = parsed.filter(p => !isDummyItem(p));
                     localStorage.setItem(PROJECTS_KEY, JSON.stringify(clean));
                 }
             }
@@ -367,8 +384,7 @@ const DB = (function() {
             if (rawArts) {
                 const parsed = JSON.parse(rawArts);
                 if (Array.isArray(parsed)) {
-                    const dummyIds = new Set(['0', '1', '2', '3']);
-                    const clean = parsed.filter(a => !dummyIds.has(String(a.id)));
+                    const clean = parsed.filter(a => !isDummyItem(a));
                     localStorage.setItem(ARTICLES_KEY, JSON.stringify(clean));
                 }
             }
@@ -541,8 +557,7 @@ const DB = (function() {
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (Array.isArray(parsed)) {
-                    const dummyIds = new Set(['0', '1', '2', '3']);
-                    const sanitized = parsed.filter(a => !dummyIds.has(String(a.id)));
+                    const sanitized = parsed.filter(a => !isDummyItem(a));
                     if (sanitized.length !== parsed.length) {
                         localStorage.setItem(ARTICLES_KEY, JSON.stringify(sanitized));
                     }
@@ -693,7 +708,7 @@ const DB = (function() {
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (Array.isArray(parsed)) {
-                    const sanitized = parsed.filter(p => p.id !== 'proj-atlantic-world' && p.id !== 'proj-colonial-culture');
+                    const sanitized = parsed.filter(p => !isDummyItem(p));
                     if (sanitized.length !== parsed.length) {
                         localStorage.setItem(PROJECTS_KEY, JSON.stringify(sanitized));
                     }
@@ -929,11 +944,13 @@ const DB = (function() {
     }
 
     function getDeletedArticleIds() {
+        const defaultDeleted = ['0', '1', '2', '3', 'proj-atlantic-world', 'proj-colonial-culture'];
         try {
             const raw = localStorage.getItem(DELETED_KEY);
-            return new Set(raw ? JSON.parse(raw) : []);
+            const userDeleted = raw ? JSON.parse(raw) : [];
+            return new Set([...defaultDeleted, ...userDeleted]);
         } catch (e) {
-            return new Set();
+            return new Set(defaultDeleted);
         }
     }
 
@@ -3032,6 +3049,7 @@ const DB = (function() {
         showAlert,
         showConfirm,
         confirmDeleteContactMessage,
+        isDummyItem,
         // Supabase Cloud Database Methods
         isSupabaseConfigured,
         getSupabaseClient,

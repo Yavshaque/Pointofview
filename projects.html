@@ -8,10 +8,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="articles-data.js?v=2.1"></script>
-    <script src="projects-data.js?v=2.1"></script>
+    <script src="articles-data.js?v=2.2"></script>
+    <script src="projects-data.js?v=2.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js?v=2.1"></script>
+    <script src="db.js?v=2.2"></script>
 </head>
 <body class="projectsPageBody">
     <!-- Navigation Header -->
@@ -529,20 +529,30 @@
             history.pushState(null, '', newUrl);
             handleRouting();
         }
-
-        // ======================================================================
-        // View 1: Projects Grid View
+        if (typeof window !== 'undefined') {
+            window.addEventListener('cloud_data_synced', () => {
+                if (typeof renderProjectsGrid === 'function') renderProjectsGrid();
+            });
+        }
         // ======================================================================
         let currentFilterCategory = 'all';
         let currentSearchQuery = '';
 
         function renderProjectsGrid() {
             const projects = (typeof DB !== 'undefined' && DB.getProjects) ? DB.getProjects() : [];
+            const cleanProjects = projects.filter(p => {
+                if (!p) return false;
+                if (typeof DB !== 'undefined' && DB.isDummyItem && DB.isDummyItem(p)) return false;
+                const title = (p.title || '').trim().toLowerCase();
+                if (title.includes('the atlantic world')) return false;
+                if (title.includes('colonial social orders')) return false;
+                return true;
+            });
             const container = document.getElementById('projectsGrid');
             const countText = document.getElementById('projectsTotalCountText');
 
             // Filter logic
-            const filtered = projects.filter(proj => {
+            const filtered = cleanProjects.filter(proj => {
                 // Category match
                 if (currentFilterCategory !== 'all') {
                     const cats = (proj.categories || []).map(c => c.toLowerCase());
