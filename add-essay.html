@@ -354,13 +354,13 @@
 
         async function initEditMode(id) {
             let article = typeof DB.getArticleById === 'function' ? DB.getArticleById(id) : null;
-            if (!article) {
-                try {
-                    const res = await fetch('articles.json');
-                    const baseArticles = await res.json();
-                    article = baseArticles.find(a => String(a.id) === String(id)) || null;
-                } catch (e) {
-                    console.error('Error fetching base articles:', e);
+            if (!article && typeof DB !== 'undefined' && DB.isSupabaseConfigured && DB.isSupabaseConfigured()) {
+                const client = DB.getSupabaseClient();
+                if (client) {
+                    try {
+                        const { data } = await client.from('articles').select('*').eq('id', String(id)).maybeSingle();
+                        if (data) article = data;
+                    } catch (e) {}
                 }
             }
 

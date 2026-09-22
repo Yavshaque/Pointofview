@@ -505,22 +505,9 @@
         }
 
         async function loadAuthorArticles(authorName) {
-            let baseArticles = (typeof window.ARTICLES_DATABASE !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE))
+            const baseArticles = (typeof window.ARTICLES_DATABASE !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE))
                 ? [...window.ARTICLES_DATABASE]
                 : [];
-            try {
-                const res = await fetch('articles.json');
-                const fetched = await res.json();
-                if (Array.isArray(fetched) && fetched.length) {
-                    const map = new Map();
-                    baseArticles.forEach(a => map.set(String(a.id), a));
-                    fetched.forEach(a => map.set(String(a.id), a));
-                    baseArticles = Array.from(map.values());
-                }
-            } catch (e) {
-                // Keep synchronous baseline
-            }
-
             const custom = typeof DB !== 'undefined' && DB.getCustomArticles ? DB.getCustomArticles() : [];
             const deletedIds = typeof DB !== 'undefined' && DB.getDeletedArticleIds ? DB.getDeletedArticleIds() : new Set();
             const customIds = new Set(custom.map(a => String(a.id)));

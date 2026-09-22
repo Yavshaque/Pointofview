@@ -13,33 +13,13 @@ let currentIndex = 0;
 let articlesData = [];
 let slideInterval = null;
 
-const DEFAULT_ARTICLES = [
-    {
-        id: 0,
-        title: "Demographic collapse to the formation of new racial classes?",
-        author: "Ali Mert Bayar",
-        date: "2026-16-9",
-        image: "images/spanish colonisation.png",
-        readTime: 5,
-        description: "The Spanish and Portuguese monarchies' pursuit of short-term wealth during the Age of Exploration had profound and far-reaching consequences. This quest for riches, driven by the desire for gold, silver, and other valuable resources, led to a series of events that reshaped societies across the globe.",
-        body: "The Spanish and Portuguese monarchies' pursuit of short-term wealth during the Age of Exploration had profound and far-reaching consequences. This quest for riches, driven by the desire for gold, silver, and other valuable resources, led to a series of events that reshaped societies across the globe.\n\nUpon arriving in the Americas, European powers encountered established empires and indigenous populations. Through warfare, forced labor systems such as the encomienda, and crucially, the introduction of Old World pathogens like smallpox, measles, and typhus, native populations suffered unprecedented demographic collapse.\n\nIn response to labor shortages and the desire to maintain extractive economies in silver mines and sugar plantations, imperial powers turned to the transatlantic slave trade. This convergence of indigenous, European, and African populations under stratified colonial systems gradually gave rise to intricate socio-racial classification hierarchies, notably the casta system.\n\nThese structures not only dictated social mobility, taxation, and legal rights in colonial Latin America, but established enduring socioeconomic inequalities that persisted long after the collapse of imperial rule.",
-        keywords: ["History", "World"],
-        bibliography: "Crosby, Alfred W. (1972). The Columbian Exchange: Biological and Cultural Consequences of 1492. Greenwood Publishing Group.\nLockhart, James, & Schwartz, Stuart B. (1983). Early Latin America: A History of Colonial Spanish America and Brazil. Cambridge University Press.\nCook, Noble David (1998). Born to Die: Disease and New World Conquest, 1492–1650. Cambridge University Press."
-    }
-];
+const DEFAULT_ARTICLES = [];
 
-const baselineArticles = (typeof window !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE) && window.ARTICLES_DATABASE.length > 0)
+const baselineArticles = (typeof window !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE))
     ? window.ARTICLES_DATABASE
-    : DEFAULT_ARTICLES;
+    : [];
 
 function initializeArticles(baseData) {
-    const map = new Map();
-    baselineArticles.forEach(a => map.set(String(a.id), a));
-    if (Array.isArray(baseData)) {
-        baseData.forEach(a => map.set(String(a.id), a));
-    }
-    const defaultData = Array.from(map.values());
-
     let customArticles = [];
     try {
         if (typeof DB !== 'undefined' && DB.getCustomArticles) {
@@ -54,7 +34,13 @@ function initializeArticles(baseData) {
 
     const deletedIds = (typeof DB !== 'undefined' && DB.getDeletedArticleIds) ? DB.getDeletedArticleIds() : new Set();
     const customIds = new Set(customArticles.map(a => String(a.id)));
-    const filteredBase = defaultData.filter(a => !customIds.has(String(a.id)));
+    
+    // External base articles (only if explicitly supplied)
+    let filteredBase = [];
+    if (Array.isArray(baseData) && baseData.length > 0) {
+        filteredBase = baseData.filter(a => !customIds.has(String(a.id)));
+    }
+
     let activeProjects = [];
     if (typeof DB !== 'undefined' && DB.getProjects) {
         const projects = DB.getProjects();
@@ -75,10 +61,6 @@ function initializeArticles(baseData) {
     }
 
     articlesData = [...activeProjects, ...customArticles, ...filteredBase].filter(a => !deletedIds.has(String(a.id)));
-
-    if (articlesData.length === 0) {
-        articlesData = [...baselineArticles];
-    }
 
     updateDOM(currentIndex);
     renderHeroCompanion(articlesData);
@@ -104,32 +86,15 @@ function initializeArticles(baseData) {
     startAutoSlide();
 }
 
-// Immediate initial render using baseline synchronous articles
+// Initial render using database articles
 initializeArticles(baselineArticles);
-
-// Also fetch base articles and merge with custom articles from database
-fetch('articles.json')
-    .then(response => {
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        return response.json();
-    })
-    .then(data => {
-        initializeArticles(data);
-    })
-    .catch(error => {
-        // Safe fallback - articles already initialized from baseline
-        console.info('articles.json fetch info:', error.message);
-    });
 
 function startAutoSlide() {
     if (slideInterval) clearInterval(slideInterval);
+    if (!articlesData || articlesData.length <= 1) return;
     slideInterval = setInterval(() => {
         if (!articlesData.length) return;
-        currentIndex++;
-        // If at the last article, loop back
-        if (currentIndex >= articlesData.length) {
-            currentIndex = 0;
-        }
+        currentIndex = (currentIndex + 1) % articlesData.length;
         updateDOM(currentIndex);
     }, 4000);
 }
@@ -178,8 +143,28 @@ function renderMiniAvatarHTML(authorName, className = 'cardAuthorAvatar') {
 }
 
 function updateDOM(index) {
-    if (!articlesData[index]) return;
-    const currentArticle = articlesData[index];
+    if (!articlesData || !articlesData.length) {
+        if (thumbnailImage) {
+            thumbnailImage.src = 'images/logo.png';
+            thumbnailImage.alt = 'Point of View';
+            thumbnailImage.onclick = null;
+            thumbnailImage.style.cursor = 'default';
+        }
+        if (articleTitle) {
+            articleTitle.innerHTML = '<h2 style="font-size: 24px; color: #fff;">No articles available</h2>';
+        }
+        const arrowLink = document.getElementById('heroArrowLink');
+        if (arrowLink) arrowLink.href = 'javascript:void(0);';
+        if (articleDesc) {
+            articleDesc.textContent = 'Articles published to the database will appear here.';
+        }
+        if (parametersDiv) parametersDiv.innerHTML = '';
+        if (keyInfoDiv) keyInfoDiv.innerHTML = '';
+        return;
+    }
+
+    const currentArticle = articlesData[index] || articlesData[0];
+    if (!currentArticle) return;
     const isProject = currentArticle.isProject === true;
     const articleHref = isProject ? `projects.html?id=${encodeURIComponent(currentArticle.id)}` : `article.html?id=${encodeURIComponent(currentArticle.id)}`;
 
@@ -244,6 +229,16 @@ function updateDOM(index) {
 function renderLatestArticles(articles) {
     if (!latestArticlesContainer) return;
     latestArticlesContainer.innerHTML = '';
+
+    if (!articles || !articles.length) {
+        latestArticlesContainer.innerHTML = `
+            <div class="emptyArticlesState" style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: #888;">
+                <p style="font-size: 16px; margin-bottom: 8px;">No articles available yet.</p>
+                <p style="font-size: 13px; opacity: 0.7;">Articles published to the database will appear here.</p>
+            </div>
+        `;
+        return;
+    }
 
     articles.forEach(article => {
         const articleCard = document.createElement('div');
@@ -434,7 +429,7 @@ function setupCategoryFilters() {
 
 function renderHeroCompanion(articles) {
     const container = document.getElementById('companionList');
-    if (!container || !articles || !articles.length) return;
+    if (!container) return;
 
     // Show/hide the "Edit Picks" settings button for admins/editors
     const editBtn = document.getElementById('editPicksBtn');
@@ -442,22 +437,27 @@ function renderHeroCompanion(articles) {
         editBtn.style.display = (typeof DB !== 'undefined' && DB.isAdmin && DB.isAdmin()) ? 'inline-flex' : 'none';
     }
 
+    if (!articles || !articles.length) {
+        container.innerHTML = '<p style="color: rgba(255,255,255,0.45); padding: 28px 16px; font-size: 13px; text-align: center;">No editorial picks available yet.</p>';
+        return;
+    }
+
     // Build a lookup map of all articles by id (handles both numeric and string ids)
     const allArticlesMap = {};
     articles.forEach(a => { allArticlesMap[String(a.id)] = a; });
 
-    // Resolve editorial picks from DB (falls back to [1, 2, 3])
-    let pickIds = ['1', '2', '3'];
+    // Resolve editorial picks from DB
+    let pickIds = [];
     if (typeof DB !== 'undefined' && DB.getEditorialPicks) {
         pickIds = DB.getEditorialPicks();
     }
 
-    // Map picks to article objects, fall back to next available article if not found
+    // Map picks to article objects
     let featured = pickIds
         .map(id => allArticlesMap[String(id)])
         .filter(Boolean);
 
-    // Backfill if fewer than 3 picks found
+    // Backfill with available articles if fewer than 3 picks found
     if (featured.length < 3) {
         const usedIds = new Set(featured.map(a => String(a.id)));
         for (const art of articles) {
@@ -467,6 +467,11 @@ function renderHeroCompanion(articles) {
                 usedIds.add(String(art.id));
             }
         }
+    }
+
+    if (!featured.length) {
+        container.innerHTML = '<p style="color: rgba(255,255,255,0.45); padding: 28px 16px; font-size: 13px; text-align: center;">No editorial picks available yet.</p>';
+        return;
     }
 
     container.innerHTML = featured.map((art, idx) => {

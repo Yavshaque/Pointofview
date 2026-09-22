@@ -1395,30 +1395,12 @@
                 articles = articles.filter(a => a.authorId === user.id || (a.author && a.author.toLowerCase() === user.name.toLowerCase()));
             }
 
-            if (!articles.length && typeof window.ARTICLES_DATABASE !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE)) {
-                articles = window.ARTICLES_DATABASE;
-            }
-
-            if (!articles.length) {
-                fetch('articles.json')
-                    .then(res => res.json())
-                    .then(seedArticles => {
-                        seedArticles.forEach(a => {
-                            const opt = document.createElement('option');
-                            opt.value = JSON.stringify(a);
-                            opt.textContent = `${a.title} (${a.author})`;
-                            select.appendChild(opt);
-                        });
-                    })
-                    .catch(() => {});
-            } else {
-                articles.forEach(a => {
-                    const opt = document.createElement('option');
-                    opt.value = JSON.stringify(a);
-                    opt.textContent = `${a.title} (${a.author})`;
-                    select.appendChild(opt);
-                });
-            }
+            articles.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = JSON.stringify(a);
+                opt.textContent = `${a.title} (${a.author})`;
+                select.appendChild(opt);
+            });
 
             select.onchange = (e) => {
                 if (!e.target.value) return;
@@ -1602,27 +1584,12 @@
                 articles = articles.filter(a => a.authorId === user.id || (a.author && a.author.toLowerCase() === user.name.toLowerCase()));
             }
 
-            // Also include default seed articles for convenience if empty
-            if (!articles.length) {
-                fetch('articles.json')
-                    .then(res => res.json())
-                    .then(seedArticles => {
-                        seedArticles.forEach(a => {
-                            const opt = document.createElement('option');
-                            opt.value = JSON.stringify(a);
-                            opt.textContent = `${a.title} (${a.author})`;
-                            select.appendChild(opt);
-                        });
-                    })
-                    .catch(() => {});
-            } else {
-                articles.forEach(a => {
-                    const opt = document.createElement('option');
-                    opt.value = JSON.stringify(a);
-                    opt.textContent = `${a.title} (${a.author})`;
-                    select.appendChild(opt);
-                });
-            }
+            articles.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = JSON.stringify(a);
+                opt.textContent = `${a.title} (${a.author})`;
+                select.appendChild(opt);
+            });
 
             select.onchange = (e) => {
                 if (!e.target.value) return;

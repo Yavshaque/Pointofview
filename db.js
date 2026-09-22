@@ -1501,20 +1501,9 @@ const DB = (function() {
             document.body.appendChild(modal);
         }
 
-        // Fetch base articles and merge with custom articles (excluding deleted)
-        let baseArticles = [];
-        try {
-            const res = await fetch('articles.json');
-            baseArticles = await res.json();
-        } catch (e) {
-            baseArticles = [];
-        }
-
         const custom = getCustomArticles();
         const deletedIds = getDeletedArticleIds();
-        const customIds = new Set(custom.map(a => String(a.id)));
-        const filteredBase = baseArticles.filter(a => !customIds.has(String(a.id)));
-        const allArticles = [...custom, ...filteredBase].filter(a => !deletedIds.has(String(a.id)));
+        const allArticles = custom.filter(a => !deletedIds.has(String(a.id)));
         const users = getAllUsers();
         const currentUser = getCurrentUser();
 
@@ -1727,19 +1716,9 @@ const DB = (function() {
             document.body.appendChild(modal);
         }
 
-        let baseArticles = [];
-        try {
-            const res = await fetch('articles.json');
-            baseArticles = await res.json();
-        } catch (e) {
-            baseArticles = [];
-        }
-
         const custom = getCustomArticles();
         const deletedIds = getDeletedArticleIds();
-        const customIds = new Set(custom.map(a => String(a.id)));
-        const filteredBase = baseArticles.filter(a => !customIds.has(String(a.id)));
-        const allArticles = [...custom, ...filteredBase].filter(a => !deletedIds.has(String(a.id)));
+        const allArticles = custom.filter(a => !deletedIds.has(String(a.id)));
 
         // Find articles authored by this user
         const myArticles = allArticles.filter(a => {
@@ -1933,19 +1912,9 @@ const DB = (function() {
             document.body.appendChild(modal);
         }
 
-        let baseArticles = [];
-        try {
-            const res = await fetch('articles.json');
-            baseArticles = await res.json();
-        } catch (e) {
-            baseArticles = [];
-        }
-
         const custom = getCustomArticles();
         const deletedIds = getDeletedArticleIds();
-        const customIds = new Set(custom.map(a => String(a.id)));
-        const filteredBase = baseArticles.filter(a => !customIds.has(String(a.id)));
-        const allArticles = [...custom, ...filteredBase].filter(a => !deletedIds.has(String(a.id)));
+        const allArticles = custom.filter(a => !deletedIds.has(String(a.id)));
 
         modal.innerHTML = `
             <div class="adminModalCard" style="max-width: 520px;">
@@ -2830,8 +2799,7 @@ const DB = (function() {
             const raw = localStorage.getItem(EDITORIAL_PICKS_KEY);
             if (raw) return JSON.parse(raw);
         } catch (e) {}
-        // Default picks: article ids 1, 2, 3
-        return ['1', '2', '3'];
+        return [];
     }
 
     function saveEditorialPicks(pickIds) {
@@ -2856,16 +2824,10 @@ const DB = (function() {
             document.body.appendChild(modal);
         }
 
-        // Gather all available articles (default built-in + custom)
-        const DEFAULT_ARTICLES = [
-            { id: '0', title: 'Demographic collapse to the formation of new racial classes?', author: 'Ali Mert Bayar', keywords: ['History'] },
-            { id: '1', title: 'Mercantilism and the Global Silver Trade', author: 'Ali Mert Bayar', keywords: ['Economy'] },
-            { id: '2', title: 'Racial classes and social stratification in colonial societies', author: 'Ceren Onursal', keywords: ['Culture'] },
-            { id: '3', title: 'Technological and Cultural Exchanges in Maritime Empires', author: 'Ceren Onursal', keywords: ['Technology'] }
-        ];
+        // Gather all available custom articles (excluding deleted)
         const customArticles = getCustomArticles();
         const deletedIds = getDeletedArticleIds();
-        const allArticles = [...DEFAULT_ARTICLES, ...customArticles].filter(a => !deletedIds.has(String(a.id)));
+        const allArticles = customArticles.filter(a => !deletedIds.has(String(a.id)));
 
         const currentPicks = getEditorialPicks();
 
