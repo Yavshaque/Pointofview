@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="articles-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
 </head>
 <body class="profilePageBody">
@@ -220,6 +221,12 @@
 
             currentAuthorName = author.trim();
             await loadProfile(currentAuthorName);
+
+            // Re-load profile when cloud data sync completes
+            window.addEventListener('cloudDataSynced', () => {
+                console.log('⚡ Supabase cloud sync completed - refreshing profile...');
+                if (currentAuthorName) loadProfile(currentAuthorName);
+            });
         });
 
         async function loadProfile(authorName) {

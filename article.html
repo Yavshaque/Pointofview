@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="articles-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
 </head>
 <body class="readerPageBody">
@@ -106,7 +107,7 @@
                             <span>Share on LinkedIn</span>
                         </button>
                         <button type="button" class="sharePillBtn shareWhatsapp" onclick="shareArticle('whatsapp')">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm5.79 14.07c-.24.68-1.22 1.25-1.74 1.31-.49.06-1.12.09-3.28-.79-2.77-1.13-4.54-3.95-4.68-4.14-.14-.19-1.12-1.49-1.12-2.84 0-1.35.7-2.01.95-2.29.25-.28.55-.35.73-.35.18 0 .37 0 .53.01.17.01.4.06.61.57.24.58.82 2 .89 2.15.07.15.12.33.02.53-.1.2-.15.32-.3.5-.15.18-.31.39-.45.53-.15.15-.3.32-.13.62.17.3.76 1.26 1.63 2.04 1.12 1 2.07 1.32 2.37 1.47.3.15.48.13.66-.08.18-.21.78-.91.99-1.22.21-.31.42-.26.7-.16.28.1.1.79.89 2.38.89.18 0 .34 0 .47-.02.13-.02.39-.08.57-.45.24-.68.24-1.26.17-1.38z"/></svg>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.301-.15-1.78-.879-2.056-.98-.277-.101-.478-.15-.678.15-.2.301-.777.98-.952 1.18-.175.2-.351.226-.652.075-.301-.15-1.27-.468-2.42-1.493-.894-.798-1.498-1.784-1.674-2.085-.175-.301-.019-.464.132-.614.136-.134.301-.351.451-.526.151-.176.201-.301.301-.502.101-.2.05-.376-.025-.526-.075-.15-.678-1.636-.928-2.242-.244-.59-.492-.51-.678-.52-.175-.008-.376-.01-.577-.01-.2 0-.527.075-.802.376-.276.301-1.054 1.03-1.054 2.511 0 1.482 1.079 2.912 1.23 3.113.15.201 2.124 3.243 5.145 4.548.719.31 1.28.496 1.718.635.722.23 1.379.197 1.899.12.579-.087 1.78-.727 2.031-1.43.251-.703.251-1.306.176-1.431-.075-.126-.276-.201-.577-.351zM12.042 2C6.5 2 2 6.5 2 12.042c0 1.768.46 3.493 1.334 5.013L2 22.042l5.127-1.314A10.005 10.005 0 0 0 12.042 22C17.584 22 22.084 17.542 22.084 12c0-2.673-1.042-5.187-2.934-7.078A9.97 9.97 0 0 0 12.042 2z"/></svg>
                             <span>Share on WhatsApp</span>
                         </button>
                         <button type="button" class="sharePillBtn shareCopy" onclick="copyArticleLink(this)">
@@ -191,7 +192,7 @@
                     if (foundDefault) {
                         displayArticle(foundDefault);
                     } else {
-                        showNotFound();
+                        fetchFromCloudOrNotFound(articleId);
                     }
                 })
                 .catch(err => {
@@ -217,25 +218,13 @@
                             image: "images/spanish colonisation.png",
                             readTime: 4,
                             description: "How the flow of silver from Potosí transformed European monarchies, altered international trade balances with Ming dynasty China, and spurred early modern global capitalism.",
-                            body: "During the sixteenth and seventeenth centuries, the mountain of Potosí in Upper Peru yielded silver in quantities unimaginable to earlier generations. Under mercantilist economic doctrine, European powers measured sovereign strength by their bullion reserves.\n\nHowever, the sudden influx of precious metals triggered the infamous Price Revolution across Europe, eroding wages and inflating commodity prices. Simultaneously, silver became the lifeblood of Pacific trade via the Manila Galleons, flowing directly into China where Ming fiscal reforms demanded tax payments in pure silver.\n\nThis global circuit of wealth stimulated early financial markets, joint-stock enterprises, and maritime insurance systems, demonstrating that the globalized economy began far earlier than the Industrial Revolution.",
-                            keywords: ["Economy", "World"],
-                            bibliography: "Flynn, Dennis O., & Giráldez, Arturo (1995). Born with a 'Silver Spoon': The Origin of World Trade in 1571. Journal of World History, 6(2), 201-221.\nFrank, Andre Gunder (1998). ReORIENT: Global Economy in the Asian Age. University of California Press.\nElliott, John H. (2006). Empires of the Atlantic World: Britain and Spain in America 1492–1830. Yale University Press."
+                            body: "Between the sixteenth and eighteenth centuries, the mountain of Cerro Rico in Potosí yielded unprecedented quantities of silver, altering commercial balances across continents.\n\nSpanish galleons transported vast quantities of bullion across both the Atlantic and Pacific networks. In Europe, the influx triggered an inflationary spiral known as the Price Revolution, while simultaneously funding imperial military campaigns across the continent.\n\nConcurrently, the Manila Galleon trade linked American silver mines directly with Chinese markets, where Ming tax reforms required payments in silver. This trade network represents one of the earliest truly global economic circulations, demonstrating that the foundations of modern international trade were intrinsically tied to early modern commodity flows.",
+                            keywords: ["Economy", "History"],
+                            bibliography: "Flynn, Dennis O., & Giráldez, Arturo (1995). Born with a 'Silver Spoon': The Origin of World Trade in 1571. Journal of World History, 6(2), 201–221.\nBakewell, Peter (1984). Miners of the Red Mountain: Indian Labor in Potosí, 1545–1650. University of New Mexico Press."
                         },
                         {
                             id: 2,
-                            title: "Racial classes and social stratification in colonial societies",
-                            author: "Ceren Onursal",
-                            date: "2026-16-9",
-                            image: "images/spanish colonisation.png",
-                            readTime: 5,
-                            description: "This quest for riches, driven by the desire for gold, silver, and other valuable resources, led to a series of events that reshaped societies across the globe.",
-                            body: "Colonial expansion did not merely extract resources; it radically restructured human relationships. In the Spanish viceroyalties, colonial authorities sought to categorize and regulate the emerging multi-ethnic population through legal codes and artistic representations known as casta paintings.\n\nThese detailed depictions illustrated families of mixed heritage—peninsulares, criollos, mestizos, mulattos, and indios—each assigned distinct societal roles and privileges. While intended to enforce rigid hierarchies, everyday life often saw individuals negotiating, challenging, and subverting these boundaries through marriage, commerce, and legal appeals.\n\nUnderstanding these mechanisms provides vital insights into modern institutional patterns across the Americas and how cultural identities coalesce in times of rapid geopolitical upheaval.",
-                            keywords: ["Culture", "World"],
-                            bibliography: "Katzew, Ilona (2004). Casta Painting: Images of Race in Eighteenth-Century Mexico. Yale University Press.\nSeed, Patricia (1988). To Love, Honor, and Obey in Colonial Mexico: Conflicts over Marriage Choice, 1574–1821. Stanford University Press."
-                        },
-                        {
-                            id: 3,
-                            title: "Technological and Cultural Exchanges in Maritime Empires",
+                            title: "Navigation, Cartography, and Global Empire",
                             author: "Ceren Onursal",
                             date: "2026-16-9",
                             image: "images/spanish colonisation.png",
@@ -250,10 +239,29 @@
                     if (foundDefault) {
                         displayArticle(foundDefault);
                     } else {
-                        showNotFound();
+                        fetchFromCloudOrNotFound(articleId);
                     }
                 });
         });
+
+        function fetchFromCloudOrNotFound(id) {
+            if (typeof DB !== 'undefined' && DB.isSupabaseConfigured && DB.isSupabaseConfigured()) {
+                const client = DB.getSupabaseClient();
+                if (client) {
+                    client.from('articles').select('*').eq('id', String(id)).maybeSingle()
+                        .then(({ data: cloudArt, error: cloudErr }) => {
+                            if (!cloudErr && cloudArt) {
+                                displayArticle(cloudArt);
+                            } else {
+                                showNotFound();
+                            }
+                        })
+                        .catch(() => showNotFound());
+                    return;
+                }
+            }
+            showNotFound();
+        }
 
         function displayArticle(article) {
             document.getElementById('loadingState').classList.add('hidden');

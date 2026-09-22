@@ -3,6 +3,14 @@
  * Handles persistent storage of users, active sessions, and custom articles.
  */
 
+// ==========================================================================
+// SUPABASE CLOUD DATABASE CONFIGURATION
+// Project: "POV by youth" (https://pyhceptcqhwdyhvpykbj.supabase.co)
+// ==========================================================================
+const SUPABASE_URL = 'https://pyhceptcqhwdyhvpykbj.supabase.co';
+// >>> REPLACE THE STRING BELOW WITH YOUR SUPABASE ANON PUBLIC KEY <<<
+const SUPABASE_ANON_KEY = 'sb_publishable_0mOtqjP2g0YUu5T5aHHaPw_Jj3Vkm7Z';
+
 const DB = (function() {
     const USERS_KEY = 'article_website_users';
     const SESSION_KEY = 'article_website_session';
@@ -11,6 +19,305 @@ const DB = (function() {
     const EDITORIAL_PICKS_KEY = 'article_website_editorial_picks';
     const CONTACT_MESSAGES_KEY = 'article_website_contact_messages';
     const PROJECTS_KEY = 'article_website_projects';
+    const PROFILES_KEY = 'article_website_profiles';
+
+    // ==========================================================================
+    // Supabase Client & Cloud Synchronization Engine
+    // ==========================================================================
+    let supabaseClient = null;
+
+    function isSupabaseConfigured() {
+        return (
+            typeof supabase !== 'undefined' &&
+            typeof supabase.createClient === 'function' &&
+            typeof SUPABASE_ANON_KEY === 'string' &&
+            SUPABASE_ANON_KEY !== 'PASTE_YOUR_SUPABASE_ANON_KEY_HERE' &&
+            SUPABASE_ANON_KEY.trim().length > 20
+        );
+    }
+
+    function getSupabaseClient() {
+        if (!supabaseClient && isSupabaseConfigured()) {
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('⚡ Connected to Supabase Cloud: "POV by youth"');
+            } catch (err) {
+                console.error('Failed to initialize Supabase client:', err);
+            }
+        }
+        return supabaseClient;
+    }
+
+    // Mapping Helpers between JS Domain Objects and Supabase Cloud Tables
+    function articleToRow(a) {
+        return {
+            id: String(a.id),
+            title: a.title || 'Untitled Article',
+            subtitle: a.subtitle || '',
+            description: a.description || '',
+            author: a.author || 'Anonymous',
+            author_id: a.authorId || a.author_id || null,
+            date: a.date || null,
+            image: a.image || null,
+            read_time: parseInt(a.readTime || a.read_time, 10) || 5,
+            body: a.body || '',
+            keywords: Array.isArray(a.keywords) ? a.keywords : [],
+            bibliography: a.bibliography || ''
+        };
+    }
+
+    function rowToArticle(r) {
+        return {
+            id: r.id,
+            title: r.title,
+            subtitle: r.subtitle || '',
+            description: r.description || '',
+            author: r.author,
+            authorId: r.author_id || r.authorId,
+            author_id: r.author_id,
+            date: r.date,
+            image: r.image,
+            readTime: r.read_time || r.readTime || 5,
+            read_time: r.read_time,
+            body: r.body,
+            keywords: Array.isArray(r.keywords) ? r.keywords : (typeof r.keywords === 'string' ? JSON.parse(r.keywords || '[]') : []),
+            bibliography: r.bibliography || '',
+            createdAt: r.created_at
+        };
+    }
+
+    function projectToRow(p) {
+        return {
+            id: String(p.id),
+            title: p.title || 'Untitled Project',
+            subtitle: p.subtitle || '',
+            description: p.description || '',
+            author: p.author || 'Anonymous',
+            author_id: p.authorId || p.author_id || null,
+            author_role: p.authorRole || p.author_role || null,
+            collaborator_id: p.collaboratorId || p.collaborator_id || null,
+            collaborator_name: p.collaboratorName || p.collaborator_name || null,
+            collaborator_role: p.collaboratorRole || p.collaborator_role || null,
+            cover: p.cover || null,
+            categories: Array.isArray(p.categories) ? p.categories : [],
+            parts: Array.isArray(p.parts) ? p.parts : []
+        };
+    }
+
+    function rowToProject(r) {
+        return {
+            id: r.id,
+            title: r.title,
+            subtitle: r.subtitle || '',
+            description: r.description || '',
+            author: r.author,
+            authorId: r.author_id,
+            authorRole: r.author_role,
+            collaboratorId: r.collaborator_id,
+            collaboratorName: r.collaborator_name,
+            collaboratorRole: r.collaborator_role,
+            cover: r.cover,
+            categories: Array.isArray(r.categories) ? r.categories : (typeof r.categories === 'string' ? JSON.parse(r.categories || '[]') : []),
+            parts: Array.isArray(r.parts) ? r.parts : (typeof r.parts === 'string' ? JSON.parse(r.parts || '[]') : []),
+            createdAt: r.created_at,
+            updatedAt: r.updated_at
+        };
+    }
+
+    function profileToRow(prof, user) {
+        const cleanName = prof.name || user?.name || '';
+        const defaultEmail = cleanName ? `${cleanName.toLowerCase().replace(/\s+/g, '.')}@articlewebsite.com` : 'contributor@articlewebsite.com';
+        return {
+            id: String(prof.id || user?.id || ('prof-' + (cleanName || 'user').toLowerCase().replace(/\s+/g, '-'))),
+            name: cleanName,
+            email: prof.email || user?.email || defaultEmail,
+            password: prof.password || user?.password || null,
+            role: prof.role || user?.role || 'writer',
+            bio: prof.bio || user?.bio || '',
+            avatar: prof.avatar || user?.avatar || null,
+            instagram: prof.instagram || user?.instagram || '',
+            linkedin: prof.linkedin || user?.linkedin || '',
+            public_email: prof.publicEmail || prof.public_email || user?.publicEmail || ''
+        };
+    }
+
+    function rowToProfile(r) {
+        return {
+            id: r.id,
+            name: r.name,
+            email: r.email,
+            password: r.password,
+            role: r.role,
+            bio: r.bio,
+            avatar: r.avatar,
+            instagram: r.instagram,
+            linkedin: r.linkedin,
+            publicEmail: r.public_email,
+            public_email: r.public_email,
+            createdAt: r.created_at
+        };
+    }
+
+    function messageToRow(m) {
+        return {
+            id: String(m.id),
+            name: m.name || '',
+            email: m.email || '',
+            subject: m.subject || 'General Inquiry',
+            message: m.message || '',
+            timestamp: m.timestamp || new Date().toISOString(),
+            read: !!m.read,
+            read_by: Array.isArray(m.readBy) ? m.readBy : (Array.isArray(m.read_by) ? m.read_by : [])
+        };
+    }
+
+    function rowToMessage(r) {
+        return {
+            id: r.id,
+            name: r.name,
+            email: r.email,
+            subject: r.subject,
+            message: r.message,
+            timestamp: r.timestamp,
+            read: !!r.read,
+            readBy: Array.isArray(r.read_by) ? r.read_by : (Array.isArray(r.readBy) ? r.readBy : [])
+        };
+    }
+
+    // Cloud background sync
+    let isSyncingCloud = false;
+    async function syncCloudData() {
+        if (!isSupabaseConfigured() || isSyncingCloud) return;
+        const client = getSupabaseClient();
+        if (!client) return;
+
+        isSyncingCloud = true;
+        try {
+            // 1. Articles Sync
+            const { data: cloudArticles, error: artError } = await client.from('articles').select('*');
+            if (!artError && Array.isArray(cloudArticles)) {
+                if (cloudArticles.length > 0) {
+                    const localArticles = getCustomArticles();
+                    const localMap = new Map();
+                    localArticles.forEach(a => localMap.set(String(a.id), a));
+                    cloudArticles.forEach(row => {
+                        const mapped = rowToArticle(row);
+                        localMap.set(String(mapped.id), mapped);
+                    });
+                    const mergedArticles = Array.from(localMap.values());
+                    try {
+                        localStorage.setItem(ARTICLES_KEY, JSON.stringify(mergedArticles));
+                    } catch (e) {}
+                } else {
+                    // Seed cloud if empty
+                    const localArticles = getCustomArticles();
+                    if (localArticles.length > 0) {
+                        const rows = localArticles.map(articleToRow);
+                        await client.from('articles').upsert(rows, { onConflict: 'id' });
+                    }
+                }
+            }
+
+            // 2. Projects Sync
+            const { data: cloudProjects, error: projError } = await client.from('projects').select('*');
+            if (!projError && Array.isArray(cloudProjects)) {
+                if (cloudProjects.length > 0) {
+                    const mappedProjects = cloudProjects.map(rowToProject);
+                    const localProjects = getProjects();
+                    const projMap = new Map();
+                    mappedProjects.forEach(p => projMap.set(String(p.id), p));
+                    localProjects.forEach(p => {
+                        if (!projMap.has(String(p.id))) {
+                            projMap.set(String(p.id), p);
+                        }
+                    });
+                    const finalProjects = Array.from(projMap.values());
+                    try {
+                        localStorage.setItem(PROJECTS_KEY, JSON.stringify(finalProjects));
+                    } catch (e) {}
+                } else {
+                    const localProjects = getProjects();
+                    if (localProjects.length > 0) {
+                        const rows = localProjects.map(projectToRow);
+                        await client.from('projects').upsert(rows, { onConflict: 'id' });
+                    }
+                }
+            }
+
+            // 3. Profiles Sync
+            const { data: cloudProfiles, error: profError } = await client.from('profiles').select('*');
+            if (!profError && Array.isArray(cloudProfiles) && cloudProfiles.length > 0) {
+                let customProfiles = {};
+                try {
+                    customProfiles = JSON.parse(localStorage.getItem(PROFILES_KEY) || '{}');
+                } catch (e) {}
+                cloudProfiles.forEach(row => {
+                    const mapped = rowToProfile(row);
+                    if (mapped.name) {
+                        customProfiles[mapped.name.toLowerCase()] = {
+                            ...(customProfiles[mapped.name.toLowerCase()] || {}),
+                            ...mapped
+                        };
+                    }
+                });
+                try {
+                    localStorage.setItem(PROFILES_KEY, JSON.stringify(customProfiles));
+                } catch (e) {}
+            }
+
+            // 4. Contact Messages Sync (if admin / co-founder)
+            const user = getCurrentUser();
+            if (isAdmin() || (user && isCoFounder(user))) {
+                const { data: cloudMsgs, error: msgError } = await client.from('contact_messages').select('*');
+                if (!msgError && Array.isArray(cloudMsgs) && cloudMsgs.length > 0) {
+                    const mappedMsgs = cloudMsgs.map(rowToMessage);
+                    mappedMsgs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    try {
+                        localStorage.setItem(CONTACT_MESSAGES_KEY, JSON.stringify(mappedMsgs));
+                    } catch (e) {}
+                }
+            }
+
+            // Dispatch notification event for dynamic UI components
+            if (typeof document !== 'undefined') {
+                document.dispatchEvent(new CustomEvent('cloudDataSynced', {
+                    detail: {
+                        articlesCount: cloudArticles ? cloudArticles.length : 0,
+                        projectsCount: cloudProjects ? cloudProjects.length : 0
+                    }
+                }));
+            }
+        } catch (syncErr) {
+            console.warn('Supabase cloud sync notification:', syncErr.message || syncErr);
+        } finally {
+            isSyncingCloud = false;
+        }
+    }
+
+    async function syncLocalToSupabase() {
+        const client = getSupabaseClient();
+        if (!client) {
+            throw new Error('Supabase client is not configured. Please paste your anon key in db.js.');
+        }
+        const articles = getCustomArticles().map(articleToRow);
+        const projects = getProjects().map(projectToRow);
+        const users = getAllUsers().map(u => profileToRow(u, u));
+
+        let res = { articles: 0, projects: 0, profiles: 0 };
+        if (articles.length > 0) {
+            await client.from('articles').upsert(articles, { onConflict: 'id' });
+            res.articles = articles.length;
+        }
+        if (projects.length > 0) {
+            await client.from('projects').upsert(projects, { onConflict: 'id' });
+            res.projects = projects.length;
+        }
+        if (users.length > 0) {
+            await client.from('profiles').upsert(users, { onConflict: 'id' });
+            res.profiles = users.length;
+        }
+        return { success: true, ...res };
+    }
 
     // Seed default admin account if not already present & purge stale 'Google Editor' dummy data
     function init() {
@@ -234,6 +541,19 @@ const DB = (function() {
 
         articles.unshift(newArticle);
         localStorage.setItem(ARTICLES_KEY, JSON.stringify(articles));
+
+        // Asynchronously sync to Supabase cloud
+        const client = getSupabaseClient();
+        if (client) {
+            client.from('articles')
+                .upsert([articleToRow(newArticle)], { onConflict: 'id' })
+                .then(({ error }) => {
+                    if (error) console.error('Supabase cloud insert article error:', error);
+                    else console.log('Article saved to Supabase cloud!');
+                })
+                .catch(err => console.error('Supabase network error saving article:', err));
+        }
+
         return newArticle;
     }
 
@@ -269,6 +589,7 @@ const DB = (function() {
             updatedData = { ...updatedData, keywords: updatedData.keywords.slice(0, 2) };
         }
 
+        let savedArticle = null;
         if (existingIndex === -1) {
             // Seed article being customized or created with specific ID
             const target = { id: id, ...updatedData };
@@ -287,26 +608,40 @@ const DB = (function() {
             };
             articles.unshift(newCustom);
             localStorage.setItem(ARTICLES_KEY, JSON.stringify(articles));
-            return newCustom;
+            savedArticle = newCustom;
+        } else {
+            const existingArticle = articles[existingIndex];
+            if (!canEditArticle(existingArticle)) {
+                throw new Error('Permission denied: You do not have permission to edit this article.');
+            }
+
+            const updated = {
+                ...existingArticle,
+                ...updatedData,
+                id: existingArticle.id,
+                authorId: existingArticle.authorId || user.id,
+                author: updatedData.author || existingArticle.author || user.name,
+                updatedAt: new Date().toISOString()
+            };
+
+            articles[existingIndex] = updated;
+            localStorage.setItem(ARTICLES_KEY, JSON.stringify(articles));
+            savedArticle = updated;
         }
 
-        const existingArticle = articles[existingIndex];
-        if (!canEditArticle(existingArticle)) {
-            throw new Error('Permission denied: You do not have permission to edit this article.');
+        // Asynchronously sync update to Supabase cloud
+        const client = getSupabaseClient();
+        if (client && savedArticle) {
+            client.from('articles')
+                .upsert([articleToRow(savedArticle)], { onConflict: 'id' })
+                .then(({ error }) => {
+                    if (error) console.error('Supabase cloud update article error:', error);
+                    else console.log('Article updated in Supabase cloud!');
+                })
+                .catch(err => console.error('Supabase network error updating article:', err));
         }
 
-        const updated = {
-            ...existingArticle,
-            ...updatedData,
-            id: existingArticle.id,
-            authorId: existingArticle.authorId || user.id,
-            author: updatedData.author || existingArticle.author || user.name,
-            updatedAt: new Date().toISOString()
-        };
-
-        articles[existingIndex] = updated;
-        localStorage.setItem(ARTICLES_KEY, JSON.stringify(articles));
-        return updated;
+        return savedArticle;
     }
 
     // ==========================================================================
@@ -463,6 +798,19 @@ const DB = (function() {
 
         projects.unshift(newProject);
         localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+
+        // Asynchronously sync project to Supabase cloud
+        const client = getSupabaseClient();
+        if (client) {
+            client.from('projects')
+                .upsert([projectToRow(newProject)], { onConflict: 'id' })
+                .then(({ error }) => {
+                    if (error) console.error('Supabase cloud save project error:', error);
+                    else console.log('Project saved to Supabase cloud!');
+                })
+                .catch(err => console.error('Supabase network error saving project:', err));
+        }
+
         return newProject;
     }
 
@@ -504,6 +852,19 @@ const DB = (function() {
 
         projects[index] = updated;
         localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+
+        // Asynchronously sync updated project to Supabase cloud
+        const client = getSupabaseClient();
+        if (client) {
+            client.from('projects')
+                .upsert([projectToRow(updated)], { onConflict: 'id' })
+                .then(({ error }) => {
+                    if (error) console.error('Supabase cloud update project error:', error);
+                    else console.log('Project updated in Supabase cloud!');
+                })
+                .catch(err => console.error('Supabase network error updating project:', err));
+        }
+
         return updated;
     }
 
@@ -526,6 +887,20 @@ const DB = (function() {
 
         const filtered = projects.filter(p => String(p.id) !== strId);
         localStorage.setItem(PROJECTS_KEY, JSON.stringify(filtered));
+
+        // Asynchronously sync project delete to Supabase cloud
+        const client = getSupabaseClient();
+        if (client) {
+            client.from('projects')
+                .delete()
+                .eq('id', strId)
+                .then(({ error }) => {
+                    if (error) console.error('Supabase cloud delete project error:', error);
+                    else console.log('Project deleted from Supabase cloud!');
+                })
+                .catch(err => console.error('Supabase network error deleting project:', err));
+        }
+
         return { success: true };
     }
 
@@ -662,6 +1037,19 @@ const DB = (function() {
         const deleted = getDeletedArticleIds();
         deleted.add(strId);
         localStorage.setItem(DELETED_KEY, JSON.stringify(Array.from(deleted)));
+
+        // Asynchronously sync delete to Supabase cloud
+        const client = getSupabaseClient();
+        if (client) {
+            client.from('articles')
+                .delete()
+                .eq('id', strId)
+                .then(({ error }) => {
+                    if (error) console.error('Supabase cloud delete article error:', error);
+                    else console.log('Article deleted from Supabase cloud!');
+                })
+                .catch(err => console.error('Supabase network error deleting article:', err));
+        }
 
         return { success: true, id: strId };
     }
@@ -1868,8 +2256,6 @@ const DB = (function() {
         }, 900);
     }
 
-    const PROFILES_KEY = 'article_website_profiles';
-
     function getAuthorProfile(authorName) {
         if (!authorName) {
             const current = getCurrentUser();
@@ -2088,6 +2474,18 @@ const DB = (function() {
         messages.unshift(newMsg);
         localStorage.setItem(CONTACT_MESSAGES_KEY, JSON.stringify(messages));
 
+        // Asynchronously sync contact inquiry to Supabase cloud
+        const client = getSupabaseClient();
+        if (client) {
+            client.from('contact_messages')
+                .insert([messageToRow(newMsg)])
+                .then(({ error }) => {
+                    if (error) console.error('Supabase cloud insert contact message error:', error);
+                    else console.log('Contact inquiry pushed to Supabase cloud!');
+                })
+                .catch(err => console.error('Supabase network error saving message:', err));
+        }
+
         if (typeof document !== 'undefined' && typeof CustomEvent !== 'undefined') {
             document.dispatchEvent(new CustomEvent('contactMessagesUpdated', { detail: { count: messages.length } }));
         }
@@ -2132,6 +2530,17 @@ const DB = (function() {
             if (typeof document !== 'undefined' && typeof CustomEvent !== 'undefined') {
                 document.dispatchEvent(new CustomEvent('contactMessagesUpdated'));
             }
+
+            const client = getSupabaseClient();
+            if (client) {
+                const updatedMsg = messages.find(m => m.id === msgId);
+                if (updatedMsg) {
+                    client.from('contact_messages')
+                        .update({ read: true, read_by: updatedMsg.readBy || [] })
+                        .eq('id', String(msgId))
+                        .catch(err => console.error('Supabase mark read error:', err));
+                }
+            }
         }
         return { success: found };
     }
@@ -2154,6 +2563,15 @@ const DB = (function() {
         if (typeof document !== 'undefined' && typeof CustomEvent !== 'undefined') {
             document.dispatchEvent(new CustomEvent('contactMessagesUpdated'));
         }
+
+        const client = getSupabaseClient();
+        if (client) {
+            client.from('contact_messages')
+                .update({ read: true })
+                .neq('id', '___none___')
+                .catch(err => console.error('Supabase mark all read error:', err));
+        }
+
         return { success: true };
     }
 
@@ -2168,6 +2586,20 @@ const DB = (function() {
         if (typeof document !== 'undefined' && typeof CustomEvent !== 'undefined') {
             document.dispatchEvent(new CustomEvent('contactMessagesUpdated'));
         }
+
+        // Asynchronously delete message in Supabase cloud
+        const client = getSupabaseClient();
+        if (client) {
+            client.from('contact_messages')
+                .delete()
+                .eq('id', String(msgId))
+                .then(({ error }) => {
+                    if (error) console.error('Supabase cloud delete contact message error:', error);
+                    else console.log('Contact message deleted from Supabase cloud!');
+                })
+                .catch(err => console.error('Supabase network error deleting message:', err));
+        }
+
         return { success: true };
     }
 
@@ -2316,6 +2748,21 @@ const DB = (function() {
             localStorage.setItem(PROFILES_KEY, JSON.stringify(customProfiles));
         } catch (e) {
             console.error('Error saving author profile:', e);
+        }
+
+        // Asynchronously sync author profile to Supabase cloud
+        const client = getSupabaseClient();
+        if (client) {
+            const merged = getAuthorProfile(cleanName);
+            if (merged) {
+                client.from('profiles')
+                    .upsert([profileToRow(merged, currentUser)], { onConflict: 'id' })
+                    .then(({ error }) => {
+                        if (error) console.error('Supabase cloud profile upsert error:', error);
+                        else console.log('Author profile saved to Supabase cloud!');
+                    })
+                    .catch(err => console.error('Supabase network error saving author profile:', err));
+            }
         }
     }
 
@@ -2662,8 +3109,13 @@ const DB = (function() {
         dialog: showAppDialog,
         showAlert,
         showConfirm,
-        confirm: showConfirm,
-        confirmDeleteContactMessage
+        confirmDeleteContactMessage,
+        // Supabase Cloud Database Methods
+        isSupabaseConfigured,
+        getSupabaseClient,
+        syncCloudData,
+        syncLocalToSupabase,
+        SUPABASE_URL
     };
 })();
 
@@ -2680,5 +3132,10 @@ document.addEventListener('DOMContentLoaded', () => {
         DB.renderHeaderAuth('authHeaderSlot');
     } else if (document.getElementById('headerRight')) {
         DB.renderHeaderAuth('headerRight');
+    }
+
+    // Auto-sync cloud database in background if Supabase is configured
+    if (typeof DB !== 'undefined' && DB.isSupabaseConfigured && DB.isSupabaseConfigured()) {
+        DB.syncCloudData();
     }
 });

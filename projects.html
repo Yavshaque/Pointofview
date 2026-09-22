@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="articles-data.js"></script>
     <script src="projects-data.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js"></script>
 </head>
 <body class="projectsPageBody">
@@ -476,6 +477,12 @@
 
             // Setup Modal Listeners
             initModals();
+
+            // Refresh view when Supabase cloud sync completes
+            window.addEventListener('cloudDataSynced', () => {
+                console.log('⚡ Supabase cloud sync completed - refreshing projects...');
+                handleRouting();
+            });
         });
 
         // ======================================================================
