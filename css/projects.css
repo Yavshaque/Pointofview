@@ -1210,3 +1210,198 @@
     display: inline-flex;
     align-items: center;
 }
+
+/* ==========================================================================
+   Collaborator Search Component
+   ========================================================================== */
+.collaboratorSearchWrapper {
+    position: relative;
+    width: 100%;
+}
+
+.collaboratorSearchInputBox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.collaboratorSearchInputBox svg {
+    position: absolute;
+    left: 14px;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.collaboratorSearchInputBox input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 38px 10px 38px !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-primary) !important;
+    font-size: 13.5px !important;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.collaboratorSearchInputBox input:focus {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.18);
+}
+
+.collabClearSearchBtn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+
+.collabClearSearchBtn:hover {
+    color: #ffffff;
+}
+
+.collaboratorSearchResults {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #11121d;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 50;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.collaboratorResultItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.15s ease;
+}
+
+.collaboratorResultItem:last-child {
+    border-bottom: none;
+}
+
+.collaboratorResultItem:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.collabItemAvatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+.collabItemDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.collabItemName {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.collabItemRole {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.collabNoResults {
+    padding: 14px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+
+/* Selected Collaborator Pill / Card */
+.selectedCollaboratorCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    margin-top: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    animation: fadeIn 0.2s ease;
+}
+
+.selectedCollabInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.selectedCollabAvatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(185, 28, 28, 0.25);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.selectedCollabName {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.selectedCollabRole {
+    font-size: 11px;
+    color: #f87171;
+    font-weight: 600;
+}
+
+.removeCollaboratorBtn {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.removeCollaboratorBtn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ffffff;
+    border-color: rgba(239, 68, 68, 0.4);
+}

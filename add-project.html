@@ -56,31 +56,91 @@
     </div>
     
     <div class="formGroup">
-        <label>Categories (Select at least one) *</label>
-        <div class="projectCategoryPicker">
-            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="History" checked> History</label>
-            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="World" checked> World</label>
-            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="Economy"> Economy</label>
-            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="Culture"> Culture</label>
-            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="Technology"> Technology</label>
-            <label class="projectCategoryOption"><input type="checkbox" class="projCatCb" value="Cinematography"> Cinematography</label>
+        <div class="labelRow">
+            <label>Categories / Topics <span class="requiredAsterisk">*</span> <span style="font-size: 12px; font-weight: 400; color: var(--text-muted);">(Select 1 or 2)</span></label>
+            <span class="charCounter" id="projectTopicsCount">2/2 selected</span>
+        </div>
+        <div class="categoryChipsGrid" id="projectCategoryChips">
+            <button type="button" class="categoryChip active" data-val="History" onclick="toggleProjectTopic('History')"><span class="chipCheck">✓</span> History</button>
+            <button type="button" class="categoryChip active" data-val="World" onclick="toggleProjectTopic('World')"><span class="chipCheck">✓</span> World</button>
+            <button type="button" class="categoryChip" data-val="Economy" onclick="toggleProjectTopic('Economy')"><span class="chipCheck"></span> Economy</button>
+            <button type="button" class="categoryChip" data-val="Culture" onclick="toggleProjectTopic('Culture')"><span class="chipCheck"></span> Culture</button>
+            <button type="button" class="categoryChip" data-val="Technology" onclick="toggleProjectTopic('Technology')"><span class="chipCheck"></span> Technology</button>
+            <button type="button" class="categoryChip" data-val="Cinematography" onclick="toggleProjectTopic('Cinematography')"><span class="chipCheck"></span> Cinematography</button>
+            <button type="button" class="categoryChip" data-val="Philosophy" onclick="toggleProjectTopic('Philosophy')"><span class="chipCheck"></span> Philosophy</button>
+            <button type="button" class="categoryChip" data-val="Sociology" onclick="toggleProjectTopic('Sociology')"><span class="chipCheck"></span> Sociology</button>
+            <button type="button" class="categoryChip" data-val="Political Science" onclick="toggleProjectTopic('Political Science')"><span class="chipCheck"></span> Political Science</button>
+            <button type="button" class="categoryChip" data-val="Archaeology" onclick="toggleProjectTopic('Archaeology')"><span class="chipCheck"></span> Archaeology</button>
         </div>
     </div>
 
+    <!-- Aesthetic Visual Cover Image Picker (Replaces theme dropdown) -->
     <div class="formGroup">
-        <label for="projectCoverSelect">Cover Image Theme *</label>
-        <select id="projectCoverSelect" style="width: 100%; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white;">
-            <option value="images/spanish colonisation.png">Colonial & Imperial (Spanish Colonisation)</option>
-            <option value="images/orthaxis.jpg">Philosophical & Abstract (Orthaxis)</option>
-            <option value="images/hero.jpg">Classic Renaissance Editorial</option>
-        </select>
+        <label>Cover Image <span class="requiredAsterisk">*</span></label>
+        <div class="visualImagePicker">
+            <div class="imagePickerOption active" id="projectOptionPreset1" onclick="selectProjectPresetImage('images/spanish colonisation.png', 'projectOptionPreset1')">
+                <img src="images/spanish colonisation.png" alt="Spanish Colonization">
+                <span class="pickerOptionTitle">Spanish Colonization</span>
+            </div>
+            <div class="imagePickerOption" id="projectOptionUpload" onclick="triggerProjectImageUpload()">
+                <div class="customOptionIcon" id="projectUploadOptionPreview">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <span class="pickerOptionTitle" id="projectUploadOptionLabel">Upload Photo</span>
+                <input type="file" id="projectImageFileInput" accept="image/*" style="display:none;" onchange="handleProjectImageFile(event)">
+            </div>
+            <div class="imagePickerOption" id="projectOptionCustom" onclick="selectProjectCustomImageOption()">
+                <div class="customOptionIcon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </div>
+                <span class="pickerOptionTitle">Custom URL</span>
+            </div>
+        </div>
+
+        <!-- Custom Image URL Input -->
+        <div id="projectCustomUrlContainer" class="customUrlContainer hidden">
+            <input type="url" id="projectCustomImageUrl" placeholder="https://images.unsplash.com/.../photo.jpg" oninput="handleProjectCustomUrlInput(this.value)">
+        </div>
+
+        <!-- Active Image Preview -->
+        <div class="studioCoverPreview">
+            <img id="projectLiveCoverImg" src="images/spanish colonisation.png" alt="Cover preview">
+            <span class="previewBadge">Selected Project Cover</span>
+        </div>
     </div>
+
+    <!-- Collaborator Search Bar (Search by Name) -->
     <div class="formGroup">
-        <label for="projectCoverUpload">Upload a cover image (optional)</label>
-        <input type="file" id="projectCoverUpload" accept="image/*">
-        <small class="formHint">Images are stored with the project in this browser.</small>
+        <label>Collaborator / Co-Author (Optional)</label>
+        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 8px 0;">
+            Search and invite another registered writer by name to collaborate and manage this series with you.
+        </p>
+        <div class="collaboratorSearchWrapper" id="collaboratorSearchWrapper">
+            <div class="collaboratorSearchInputBox">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="collaboratorSearchInput" placeholder="Search registered writer by name..." autocomplete="off">
+                <button type="button" class="collabClearSearchBtn hidden" id="collabClearSearchBtn" onclick="clearCollabSearch()">&times;</button>
+            </div>
+            <div class="collaboratorSearchResults hidden" id="collaboratorSearchResults"></div>
+        </div>
+
+        <!-- Selected Collaborator Card -->
+        <div class="selectedCollaboratorCard hidden" id="selectedCollaboratorCard">
+            <div class="selectedCollabInfo">
+                <div class="selectedCollabAvatar" id="selectedCollabAvatar">A</div>
+                <div>
+                    <div class="selectedCollabName" id="selectedCollabName">Writer Name</div>
+                    <span class="selectedCollabRole" id="selectedCollabRole">Author</span>
+                </div>
+            </div>
+            <button type="button" class="removeCollaboratorBtn" onclick="removeSelectedCollaborator()" title="Remove Collaborator">✕ Remove</button>
+        </div>
+        <input type="hidden" id="selectedCollaboratorId" value="">
+        <input type="hidden" id="selectedCollaboratorName" value="">
+        <input type="hidden" id="selectedCollaboratorRole" value="">
     </div>
-    <button type="button" class="studioPrimarySubmitBtn wizardNextBtn" id="projectNextStepBtn">Next: Write the first article &rarr;</button>
+
+    <button type="button" class="studioPrimarySubmitBtn wizardNextBtn" id="projectNextStepBtn" style="margin-top: 14px;">Next: Write the first article &rarr;</button>
     </div>
 
     <div id="projectStepTwo" class="projectWizardStep hidden">
@@ -209,48 +269,316 @@
     </footer>
 
     <script>
+    let selectedProjectCategories = ['History', 'World'];
+    let selectedProjectCover = 'images/spanish colonisation.png';
+    let selectedCollaborator = null;
+
     document.addEventListener('DOMContentLoaded', () => {
         if (!DB.isAuthenticated()) {
             window.location.href = 'auth.html?redirect=add-project.html&reason=auth_required';
+            return;
         }
         if (typeof DB !== 'undefined' && DB.renderHeaderAuth) {
             DB.renderHeaderAuth('studioAccountDropdownSlot');
         }
 
+        // Set author byline in preview
+        const currentUser = DB.getCurrentUser();
+        if (currentUser) {
+            const authorEl = document.getElementById('simCardAuthor');
+            const heroAuthorEl = document.getElementById('simHeroAuthor');
+            const avatarEl = document.getElementById('simCardAvatar');
+            const heroAvatarEl = document.getElementById('simHeroAvatar');
+            if (authorEl) authorEl.textContent = currentUser.name;
+            if (heroAuthorEl) heroAuthorEl.textContent = 'By ' + currentUser.name;
+            if (currentUser.avatar) {
+                if (avatarEl) avatarEl.src = currentUser.avatar;
+                if (heroAvatarEl) heroAvatarEl.src = currentUser.avatar;
+            }
+        }
+
         const stepOne = document.getElementById('projectStepOne');
         const stepTwo = document.getElementById('projectStepTwo');
+        const titleInput = document.getElementById('projectTitle');
+        const descInput = document.getElementById('projectDescription');
         const body = document.getElementById('initialPartBody');
         const readTime = document.getElementById('initialPartReadTime');
-        const coverUpload = document.getElementById('projectCoverUpload');
+
+        // Live simulation input sync
+        titleInput.addEventListener('input', (e) => {
+            const val = e.target.value.trim() || 'Untitled Project';
+            document.getElementById('simCardTitle').textContent = val;
+            document.getElementById('simHeroTitle').textContent = val;
+        });
+
+        descInput.addEventListener('input', (e) => {
+            const val = e.target.value.trim() || 'A concise overview for this editorial series...';
+            document.getElementById('simCardDesc').textContent = val;
+            document.getElementById('simHeroDesc').textContent = val;
+        });
+
         const calculateReadTime = () => {
             const words = body.value.trim().split(/\s+/).filter(Boolean).length;
             readTime.value = Math.max(1, Math.ceil(words / 200));
+            document.getElementById('simCardReadTime').textContent = readTime.value + ' min read';
+            document.getElementById('simHeroReadTime').textContent = readTime.value + ' min read';
         };
+        body.addEventListener('input', calculateReadTime);
 
+        // Step navigation
         document.getElementById('projectNextStepBtn').addEventListener('click', () => {
-            if (!document.getElementById('projectTitle').value.trim() || !document.getElementById('projectDescription').value.trim()) {
-                alert('Please provide a project title and overview before continuing.');
+            if (!titleInput.value.trim()) {
+                alert('Please provide a project title.');
+                titleInput.focus();
+                return;
+            }
+            if (!descInput.value.trim()) {
+                alert('Please provide a comprehensive overview.');
+                descInput.focus();
+                return;
+            }
+            if (selectedProjectCategories.length === 0) {
+                alert('Please select at least one category.');
                 return;
             }
             stepOne.classList.add('hidden');
             stepTwo.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+
         document.getElementById('projectBackStepBtn').addEventListener('click', () => {
             stepTwo.classList.add('hidden');
             stepOne.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-        body.addEventListener('input', calculateReadTime);
-        coverUpload.addEventListener('change', () => {
-            const file = coverUpload.files && coverUpload.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = () => { coverUpload.dataset.image = reader.result; };
-            reader.readAsDataURL(file);
-        });
+
+        // Setup collaborator search
+        initCollaboratorSearch();
     });
 
+    // =========================================================================
+    // Category Chips
+    // =========================================================================
+    function toggleProjectTopic(topic) {
+        const idx = selectedProjectCategories.indexOf(topic);
+        if (idx !== -1) {
+            if (selectedProjectCategories.length === 1) {
+                if (typeof DB !== 'undefined' && DB.showAlert) {
+                    DB.showAlert('Please keep at least one category selected.');
+                } else {
+                    alert('Please keep at least one category selected.');
+                }
+                return;
+            }
+            selectedProjectCategories.splice(idx, 1);
+        } else {
+            if (selectedProjectCategories.length >= 2) {
+                if (typeof DB !== 'undefined' && DB.showAlert) {
+                    DB.showAlert('You can select a maximum of 2 categories.');
+                } else {
+                    alert('You can select a maximum of 2 categories.');
+                }
+                return;
+            }
+            selectedProjectCategories.push(topic);
+        }
+
+        // Update chips UI
+        document.querySelectorAll('#projectCategoryChips .categoryChip').forEach(chip => {
+            const val = chip.dataset.val;
+            const isAct = selectedProjectCategories.includes(val);
+            chip.classList.toggle('active', isAct);
+            const check = chip.querySelector('.chipCheck');
+            if (check) check.textContent = isAct ? '✓' : '';
+        });
+
+        const countEl = document.getElementById('projectTopicsCount');
+        if (countEl) countEl.textContent = `${selectedProjectCategories.length}/2 selected`;
+
+        // Update live preview
+        const firstCat = selectedProjectCategories[0] || 'Series';
+        const simCatBadge = document.getElementById('simCategoryBadge');
+        const simHeroCategory = document.getElementById('simHeroCategory');
+        if (simCatBadge) simCatBadge.textContent = firstCat;
+        if (simHeroCategory) simHeroCategory.textContent = firstCat;
+    }
+
+    // =========================================================================
+    // Aesthetic Visual Cover Image Picker
+    // =========================================================================
+    function updateProjectCoverPreview(src) {
+        selectedProjectCover = src;
+        const liveImg = document.getElementById('projectLiveCoverImg');
+        if (liveImg) liveImg.src = src;
+        const simCardImg = document.getElementById('simCardImg');
+        if (simCardImg) simCardImg.src = src;
+        const simHeroImg = document.getElementById('simHeroImg');
+        if (simHeroImg) simHeroImg.src = src;
+    }
+
+    function selectProjectPresetImage(src, optionId) {
+        document.querySelectorAll('#projectStepOne .imagePickerOption').forEach(opt => opt.classList.remove('active'));
+        const opt = document.getElementById(optionId);
+        if (opt) opt.classList.add('active');
+        document.getElementById('projectCustomUrlContainer').classList.add('hidden');
+        updateProjectCoverPreview(src);
+    }
+
+    function triggerProjectImageUpload() {
+        const fileInput = document.getElementById('projectImageFileInput');
+        if (fileInput) fileInput.click();
+    }
+
+    async function handleProjectImageFile(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        try {
+            const compressed = await DB.compressImage(file, 1200, 0.82);
+            document.querySelectorAll('#projectStepOne .imagePickerOption').forEach(opt => opt.classList.remove('active'));
+            const uploadOpt = document.getElementById('projectOptionUpload');
+            if (uploadOpt) uploadOpt.classList.add('active');
+            document.getElementById('projectCustomUrlContainer').classList.add('hidden');
+
+            const previewIcon = document.getElementById('projectUploadOptionPreview');
+            if (previewIcon) {
+                previewIcon.innerHTML = `<img src="${compressed}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">`;
+            }
+            const label = document.getElementById('projectUploadOptionLabel');
+            if (label) {
+                label.textContent = file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name;
+            }
+
+            updateProjectCoverPreview(compressed);
+        } catch (err) {
+            console.error('Error loading image:', err);
+            alert('Could not load image file.');
+        }
+    }
+
+    function selectProjectCustomImageOption() {
+        document.querySelectorAll('#projectStepOne .imagePickerOption').forEach(opt => opt.classList.remove('active'));
+        const opt = document.getElementById('projectOptionCustom');
+        if (opt) opt.classList.add('active');
+        const container = document.getElementById('projectCustomUrlContainer');
+        container.classList.remove('hidden');
+        const input = document.getElementById('projectCustomImageUrl');
+        input.focus();
+        if (input.value.trim()) {
+            updateProjectCoverPreview(input.value.trim());
+        }
+    }
+
+    function handleProjectCustomUrlInput(val) {
+        val = val.trim();
+        if (val) {
+            updateProjectCoverPreview(val);
+        }
+    }
+
+    // =========================================================================
+    // Collaborator Search Bar (Search by Name)
+    // =========================================================================
+    function initCollaboratorSearch() {
+        const input = document.getElementById('collaboratorSearchInput');
+        const clearBtn = document.getElementById('collabClearSearchBtn');
+        const resultsBox = document.getElementById('collaboratorSearchResults');
+
+        if (!input) return;
+
+        input.addEventListener('input', (e) => {
+            const q = e.target.value.trim().toLowerCase();
+            clearBtn.classList.toggle('hidden', !q);
+            if (!q) {
+                resultsBox.classList.add('hidden');
+                resultsBox.innerHTML = '';
+                return;
+            }
+
+            const currentUser = DB.getCurrentUser();
+            const allUsers = DB.getAllUsers ? DB.getAllUsers() : [];
+
+            // Filter users matching query, excluding current user
+            const matches = allUsers.filter(u => {
+                if (!u.name) return false;
+                if (currentUser && (u.id === currentUser.id || (u.email && u.email.toLowerCase() === currentUser.email.toLowerCase()))) return false;
+                return u.name.toLowerCase().includes(q) || (u.email && u.email.toLowerCase().includes(q));
+            });
+
+            if (matches.length === 0) {
+                resultsBox.innerHTML = `<div class="collabNoResults">No registered writers found matching "${escapeHtml(q)}"</div>`;
+            } else {
+                resultsBox.innerHTML = matches.map(u => {
+                    const initial = u.name ? u.name.charAt(0).toUpperCase() : 'W';
+                    const avatarHtml = u.avatar ? `<img src="${u.avatar}" class="collabItemAvatar" alt="">` : `<div class="collabItemAvatar">${initial}</div>`;
+                    const roleLabel = u.role === 'admin' ? 'Editor-in-Chief' : (u.role === 'co-founder' ? 'Co-Founder' : 'Author');
+                    return `
+                        <div class="collaboratorResultItem" onclick="selectCollaborator('${escapeHtml(u.id || '')}', '${escapeHtml(u.name || '')}', '${escapeHtml(u.avatar || '')}', '${escapeHtml(roleLabel)}')">
+                            ${avatarHtml}
+                            <div class="collabItemDetails">
+                                <div class="collabItemName">${escapeHtml(u.name)}</div>
+                                <div class="collabItemRole">${escapeHtml(roleLabel)} &bull; ${escapeHtml(u.email || '')}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            resultsBox.classList.remove('hidden');
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('collaboratorSearchWrapper')?.contains(e.target)) {
+                resultsBox.classList.add('hidden');
+            }
+        });
+    }
+
+    function clearCollabSearch() {
+        const input = document.getElementById('collaboratorSearchInput');
+        const clearBtn = document.getElementById('collabClearSearchBtn');
+        const resultsBox = document.getElementById('collaboratorSearchResults');
+        if (input) input.value = '';
+        if (clearBtn) clearBtn.classList.add('hidden');
+        if (resultsBox) resultsBox.classList.add('hidden');
+    }
+
+    function selectCollaborator(id, name, avatar, role) {
+        selectedCollaborator = { id, name, avatar, role };
+        document.getElementById('selectedCollaboratorId').value = id;
+        document.getElementById('selectedCollaboratorName').value = name;
+        document.getElementById('selectedCollaboratorRole').value = role;
+
+        const card = document.getElementById('selectedCollaboratorCard');
+        const nameEl = document.getElementById('selectedCollabName');
+        const roleEl = document.getElementById('selectedCollabRole');
+        const avatarEl = document.getElementById('selectedCollabAvatar');
+
+        if (nameEl) nameEl.textContent = name;
+        if (roleEl) roleEl.textContent = role;
+        if (avatarEl) {
+            if (avatar) {
+                avatarEl.innerHTML = `<img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+            } else {
+                avatarEl.textContent = name ? name.charAt(0).toUpperCase() : 'W';
+            }
+        }
+
+        card.classList.remove('hidden');
+        clearCollabSearch();
+    }
+
+    function removeSelectedCollaborator() {
+        selectedCollaborator = null;
+        document.getElementById('selectedCollaboratorId').value = '';
+        document.getElementById('selectedCollaboratorName').value = '';
+        document.getElementById('selectedCollaboratorRole').value = '';
+        document.getElementById('selectedCollaboratorCard').classList.add('hidden');
+    }
+
+    // =========================================================================
+    // Simulation Switcher
+    // =========================================================================
     function switchPreviewMode(mode) {
         const card = document.getElementById('simCardView');
         const hero = document.getElementById('simHeroView');
@@ -263,32 +591,73 @@
         heroButton.classList.toggle('active', showHero);
     }
 
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // =========================================================================
+    // Submit Handler
+    // =========================================================================
     function handleProjectSubmit(event) {
         event.preventDefault();
         try {
-            const checkboxes = document.querySelectorAll('.projCatCb:checked');
-            const categories = Array.from(checkboxes).map(cb => cb.value);
-            if (categories.length === 0) {
+            if (selectedProjectCategories.length === 0) {
                 alert('Please select at least one category.');
                 return;
             }
 
+            const title = document.getElementById('projectTitle').value.trim();
+            const subtitle = document.getElementById('projectSubtitle').value.trim();
+            const description = document.getElementById('projectDescription').value.trim();
+            const part1Title = document.getElementById('initialPartTitle').value.trim();
+            const part1Body = document.getElementById('initialPartBody').value.trim();
+            const part1ReadTime = parseInt(document.getElementById('initialPartReadTime').value, 10) || 1;
+
+            if (!title) {
+                alert('Please provide a project title.');
+                return;
+            }
+            if (!description) {
+                alert('Please provide a project description.');
+                return;
+            }
+            if (!part1Title || !part1Body) {
+                alert('Please provide a Part 1 essay title and body.');
+                return;
+            }
+
             const projectData = {
-                title: document.getElementById('projectTitle').value,
-                subtitle: document.getElementById('projectSubtitle').value,
-                description: document.getElementById('projectDescription').value,
-                cover: document.getElementById('projectCoverUpload').dataset.image || document.getElementById('projectCoverSelect').value,
-                categories: categories,
+                title: title,
+                subtitle: subtitle,
+                description: description,
+                cover: selectedProjectCover,
+                categories: selectedProjectCategories.slice(0, 2),
+                collaboratorId: selectedCollaborator ? selectedCollaborator.id : null,
+                collaboratorName: selectedCollaborator ? selectedCollaborator.name : null,
+                collaboratorRole: selectedCollaborator ? selectedCollaborator.role : null,
                 parts: [{
-                    title: document.getElementById('initialPartTitle').value,
-                    readTime: parseInt(document.getElementById('initialPartReadTime').value, 10) || 1,
-                    body: document.getElementById('initialPartBody').value
+                    id: 'part-1',
+                    title: part1Title,
+                    readTime: part1ReadTime,
+                    body: part1Body
                 }]
             };
 
             const savedProject = DB.saveProject(projectData);
-            alert('Project created successfully!');
-            window.location.href = 'projects.html?id=' + encodeURIComponent(savedProject.id);
+            if (typeof DB !== 'undefined' && DB.showAlert) {
+                DB.showAlert('Project created successfully!', () => {
+                    window.location.href = 'projects.html?id=' + encodeURIComponent(savedProject.id);
+                });
+            } else {
+                alert('Project created successfully!');
+                window.location.href = 'projects.html?id=' + encodeURIComponent(savedProject.id);
+            }
         } catch(err) {
             alert('Error creating project: ' + err.message);
         }

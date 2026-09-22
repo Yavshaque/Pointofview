@@ -43,7 +43,7 @@ const DEFAULT_ARTICLES = [
         title: "Racial classes and social stratification in colonial societies",
         author: "Ceren Onursal",
         date: "2026-16-9",
-        image: "images/orthaxis.jpg",
+        image: "images/spanish colonisation.png",
         readTime: 5,
         description: "This quest for riches, driven by the desire for gold, silver, and other valuable resources, led to a series of events that reshaped societies across the globe.",
         body: "Colonial expansion did not merely extract resources; it radically restructured human relationships. In the Spanish viceroyalties, colonial authorities sought to categorize and regulate the emerging multi-ethnic population through legal codes and artistic representations known as casta paintings.\n\nThese detailed depictions illustrated families of mixed heritage—peninsulares, criollos, mestizos, mulattos, and indios—each assigned distinct societal roles and privileges. While intended to enforce rigid hierarchies, everyday life often saw individuals negotiating, challenging, and subverting these boundaries through marriage, commerce, and legal appeals.\n\nUnderstanding these mechanisms provides vital insights into modern institutional patterns across the Americas and how cultural identities coalesce in times of rapid geopolitical upheaval.",
@@ -55,7 +55,7 @@ const DEFAULT_ARTICLES = [
         title: "Technological and Cultural Exchanges in Maritime Empires",
         author: "Ceren Onursal",
         date: "2026-16-9",
-        image: "images/orthaxis.jpg",
+        image: "images/spanish colonisation.png",
         readTime: 4,
         description: "Navigational breakthroughs, astrolabes, and the blending of architectural traditions that emerged along transatlantic and transpacific trade networks.",
         body: "The expansion of maritime empires relied on a synthesis of technological knowledge from across the Mediterranean, Arab, and Asian worlds. Caravel designs, lateen sails, and refined astrolabes allowed navigators to traverse open oceans with newfound reliability.\n\nAlongside navigation, cultural syncretism flourished in port cities and inland capitals. Baroque architecture incorporated indigenous motifs, while botanical exchanges fundamentally altered agricultural practices and diets across Europe, Africa, and the Americas.\n\nExamining these exchanges highlights how modern globalization is rooted in centuries of reciprocal—though often coerced—cultural and scientific integration.",
@@ -199,9 +199,6 @@ function getAuthorAvatar(authorName) {
     if (lower === 'ali mert bayar') {
         return 'images/mert_img.png';
     }
-    if (lower === 'ceren onursal') {
-        return 'images/orthaxis.jpg';
-    }
     return null;
 }
 
@@ -304,12 +301,17 @@ function renderLatestArticles(articles) {
         const mainCategory = (article.keywords && article.keywords.find(k => k.toLowerCase() !== 'published')) || 'World';
         const readTime = article.readTime || 4;
 
+        const projectBadgeHtml = isProject ? `<span class="sectionBadge projectCardBadge" style="margin-bottom: 0;">Project</span>` : '';
+        const projectContentBadge = isProject ? `<span class="sectionBadge" style="font-size: 10.5px; padding: 2px 9px; margin-bottom: 8px; align-self: flex-start;">Project</span>` : '';
+
         articleCard.innerHTML = `
             <a href="${articleHref}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex: 1;">
-                <div class="articleCardImage">
+                <div class="articleCardImage" style="position: relative;">
                     <img src="${article.image}" alt="${article.title}">
+                    ${isProject ? `<div style="position: absolute; top: 12px; left: 12px; z-index: 2;">${projectBadgeHtml}</div>` : ''}
                 </div>
                 <div class="articleCardContent">
+                    ${projectContentBadge}
                     <div class="cardMeta"><span class="cardMetaCat">${mainCategory}</span><span class="cardMetaSep">·</span>${readTime} min read</div>
                     <h2>${article.title}</h2>
                     <p>${article.description}</p>
@@ -330,10 +332,13 @@ function renderLatestArticles(articles) {
     });
 }
 
-function deleteArticlePrompt(id) {
+async function deleteArticlePrompt(id) {
     const target = articlesData.find(a => String(a.id) === String(id));
     const displayName = (target && target.title) ? `"${target.title}"` : 'this article';
-    if (confirm(`Are you sure you want to permanently delete ${displayName}? This action cannot be undone.`)) {
+    const ok = (typeof DB !== 'undefined' && DB.showConfirm)
+        ? await DB.showConfirm(`Are you sure you want to permanently delete ${displayName}? This action cannot be undone.`)
+        : confirm(`Are you sure you want to permanently delete ${displayName}? This action cannot be undone.`);
+    if (ok) {
         try {
             if (typeof DB !== 'undefined' && DB.deleteArticle) {
                 DB.deleteArticle(id);
@@ -546,7 +551,7 @@ function renderTeamMembers() {
             },
             {
                 name: 'Ceren Onursal',
-                avatar: 'images/orthaxis.jpg',
+                avatar: null,
                 role: 'Co-Founder'
             }
         ];
@@ -554,15 +559,33 @@ function renderTeamMembers() {
 
     container.innerHTML = coFounders.map(member => {
         const name = member.name || 'Ali Mert Bayar';
-        const isAliMert = name.trim().toLowerCase() === 'ali mert bayar';
+        const cleanLower = name.trim().toLowerCase();
+        const isAliMert = cleanLower === 'ali mert bayar';
+        const isCeren = cleanLower === 'ceren onursal';
+
         const profileHref = `profile.html?author=${encodeURIComponent(name)}`;
         const roleText = member.role || 'Co-Founder';
-        const emailLink = member.email ? `mailto:${member.email}` : 'mailto:contact@articlewebsite.com';
         const initialChar = name.trim().charAt(0).toUpperCase() || 'C';
 
+        // Retrieve socials from author profile or defaults
+        const authorProfile = (typeof DB !== 'undefined' && DB.getAuthorProfile) ? DB.getAuthorProfile(name) : null;
+        
+        let igVal = (authorProfile && authorProfile.instagram) || member.instagram || (isAliMert ? 'https://www.instagram.com/ali_mert_bayar/' : (isCeren ? 'https://www.instagram.com/ceren.onursal/' : ''));
+        let liVal = (authorProfile && authorProfile.linkedin) || member.linkedin || (isAliMert ? 'https://www.linkedin.com/in/ali-mert-bayar/' : (isCeren ? 'https://www.linkedin.com/in/ceren-onursal/' : ''));
+        let emVal = (authorProfile && (authorProfile.publicEmail || authorProfile.email)) || member.email || (isAliMert ? 'mert.bayar.200807@gmail.com' : (isCeren ? 'cerenonursal2008@gmail.com' : ''));
+
+        let igHref = igVal ? (igVal.startsWith('http') ? igVal : `https://instagram.com/${igVal.replace(/^@/, '')}`) : (isAliMert ? 'https://www.instagram.com/ali_mert_bayar/' : (isCeren ? 'https://www.instagram.com/ceren.onursal/' : ''));
+        let liHref = liVal ? (liVal.startsWith('http') ? liVal : `https://linkedin.com/in/${liVal.replace(/^@/, '')}`) : (isAliMert ? 'https://www.linkedin.com/in/ali-mert-bayar/' : (isCeren ? 'https://www.linkedin.com/in/ceren-onursal/' : ''));
+        let emHref = emVal ? (emVal.startsWith('mailto:') ? emVal : `mailto:${emVal}`) : (isAliMert ? 'mailto:mert.bayar.200807@gmail.com' : (isCeren ? 'mailto:cerenonursal2008@gmail.com' : ''));
+
+        let memberAvatar = member.avatar;
+        if (memberAvatar && (memberAvatar.includes('orthaxis.jpg') || memberAvatar.includes('orthaxis.png'))) {
+            memberAvatar = null;
+        }
+
         let imgHtml = '';
-        if (member.avatar) {
-            imgHtml = `<img class="memberImage" src="${member.avatar}" alt="${name}" onerror="this.outerHTML='<div class=\\'memberImage memberImageFallback\\'>${initialChar}</div>'">`;
+        if (memberAvatar) {
+            imgHtml = `<img class="memberImage" src="${memberAvatar}" alt="${name}" onerror="this.outerHTML='<div class=\\'memberImage memberImageFallback\\'>${initialChar}</div>'">`;
         } else if (isAliMert) {
             imgHtml = `<img class="memberImage" src="images/mert_img.png" alt="${name}">`;
         } else {
@@ -579,9 +602,9 @@ function renderTeamMembers() {
                 </a>
                 <p class="memberRoleRow"><span class="memberRoleBadge">${roleText}</span></p>
                 <div class="socialIcons">
-                    <a href="#" title="Instagram"><img src="images/instagram logo.png" alt="instagram" class="social-icon"></a>
-                    <a href="#" title="LinkedIn"><img src="images/linkedin logo.png" alt="linkedin" class="social-icon"></a>
-                    <a href="${emailLink}" title="Email"><img src="images/email logo.png" alt="email" class="social-icon"></a>
+                    <a href="${igHref}" target="_blank" rel="noopener noreferrer" title="${name}'s Instagram"><img src="images/instagram logo.png" alt="instagram" class="social-icon"></a>
+                    <a href="${liHref}" target="_blank" rel="noopener noreferrer" title="${name}'s LinkedIn"><img src="images/linkedin logo.png" alt="linkedin" class="social-icon"></a>
+                    <a href="${emHref}" title="Email ${name}"><img src="images/email logo.png" alt="email" class="social-icon"></a>
                 </div>
             </div>
         `;

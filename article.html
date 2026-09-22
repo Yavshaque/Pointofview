@@ -226,7 +226,7 @@
                             title: "Racial classes and social stratification in colonial societies",
                             author: "Ceren Onursal",
                             date: "2026-16-9",
-                            image: "images/orthaxis.jpg",
+                            image: "images/spanish colonisation.png",
                             readTime: 5,
                             description: "This quest for riches, driven by the desire for gold, silver, and other valuable resources, led to a series of events that reshaped societies across the globe.",
                             body: "Colonial expansion did not merely extract resources; it radically restructured human relationships. In the Spanish viceroyalties, colonial authorities sought to categorize and regulate the emerging multi-ethnic population through legal codes and artistic representations known as casta paintings.\n\nThese detailed depictions illustrated families of mixed heritage—peninsulares, criollos, mestizos, mulattos, and indios—each assigned distinct societal roles and privileges. While intended to enforce rigid hierarchies, everyday life often saw individuals negotiating, challenging, and subverting these boundaries through marriage, commerce, and legal appeals.\n\nUnderstanding these mechanisms provides vital insights into modern institutional patterns across the Americas and how cultural identities coalesce in times of rapid geopolitical upheaval.",
@@ -238,7 +238,7 @@
                             title: "Technological and Cultural Exchanges in Maritime Empires",
                             author: "Ceren Onursal",
                             date: "2026-16-9",
-                            image: "images/orthaxis.jpg",
+                            image: "images/spanish colonisation.png",
                             readTime: 4,
                             description: "Navigational breakthroughs, astrolabes, and the blending of architectural traditions that emerged along transatlantic and transpacific trade networks.",
                             body: "The expansion of maritime empires relied on a synthesis of technological knowledge from across the Mediterranean, Arab, and Asian worlds. Caravel designs, lateen sails, and refined astrolabes allowed navigators to traverse open oceans with newfound reliability.\n\nAlongside navigation, cultural syncretism flourished in port cities and inland capitals. Baroque architecture incorporated indigenous motifs, while botanical exchanges fundamentally altered agricultural practices and diets across Europe, Africa, and the Americas.\n\nExamining these exchanges highlights how modern globalization is rooted in centuries of reciprocal—though often coerced—cultural and scientific integration.",
@@ -381,9 +381,12 @@
             if (readerEditSlot) readerEditSlot.innerHTML = headerActionsHtml;
         }
 
-        function handleReaderDelete(id, title) {
+        async function handleReaderDelete(id, title) {
             const displayName = title ? `"${title}"` : 'this article';
-            if (confirm(`Are you sure you want to permanently delete ${displayName}? This action cannot be undone.`)) {
+            const ok = (typeof DB !== 'undefined' && DB.showConfirm)
+                ? await DB.showConfirm(`Are you sure you want to permanently delete ${displayName}? This action cannot be undone.`)
+                : confirm(`Are you sure you want to permanently delete ${displayName}? This action cannot be undone.`);
+            if (ok) {
                 try {
                     if (typeof DB !== 'undefined' && DB.deleteArticle) {
                         DB.deleteArticle(id);

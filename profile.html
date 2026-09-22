@@ -82,18 +82,31 @@
                     </div>
                 </div>
 
-                <div class="profileStatsRow">
-                    <div class="profileStatItem">
-                        <span class="profileStatNum" id="statArticlesCount">0</span>
-                        <span class="profileStatLabel">Published Articles</span>
+                <!-- Horizontal Bottom Row: Socials on Left, Stats on Right -->
+                <div class="profileBottomRow">
+                    <!-- Profile Socials Bar -->
+                    <div class="profileSocialsContainer" id="profileSocialsContainer">
+                        <div class="profileSocialsRow" id="profileSocialsRow"></div>
+                        <button type="button" class="editSocialsBtn hidden" id="editSocialsBtn" onclick="openSocialsModal()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            Edit Links
+                        </button>
                     </div>
-                    <div class="profileStatItem">
-                        <span class="profileStatNum" id="statMemberSince">2024</span>
-                        <span class="profileStatLabel">Member Since</span>
-                    </div>
-                    <div class="profileStatItem">
-                        <span class="profileStatNum" id="statRole">Co-Founder</span>
-                        <span class="profileStatLabel">Role</span>
+
+                    <!-- Horizontal Stats -->
+                    <div class="profileStatsRow">
+                        <div class="profileStatItem">
+                            <span class="profileStatNum" id="statArticlesCount">0</span>
+                            <span class="profileStatLabel">Published Articles</span>
+                        </div>
+                        <div class="profileStatItem">
+                            <span class="profileStatNum" id="statMemberSince">2024</span>
+                            <span class="profileStatLabel">Member Since</span>
+                        </div>
+                        <div class="profileStatItem">
+                            <span class="profileStatNum" id="statRole">Co-Founder</span>
+                            <span class="profileStatLabel">Role</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -146,6 +159,46 @@
             </div>
         </div>
     </footer>
+
+    <!-- Social Links Modal -->
+    <div class="adminModalBackdrop" id="socialsModal">
+        <div class="adminModalCard" style="max-width: 480px;">
+            <div class="adminModalHeader">
+                <div>
+                    <span class="companionBadge">Social Media &amp; Contact</span>
+                    <h2 style="margin-top: 4px;">Edit Profile Links</h2>
+                </div>
+                <button type="button" class="adminCloseBtn" onclick="closeSocialsModal()">&times;</button>
+            </div>
+            <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        Instagram
+                    </label>
+                    <input type="text" id="inputInstagram" placeholder="e.g. @username or full link" style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-surface); color: var(--text-primary); font-size: 13.5px;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        LinkedIn
+                    </label>
+                    <input type="text" id="inputLinkedin" placeholder="e.g. linkedin.com/in/username" style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-surface); color: var(--text-primary); font-size: 13.5px;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        Public Contact Email
+                    </label>
+                    <input type="email" id="inputEmail" placeholder="e.g. contact@example.com" style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-surface); color: var(--text-primary); font-size: 13.5px;">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;">
+                    <button type="button" class="adminOutlineBtn" onclick="closeSocialsModal()">Cancel</button>
+                    <button type="button" class="adminAddBtn" onclick="saveSocialsChanges()" style="padding: 8px 18px;">Save Links</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         let currentAuthorName = '';
@@ -218,6 +271,9 @@
                 editBioBtn.classList.add('hidden');
             }
 
+            // Render Social Media Links
+            renderSocials(currentProfile, canEdit);
+
             // Role Management for Co-Founders & Admins
             const isViewerAdmin = typeof DB !== 'undefined' && DB.isAdmin && DB.isAdmin();
             const isTargetPrimaryFounder = currentProfile.name.toLowerCase() === 'ali mert bayar';
@@ -245,9 +301,12 @@
             await loadAuthorArticles(authorName);
         }
 
-        function handleRoleChange(newRole) {
+        async function handleRoleChange(newRole) {
             if (!currentAuthorName) return;
-            if (!confirm(`Are you sure you want to change ${currentAuthorName}'s role to "${newRole}"?\n\nNote: Co-Founder and Admin accounts can manage articles, editorial picks, and author permissions.`)) {
+            const ok = (typeof DB !== 'undefined' && DB.showConfirm)
+                ? await DB.showConfirm(`Are you sure you want to change ${currentAuthorName}'s role to "${newRole}"?\n\nNote: Co-Founder and Admin accounts can manage articles, editorial picks, and author permissions.`)
+                : confirm(`Are you sure you want to change ${currentAuthorName}'s role to "${newRole}"?\n\nNote: Co-Founder and Admin accounts can manage articles, editorial picks, and author permissions.`);
+            if (!ok) {
                 loadProfile(currentAuthorName);
                 return;
             }
@@ -339,6 +398,105 @@
             cancelEditBio();
         }
 
+        function renderSocials(profile, canEdit) {
+            const container = document.getElementById('profileSocialsRow');
+            const editBtn = document.getElementById('editSocialsBtn');
+            if (!container) return;
+
+            let html = '';
+            const instagram = (profile.instagram || '').trim();
+            const linkedin = (profile.linkedin || '').trim();
+            const email = (profile.publicEmail || profile.email || '').trim();
+
+            if (instagram) {
+                let igUrl = instagram.startsWith('http') ? instagram : `https://instagram.com/${instagram.replace(/^@/, '')}`;
+                let displayHandle = instagram.startsWith('@') ? instagram : ('@' + instagram.split('/').filter(Boolean).pop());
+                html += `
+                    <a href="${escapeHtml(igUrl)}" target="_blank" rel="noopener noreferrer" class="profileSocialPill" title="Instagram: ${escapeHtml(instagram)}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        <span>${escapeHtml(displayHandle)}</span>
+                    </a>
+                `;
+            }
+
+            if (linkedin) {
+                let liUrl = linkedin.startsWith('http') ? linkedin : `https://linkedin.com/in/${linkedin.replace(/^@/, '')}`;
+                html += `
+                    <a href="${escapeHtml(liUrl)}" target="_blank" rel="noopener noreferrer" class="profileSocialPill" title="LinkedIn Profile">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        <span>LinkedIn</span>
+                    </a>
+                `;
+            }
+
+            if (email) {
+                html += `
+                    <a href="mailto:${escapeHtml(email)}" class="profileSocialPill" title="Email: ${escapeHtml(email)}">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        <span>${escapeHtml(email)}</span>
+                    </a>
+                `;
+            }
+
+            if (!html && !canEdit) {
+                container.innerHTML = '';
+            } else if (!html && canEdit) {
+                container.innerHTML = `<span style="font-size: 12.5px; color: var(--text-muted); font-style: italic;">No social links added yet.</span>`;
+            } else {
+                container.innerHTML = html;
+            }
+
+            if (editBtn) {
+                if (canEdit) editBtn.classList.remove('hidden');
+                else editBtn.classList.add('hidden');
+            }
+        }
+
+        function openSocialsModal() {
+            if (!currentProfile) return;
+            document.getElementById('inputInstagram').value = currentProfile.instagram || '';
+            document.getElementById('inputLinkedin').value = currentProfile.linkedin || '';
+            document.getElementById('inputEmail').value = currentProfile.publicEmail || currentProfile.email || '';
+            const modal = document.getElementById('socialsModal');
+            if (modal) {
+                modal.classList.add('visible');
+                modal.onclick = (e) => { if (e.target === modal) closeSocialsModal(); };
+            }
+        }
+
+        function closeSocialsModal() {
+            const modal = document.getElementById('socialsModal');
+            if (modal) modal.classList.remove('visible');
+        }
+
+        function saveSocialsChanges() {
+            const ig = document.getElementById('inputInstagram').value.trim();
+            const li = document.getElementById('inputLinkedin').value.trim();
+            const em = document.getElementById('inputEmail').value.trim();
+
+            const updates = {
+                instagram: ig,
+                linkedin: li,
+                publicEmail: em
+            };
+
+            if (typeof DB !== 'undefined' && DB.saveAuthorProfile) {
+                DB.saveAuthorProfile(currentAuthorName, updates);
+            }
+
+            if (currentProfile) {
+                currentProfile.instagram = ig;
+                currentProfile.linkedin = li;
+                currentProfile.publicEmail = em;
+            }
+
+            const currentUser = typeof DB !== 'undefined' && DB.getCurrentUser ? DB.getCurrentUser() : null;
+            const isAdmin = typeof DB !== 'undefined' && DB.isAdmin ? DB.isAdmin() : false;
+            const isSelf = currentUser && currentUser.name && currentUser.name.trim().toLowerCase() === currentAuthorName.trim().toLowerCase();
+            renderSocials(currentProfile, isSelf || isAdmin);
+            closeSocialsModal();
+        }
+
         async function loadAuthorArticles(authorName) {
             let baseArticles = (typeof window.ARTICLES_DATABASE !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE))
                 ? [...window.ARTICLES_DATABASE]
@@ -368,6 +526,28 @@
                 return artAuthor === cleanAuthor;
             });
 
+            if (typeof DB !== 'undefined' && DB.getProjects) {
+                const projects = DB.getProjects();
+                const authorProjects = projects.filter(p => {
+                    const primary = (p.author || '').trim().toLowerCase() === cleanAuthor;
+                    const collab = (p.collaboratorName || '').trim().toLowerCase() === cleanAuthor;
+                    return (primary || collab) && p.parts && p.parts.length > 0;
+                }).map(p => {
+                    return {
+                        id: p.id,
+                        title: p.title,
+                        author: p.author,
+                        date: p.createdAt || '2026-01-01',
+                        image: p.cover || 'images/spanish colonisation.png',
+                        readTime: p.parts.reduce((acc, part) => acc + (part.readTime || 4), 0),
+                        description: p.subtitle || p.description,
+                        keywords: p.categories || ['Project'],
+                        isProject: true
+                    };
+                });
+                authorArticles = [...authorProjects, ...authorArticles];
+            }
+
             // Update Counters
             document.getElementById('statArticlesCount').textContent = authorArticles.length;
             document.getElementById('feedCountBadge').textContent = `${authorArticles.length} pieces`;
@@ -380,7 +560,7 @@
             const grid = document.getElementById('profileArticlesGrid');
             if (!grid) return;
 
-            if (articles.length === 0) {
+            if (!articles.length) {
                 grid.innerHTML = `
                     <div class="profileEmptyState">
                         <div style="font-size: 38px; margin-bottom: 10px;">📰</div>
@@ -399,22 +579,24 @@
                 const canDelete = typeof DB !== 'undefined' && DB.canDeleteArticle ? DB.canDeleteArticle(art) : false;
                 const coverImg = art.image || 'images/spanish colonisation.png';
                 const topics = (art.keywords || []).filter(k => k.toLowerCase() !== 'published');
+                const artHref = art.isProject ? `projects.html?id=${encodeURIComponent(art.id)}` : `article.html?id=${encodeURIComponent(art.id)}`;
 
                 return `
                     <article class="profileArticleCard">
-                        <a href="article.html?id=${encodeURIComponent(art.id)}" class="profileArticleCoverLink">
+                        <a href="${artHref}" class="profileArticleCoverLink">
                             <img src="${coverImg}" alt="${escapeHtml(art.title)}" loading="lazy">
                         </a>
                         <div class="profileArticleContent">
                             <div class="profileArticleTopics">
+                                ${art.isProject ? `<span class="sectionBadge" style="font-size: 10.5px; padding: 2px 9px; margin-bottom: 0;">Project</span>` : ''}
                                 ${topics.map(t => `<span class="profileArticleTopicChip">${escapeHtml(t)}</span>`).join('')}
                             </div>
                             <h3 class="profileArticleTitle">
-                                <a href="article.html?id=${encodeURIComponent(art.id)}">${escapeHtml(art.title)}</a>
+                                <a href="${artHref}">${escapeHtml(art.title)}</a>
                             </h3>
                             <p class="profileArticleExcerpt">${escapeHtml(art.description || '')}</p>
                             <div class="profileArticleFooter">
-                                <a href="article.html?id=${encodeURIComponent(art.id)}" class="profileReadBtn">Read Article &rarr;</a>
+                                <a href="${artHref}" class="profileReadBtn">${art.isProject ? 'Explore Series &rarr;' : 'Read Article &rarr;'}</a>
                                 ${(canEdit || canDelete) ? `
                                     <div class="profileArticleActions">
                                         ${canEdit ? `<a href="add-essay.html?edit=${encodeURIComponent(art.id)}" class="profileEditBtn">Edit</a>` : ''}
@@ -428,8 +610,11 @@
             }).join('');
         }
 
-        function handleDeleteArticle(id, title) {
-            if (confirm(`Are you sure you want to delete "${title}"?`)) {
+        async function handleDeleteArticle(id, title) {
+            const ok = (typeof DB !== 'undefined' && DB.showConfirm)
+                ? await DB.showConfirm(`Are you sure you want to delete "${title}"?`)
+                : confirm(`Are you sure you want to delete "${title}"?`);
+            if (ok) {
                 try {
                     if (typeof DB !== 'undefined' && DB.deleteArticle) {
                         DB.deleteArticle(id);

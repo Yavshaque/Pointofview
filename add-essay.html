@@ -42,8 +42,8 @@
                     <!-- Topic Selection Chips (Multi-select) -->
                     <div class="formGroup">
                         <div class="labelRow">
-                            <label>Topics / Categories <span class="requiredAsterisk">*</span> <span style="font-size: 12px; font-weight: 400; color: var(--text-muted);">(Select one or more)</span></label>
-                            <span class="charCounter" id="topicsCount">1 selected</span>
+                            <label>Topics / Categories <span class="requiredAsterisk">*</span> <span style="font-size: 12px; font-weight: 400; color: var(--text-muted);">(Select 1 or 2)</span></label>
+                            <span class="charCounter" id="topicsCount">1/2 selected</span>
                         </div>
                         <div class="categoryChipsGrid" id="categoryChips">
                             <button type="button" class="categoryChip active" data-val="World" onclick="toggleTopic('World')"><span class="chipCheck">✓</span> World</button>
@@ -364,15 +364,27 @@
             }
 
             if (!article) {
-                alert('Article not found.');
-                window.location.href = 'index.html';
+                if (typeof DB !== 'undefined' && DB.showAlert) {
+                    DB.showAlert('Article not found.', () => {
+                        window.location.href = 'index.html';
+                    });
+                } else {
+                    alert('Article not found.');
+                    window.location.href = 'index.html';
+                }
                 return;
             }
 
             // Verify permission
             if (typeof DB.canEditArticle === 'function' && !DB.canEditArticle(article)) {
-                alert('Permission denied: You can only edit articles that you have written.');
-                window.location.href = `article.html?id=${encodeURIComponent(id)}`;
+                if (typeof DB !== 'undefined' && DB.showAlert) {
+                    DB.showAlert('Permission denied: You can only edit articles that you have written.', () => {
+                        window.location.href = `article.html?id=${encodeURIComponent(id)}`;
+                    });
+                } else {
+                    alert('Permission denied: You can only edit articles that you have written.');
+                    window.location.href = `article.html?id=${encodeURIComponent(id)}`;
+                }
                 return;
             }
 
@@ -406,7 +418,8 @@
 
             // Topics / Categories
             if (article.keywords && Array.isArray(article.keywords)) {
-                const cleaned = article.keywords.filter(k => k.toLowerCase() !== 'published');
+                let cleaned = article.keywords.filter(k => k.toLowerCase() !== 'published');
+                if (cleaned.length > 2) cleaned = cleaned.slice(0, 2);
                 selectedTopics = cleaned.length ? cleaned : ['World'];
             } else {
                 selectedTopics = ['World'];
@@ -467,6 +480,14 @@
                 }
                 selectedTopics.splice(idx, 1);
             } else {
+                if (selectedTopics.length >= 2) {
+                    if (typeof DB !== 'undefined' && DB.showAlert) {
+                        DB.showAlert('You can select a maximum of 2 categories.');
+                    } else {
+                        alert('You can select a maximum of 2 categories.');
+                    }
+                    return;
+                }
                 selectedTopics.push(val);
             }
             updateTopicChipsUI();
@@ -487,7 +508,7 @@
 
             const countEl = document.getElementById('topicsCount');
             if (countEl) {
-                countEl.textContent = `${selectedTopics.length} selected`;
+                countEl.textContent = `${selectedTopics.length}/2 selected`;
             }
 
             const catInput = document.getElementById('articleCategory');
@@ -508,10 +529,13 @@
             }
         }
 
-        function handleStudioDelete() {
+        async function handleStudioDelete() {
             if (!isEditMode || !editArticleId) return;
             const title = document.getElementById('articleTitle').value || 'this article';
-            if (confirm(`Are you sure you want to permanently delete "${title}"? This action cannot be undone.`)) {
+            const ok = (typeof DB !== 'undefined' && DB.showConfirm)
+                ? await DB.showConfirm(`Are you sure you want to permanently delete "${title}"? This action cannot be undone.`)
+                : confirm(`Are you sure you want to permanently delete "${title}"? This action cannot be undone.`);
+            if (ok) {
                 try {
                     DB.deleteArticle(editArticleId);
                     window.location.href = 'index.html';
@@ -918,6 +942,8 @@
             const words = body ? body.split(/\s+/).length : 0;
             const readTime = Math.max(1, Math.ceil(words / 200));
 
+            const finalTopics = selectedTopics.slice(0, 2);
+
             // EDIT MODE: Update existing article
             if (isEditMode && editArticleId !== null) {
                 const now = new Date();
@@ -931,7 +957,7 @@
                     readTime: readTime,
                     description: description,
                     body: body,
-                    keywords: [...selectedTopics],
+                    keywords: [...finalTopics],
                     bibliography: bibliography
                 };
 
@@ -966,7 +992,7 @@
                 readTime: readTime,
                 description: description,
                 body: body,
-                keywords: [...selectedTopics],
+                keywords: [...finalTopics],
                 bibliography: bibliography
             };
 

@@ -250,50 +250,90 @@
                     <textarea id="projectDescriptionInput" required rows="4" maxlength="1200" placeholder="Explain the project's background, scope of inquiry, and what the series explores..."></textarea>
                 </div>
 
+                <!-- Aesthetic Visual Cover Image Picker (Replaces theme select) -->
                 <div class="projectFormGroup">
-                    <label for="projectCoverSelect">Cover Image Theme</label>
-                    <select id="projectCoverSelect">
-                        <option value="images/spanish colonisation.png">Colonial &amp; Imperial (Spanish Colonisation)</option>
-                        <option value="images/orthaxis.jpg">Philosophical &amp; Abstract (Orthaxis)</option>
-                        <option value="images/hero.jpg">Classic Renaissance Editorial</option>
-                    </select>
-                </div>
+                    <label>Cover Image <span class="requiredAsterisk" style="color: var(--accent-red);">*</span></label>
+                    <div class="visualImagePicker" id="modalVisualImagePicker">
+                        <div class="imagePickerOption active" id="modalOptionPreset1" onclick="selectModalPresetImage('images/spanish colonisation.png', 'modalOptionPreset1')">
+                            <img src="images/spanish colonisation.png" alt="Spanish Colonization">
+                            <span class="pickerOptionTitle">Spanish Colonization</span>
+                        </div>
+                        <div class="imagePickerOption" id="modalOptionUpload" onclick="triggerModalImageUpload()">
+                            <div class="customOptionIcon" id="modalUploadOptionPreview">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            </div>
+                            <span class="pickerOptionTitle" id="modalUploadOptionLabel">Upload Photo</span>
+                            <input type="file" id="modalImageFileInput" accept="image/*" style="display:none;" onchange="handleModalImageFile(event)">
+                        </div>
+                        <div class="imagePickerOption" id="modalOptionCustom" onclick="selectModalCustomImageOption()">
+                            <div class="customOptionIcon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                            </div>
+                            <span class="pickerOptionTitle">Custom URL</span>
+                        </div>
+                    </div>
 
-                <div class="projectFormGroup">
-                    <label>Categories &amp; Topics</label>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
-                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
-                            <input type="checkbox" name="projectCategory" value="History" checked> History
-                        </label>
-                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
-                            <input type="checkbox" name="projectCategory" value="World" checked> World
-                        </label>
-                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
-                            <input type="checkbox" name="projectCategory" value="Economy"> Economy
-                        </label>
-                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
-                            <input type="checkbox" name="projectCategory" value="Culture"> Culture
-                        </label>
-                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
-                            <input type="checkbox" name="projectCategory" value="Technology"> Technology
-                        </label>
-                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: normal; color: #cbd5e1;">
-                            <input type="checkbox" name="projectCategory" value="Cinematography"> Cinematography
-                        </label>
+                    <!-- Custom Image URL Input -->
+                    <div id="modalCustomUrlContainer" class="customUrlContainer hidden">
+                        <input type="url" id="modalCustomImageUrl" placeholder="https://images.unsplash.com/.../photo.jpg" oninput="handleModalCustomUrlInput(this.value)">
+                    </div>
+
+                    <!-- Active Image Preview -->
+                    <div class="studioCoverPreview" style="height: 160px; margin-top: 4px;">
+                        <img id="modalProjectLiveCoverImg" src="images/spanish colonisation.png" alt="Cover preview">
+                        <span class="previewBadge">Selected Project Cover</span>
                     </div>
                 </div>
 
-                <div class="projectCollaboratorBox" id="projectCollaboratorBox">
-                    <label for="projectCollaboratorSelect">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        Collaborator / Co-Author (Optional)
+                <!-- Category Chips Selection with active CSS state -->
+                <div class="projectFormGroup">
+                    <label>
+                        <span>Categories &amp; Topics <span style="font-size: 12px; font-weight: 400; color: var(--text-muted);">(Select 1 or 2)</span></span>
+                        <span class="charCounter" id="modalTopicsCount" style="font-size: 12px; color: var(--text-muted);">2/2 selected</span>
                     </label>
-                    <p style="font-size: 12px; color: #94a3b8; margin: 0;">
-                        Invite another registered writer to co-author and manage this series with you.
+                    <div class="categoryChipsGrid" id="modalCategoryChips">
+                        <button type="button" class="categoryChip active" data-val="History" onclick="toggleModalTopic('History')"><span class="chipCheck">✓</span> History</button>
+                        <button type="button" class="categoryChip active" data-val="World" onclick="toggleModalTopic('World')"><span class="chipCheck">✓</span> World</button>
+                        <button type="button" class="categoryChip" data-val="Economy" onclick="toggleModalTopic('Economy')"><span class="chipCheck"></span> Economy</button>
+                        <button type="button" class="categoryChip" data-val="Culture" onclick="toggleModalTopic('Culture')"><span class="chipCheck"></span> Culture</button>
+                        <button type="button" class="categoryChip" data-val="Technology" onclick="toggleModalTopic('Technology')"><span class="chipCheck"></span> Technology</button>
+                        <button type="button" class="categoryChip" data-val="Cinematography" onclick="toggleModalTopic('Cinematography')"><span class="chipCheck"></span> Cinematography</button>
+                        <button type="button" class="categoryChip" data-val="Philosophy" onclick="toggleModalTopic('Philosophy')"><span class="chipCheck"></span> Philosophy</button>
+                        <button type="button" class="categoryChip" data-val="Sociology" onclick="toggleModalTopic('Sociology')"><span class="chipCheck"></span> Sociology</button>
+                        <button type="button" class="categoryChip" data-val="Political Science" onclick="toggleModalTopic('Political Science')"><span class="chipCheck"></span> Political Science</button>
+                        <button type="button" class="categoryChip" data-val="Archaeology" onclick="toggleModalTopic('Archaeology')"><span class="chipCheck"></span> Archaeology</button>
+                    </div>
+                </div>
+
+                <!-- Collaborator Search Bar (Search by Name) -->
+                <div class="projectFormGroup">
+                    <label>Collaborator / Co-Author (Optional)</label>
+                    <p style="font-size: 12px; color: #94a3b8; margin: 0 0 6px 0;">
+                        Search and invite another registered writer by name to collaborate and manage this series with you.
                     </p>
-                    <select id="projectCollaboratorSelect" style="margin-top: 4px; padding: 10px 14px; font-size: 13.5px;">
-                        <option value="">-- Solo Project (No Collaborator) --</option>
-                    </select>
+                    <div class="collaboratorSearchWrapper" id="modalCollaboratorSearchWrapper">
+                        <div class="collaboratorSearchInputBox">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="modalCollaboratorSearchInput" placeholder="Search registered writer by name..." autocomplete="off">
+                            <button type="button" class="collabClearSearchBtn hidden" id="modalCollabClearSearchBtn" onclick="clearModalCollabSearch()">&times;</button>
+                        </div>
+                        <div class="collaboratorSearchResults hidden" id="modalCollaboratorSearchResults"></div>
+                    </div>
+
+                    <!-- Selected Collaborator Card -->
+                    <div class="selectedCollaboratorCard hidden" id="modalSelectedCollaboratorCard">
+                        <div class="selectedCollabInfo">
+                            <div class="selectedCollabAvatar" id="modalSelectedCollabAvatar">A</div>
+                            <div>
+                                <div class="selectedCollabName" id="modalSelectedCollabName">Writer Name</div>
+                                <span class="selectedCollabRole" id="modalSelectedCollabRole">Author</span>
+                            </div>
+                        </div>
+                        <button type="button" class="removeCollaboratorBtn" onclick="removeModalCollaborator()" title="Remove Collaborator">✕ Remove</button>
+                    </div>
+                    <input type="hidden" id="modalSelectedCollaboratorId" value="">
+                    <input type="hidden" id="modalSelectedCollaboratorName" value="">
+                    <input type="hidden" id="modalSelectedCollaboratorRole" value="">
                 </div>
 
                 <!-- Initial Essay / Part 1 Section (Required when creating a project) -->
@@ -549,6 +589,7 @@
                             <img src="${escapeHtml(proj.cover || 'images/spanish colonisation.png')}" alt="${escapeHtml(proj.title)}" class="projectCardCoverImg">
                             <div class="projectCardCoverOverlay"></div>
                             <div class="projectCardTopBadges">
+                                <span class="sectionBadge projectCardBadge">Project</span>
                                 <span class="projectSeriesBadge">
                                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
                                     Series &bull; ${partsCount} ${partsCount === 1 ? 'Part' : 'Parts'}
@@ -558,7 +599,8 @@
 
                         <div class="projectCardBody">
                             <div class="projectCategoryTags">
-                                ${categories.map(c => `<span class="sectionBadge" style="font-size: 11px; padding: 2px 8px;">${escapeHtml(c)}</span>`).join('')}
+                                <span class="sectionBadge" style="font-size: 11px; padding: 2px 8px; margin-bottom: 0;">Project</span>
+                                ${categories.map(c => `<span class="sectionBadge" style="font-size: 11px; padding: 2px 8px; margin-bottom: 0; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #cbd5e1;">${escapeHtml(c)}</span>`).join('')}
                             </div>
 
                             <h3 class="projectCardTitle">${escapeHtml(proj.title)}</h3>
@@ -620,8 +662,12 @@
         function renderProjectDetail(projectId) {
             const project = (typeof DB !== 'undefined' && DB.getProjectById) ? DB.getProjectById(projectId) : null;
             if (!project) {
-                alert('Project not found or has been removed.');
-                navigateTo();
+                if (typeof DB !== 'undefined' && DB.showAlert) {
+                    DB.showAlert('Project not found or has been removed.', () => navigateTo());
+                } else {
+                    alert('Project not found or has been removed.');
+                    navigateTo();
+                }
                 return;
             }
 
@@ -759,15 +805,23 @@
         function renderSeriesReader(projectId, partIndex) {
             const project = (typeof DB !== 'undefined' && DB.getProjectById) ? DB.getProjectById(projectId) : null;
             if (!project) {
-                alert('Project not found.');
-                navigateTo();
+                if (typeof DB !== 'undefined' && DB.showAlert) {
+                    DB.showAlert('Project not found.', () => navigateTo());
+                } else {
+                    alert('Project not found.');
+                    navigateTo();
+                }
                 return;
             }
 
             const parts = project.parts || [];
             if (partIndex < 0 || partIndex >= parts.length) {
-                alert('Specified part not found.');
-                navigateTo(projectId);
+                if (typeof DB !== 'undefined' && DB.showAlert) {
+                    DB.showAlert('Specified part not found.', () => navigateTo(projectId));
+                } else {
+                    alert('Specified part not found.');
+                    navigateTo(projectId);
+                }
                 return;
             }
 
@@ -956,6 +1010,271 @@
             });
         }
 
+        // =========================================================================
+        // Modal State & Controls (Categories, Image Picker, Collaborator Search)
+        // =========================================================================
+        let modalSelectedCategories = ['History', 'World'];
+        let modalSelectedCover = 'images/spanish colonisation.png';
+        let modalSelectedCollaborator = null;
+        let modalCollabSearchInitialized = false;
+
+        function toggleModalTopic(topic) {
+            const idx = modalSelectedCategories.indexOf(topic);
+            if (idx > -1) {
+                if (modalSelectedCategories.length === 1) {
+                    if (typeof DB !== 'undefined' && DB.showAlert) {
+                        DB.showAlert('A project must have at least one topic selected.');
+                    } else {
+                        alert('A project must have at least one topic selected.');
+                    }
+                    return;
+                }
+                modalSelectedCategories.splice(idx, 1);
+            } else {
+                if (modalSelectedCategories.length >= 2) {
+                    if (typeof DB !== 'undefined' && DB.showAlert) {
+                        DB.showAlert('You can select a maximum of 2 categories.');
+                    } else {
+                        alert('You can select a maximum of 2 categories.');
+                    }
+                    return;
+                }
+                modalSelectedCategories.push(topic);
+            }
+            updateModalTopicsUI();
+        }
+
+        function updateModalTopicsUI() {
+            const chips = document.querySelectorAll('#modalCategoryChips .categoryChip');
+            chips.forEach(chip => {
+                const val = chip.getAttribute('data-val');
+                const isActive = modalSelectedCategories.includes(val);
+                chip.classList.toggle('active', isActive);
+                const check = chip.querySelector('.chipCheck');
+                if (check) check.textContent = isActive ? '✓' : '';
+            });
+            const counter = document.getElementById('modalTopicsCount');
+            if (counter) {
+                counter.textContent = `${modalSelectedCategories.length}/2 selected`;
+            }
+        }
+
+        function selectModalPresetImage(path, optionId) {
+            document.querySelectorAll('#modalVisualImagePicker .imagePickerOption').forEach(opt => opt.classList.remove('active'));
+            const target = document.getElementById(optionId);
+            if (target) target.classList.add('active');
+
+            const urlContainer = document.getElementById('modalCustomUrlContainer');
+            if (urlContainer) urlContainer.classList.add('hidden');
+
+            updateModalCover(path);
+        }
+
+        function triggerModalImageUpload() {
+            const fileInput = document.getElementById('modalImageFileInput');
+            if (fileInput) fileInput.click();
+        }
+
+        function handleModalImageFile(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please choose an image file (PNG, JPG, WebP, etc.)');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const maxW = 1200;
+                    const maxH = 800;
+                    let w = img.width;
+                    let h = img.height;
+
+                    if (w > maxW || h > maxH) {
+                        if (w / h > maxW / maxH) {
+                            h = Math.round((h * maxW) / w);
+                            w = maxW;
+                        } else {
+                            w = Math.round((w * maxH) / h);
+                            h = maxH;
+                        }
+                    }
+
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+                    document.querySelectorAll('#modalVisualImagePicker .imagePickerOption').forEach(opt => opt.classList.remove('active'));
+                    const uploadOpt = document.getElementById('modalOptionUpload');
+                    if (uploadOpt) uploadOpt.classList.add('active');
+
+                    const previewIcon = document.getElementById('modalUploadOptionPreview');
+                    if (previewIcon) {
+                        previewIcon.innerHTML = `<img src="${compressedDataUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
+                    const uploadLabel = document.getElementById('modalUploadOptionLabel');
+                    if (uploadLabel) uploadLabel.textContent = file.name.length > 12 ? file.name.substring(0, 10) + '...' : file.name;
+
+                    const urlContainer = document.getElementById('modalCustomUrlContainer');
+                    if (urlContainer) urlContainer.classList.add('hidden');
+
+                    updateModalCover(compressedDataUrl);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function selectModalCustomImageOption() {
+            document.querySelectorAll('#modalVisualImagePicker .imagePickerOption').forEach(opt => opt.classList.remove('active'));
+            const customOpt = document.getElementById('modalOptionCustom');
+            if (customOpt) customOpt.classList.add('active');
+
+            const urlContainer = document.getElementById('modalCustomUrlContainer');
+            if (urlContainer) {
+                urlContainer.classList.remove('hidden');
+                const input = document.getElementById('modalCustomImageUrl');
+                if (input) {
+                    input.focus();
+                    if (input.value.trim()) {
+                        updateModalCover(input.value.trim());
+                    }
+                }
+            }
+        }
+
+        function handleModalCustomUrlInput(url) {
+            const trimmed = url.trim();
+            if (trimmed) {
+                updateModalCover(trimmed);
+            }
+        }
+
+        function updateModalCover(url) {
+            modalSelectedCover = url;
+            const liveImg = document.getElementById('modalProjectLiveCoverImg');
+            if (liveImg) {
+                liveImg.src = url;
+            }
+        }
+
+        function initModalCollaboratorSearch() {
+            if (modalCollabSearchInitialized) return;
+            modalCollabSearchInitialized = true;
+
+            const input = document.getElementById('modalCollaboratorSearchInput');
+            const clearBtn = document.getElementById('modalCollabClearSearchBtn');
+            const resultsBox = document.getElementById('modalCollaboratorSearchResults');
+
+            if (!input || !resultsBox) return;
+
+            input.addEventListener('input', (e) => {
+                const q = e.target.value.trim().toLowerCase();
+                if (clearBtn) clearBtn.classList.toggle('hidden', !q);
+
+                if (!q) {
+                    resultsBox.innerHTML = '';
+                    resultsBox.classList.add('hidden');
+                    return;
+                }
+
+                const currentUser = (typeof DB !== 'undefined' && DB.getCurrentUser) ? DB.getCurrentUser() : null;
+                const allUsers = (typeof DB !== 'undefined' && DB.getAllUsers) ? DB.getAllUsers() : [];
+
+                // Filter users matching query, excluding current user
+                const matches = allUsers.filter(u => {
+                    if (!u.name) return false;
+                    if (currentUser && (u.id === currentUser.id || (u.email && u.email.toLowerCase() === currentUser.email.toLowerCase()))) return false;
+                    return u.name.toLowerCase().includes(q) || (u.email && u.email.toLowerCase() === q);
+                });
+
+                if (matches.length === 0) {
+                    resultsBox.innerHTML = `<div class="collabNoResults">No registered writers found matching "${escapeHtml(q)}"</div>`;
+                } else {
+                    resultsBox.innerHTML = matches.map(u => {
+                        const initial = u.name ? u.name.charAt(0).toUpperCase() : 'W';
+                        const avatarHtml = u.avatar ? `<img src="${u.avatar}" class="collabItemAvatar" alt="">` : `<div class="collabItemAvatar">${initial}</div>`;
+                        const roleLabel = u.role === 'admin' ? 'Editor-in-Chief' : (u.role === 'co-founder' ? 'Co-Founder' : 'Author');
+                        return `
+                            <div class="collaboratorResultItem" onclick="selectModalCollaborator('${escapeHtml(u.id || '')}', '${escapeHtml(u.name || '')}', '${escapeHtml(u.avatar || '')}', '${escapeHtml(roleLabel)}')">
+                                ${avatarHtml}
+                                <div class="collabItemDetails">
+                                    <div class="collabItemName">${escapeHtml(u.name)}</div>
+                                    <div class="collabItemRole">${escapeHtml(roleLabel)} &bull; ${escapeHtml(u.email || '')}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                resultsBox.classList.remove('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!document.getElementById('modalCollaboratorSearchWrapper')?.contains(e.target)) {
+                    resultsBox.classList.add('hidden');
+                }
+            });
+        }
+
+        function clearModalCollabSearch() {
+            const input = document.getElementById('modalCollaboratorSearchInput');
+            const clearBtn = document.getElementById('modalCollabClearSearchBtn');
+            const resultsBox = document.getElementById('modalCollaboratorSearchResults');
+            if (input) input.value = '';
+            if (clearBtn) clearBtn.classList.add('hidden');
+            if (resultsBox) resultsBox.classList.add('hidden');
+        }
+
+        function selectModalCollaborator(id, name, avatar, role) {
+            modalSelectedCollaborator = { id, name, avatar, role };
+            const idEl = document.getElementById('modalSelectedCollaboratorId');
+            const nameEl = document.getElementById('modalSelectedCollaboratorName');
+            const roleEl = document.getElementById('modalSelectedCollaboratorRole');
+            if (idEl) idEl.value = id;
+            if (nameEl) nameEl.value = name;
+            if (roleEl) roleEl.value = role;
+
+            const card = document.getElementById('modalSelectedCollaboratorCard');
+            const nameDisplay = document.getElementById('modalSelectedCollabName');
+            const roleDisplay = document.getElementById('modalSelectedCollabRole');
+            const avatarDisplay = document.getElementById('modalSelectedCollabAvatar');
+
+            if (nameDisplay) nameDisplay.textContent = name;
+            if (roleDisplay) roleDisplay.textContent = role;
+            if (avatarDisplay) {
+                if (avatar) {
+                    avatarDisplay.innerHTML = `<img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else {
+                    avatarDisplay.textContent = name ? name.charAt(0).toUpperCase() : 'W';
+                }
+            }
+
+            if (card) card.classList.remove('hidden');
+            clearModalCollabSearch();
+        }
+
+        function removeModalCollaborator() {
+            modalSelectedCollaborator = null;
+            const idEl = document.getElementById('modalSelectedCollaboratorId');
+            const nameEl = document.getElementById('modalSelectedCollaboratorName');
+            const roleEl = document.getElementById('modalSelectedCollaboratorRole');
+            if (idEl) idEl.value = '';
+            if (nameEl) nameEl.value = '';
+            if (roleEl) roleEl.value = '';
+            const card = document.getElementById('modalSelectedCollaboratorCard');
+            if (card) card.classList.add('hidden');
+        }
+
+        // =========================================================================
+        // Modal Open / Close & Save
+        // =========================================================================
         function openProjectModal(existingProject = null) {
             const overlay = document.getElementById('projectModalOverlay');
             const titleEl = document.getElementById('projectModalTitle');
@@ -963,27 +1282,10 @@
             const titleInput = document.getElementById('projectTitleInput');
             const subtitleInput = document.getElementById('projectSubtitleInput');
             const descInput = document.getElementById('projectDescriptionInput');
-            const coverSelect = document.getElementById('projectCoverSelect');
-            const collabSelect = document.getElementById('projectCollaboratorSelect');
             const initialPartSection = document.getElementById('projectInitialPartSection');
 
-            // Populate Collaborators dropdown with registered users (excluding current user)
-            const currentUser = (typeof DB !== 'undefined' && DB.getCurrentUser) ? DB.getCurrentUser() : null;
-            const allUsers = (typeof DB !== 'undefined' && DB.getAllUsers) ? DB.getAllUsers() : [];
-            collabSelect.innerHTML = '<option value="">-- Solo Project (No Collaborator) --</option>';
-
-            allUsers.forEach(u => {
-                if (!u.name) return;
-                if (currentUser && (u.id === currentUser.id || (u.email && u.email.toLowerCase() === currentUser.email.toLowerCase()))) return;
-                const opt = document.createElement('option');
-                opt.value = u.id || u.name;
-                const roleLabel = u.role === 'admin' ? 'Editor-in-Chief' : (u.role === 'co-founder' ? 'Co-Founder' : 'Author');
-                opt.textContent = `${u.name} (${roleLabel})`;
-                if (existingProject && (existingProject.collaboratorId === u.id || existingProject.collaboratorName === u.name)) {
-                    opt.selected = true;
-                }
-                collabSelect.appendChild(opt);
-            });
+            // Initialize collaborator search once
+            initModalCollaboratorSearch();
 
             if (existingProject) {
                 titleEl.textContent = 'Edit Project Details';
@@ -991,24 +1293,59 @@
                 titleInput.value = existingProject.title || '';
                 subtitleInput.value = existingProject.subtitle || '';
                 descInput.value = existingProject.description || '';
-                coverSelect.value = existingProject.cover || 'images/spanish colonisation.png';
 
                 // Hide initial part section during edit (parts are managed in Table of Contents)
                 initialPartSection.style.display = 'none';
 
-                // Check categories
-                const cats = existingProject.categories || [];
-                document.querySelectorAll('input[name="projectCategory"]').forEach(cb => {
-                    cb.checked = cats.includes(cb.value);
-                });
+                // Categories
+                modalSelectedCategories = (existingProject.categories && existingProject.categories.length)
+                    ? [...existingProject.categories].slice(0, 2)
+                    : ['History', 'World'];
+                updateModalTopicsUI();
+
+                // Cover
+                modalSelectedCover = existingProject.cover || 'images/spanish colonisation.png';
+                updateModalCover(modalSelectedCover);
+
+                // Cover visual options
+                document.querySelectorAll('#modalVisualImagePicker .imagePickerOption').forEach(opt => opt.classList.remove('active'));
+                const customUrlContainer = document.getElementById('modalCustomUrlContainer');
+                if (customUrlContainer) customUrlContainer.classList.add('hidden');
+
+                if (modalSelectedCover === 'images/spanish colonisation.png') {
+                    document.getElementById('modalOptionPreset1')?.classList.add('active');
+                } else if (modalSelectedCover.startsWith('data:')) {
+                    const uploadOpt = document.getElementById('modalOptionUpload');
+                    uploadOpt?.classList.add('active');
+                    const previewIcon = document.getElementById('modalUploadOptionPreview');
+                    if (previewIcon) {
+                        previewIcon.innerHTML = `<img src="${modalSelectedCover}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
+                } else {
+                    document.getElementById('modalOptionCustom')?.classList.add('active');
+                    if (customUrlContainer) {
+                        customUrlContainer.classList.remove('hidden');
+                        const urlInput = document.getElementById('modalCustomImageUrl');
+                        if (urlInput) urlInput.value = modalSelectedCover;
+                    }
+                }
+
+                // Collaborator
+                if (existingProject.collaboratorId || existingProject.collaboratorName) {
+                    const allUsers = (typeof DB !== 'undefined' && DB.getAllUsers) ? DB.getAllUsers() : [];
+                    const user = allUsers.find(u => u.id === existingProject.collaboratorId || u.name === existingProject.collaboratorName);
+                    const avatar = user ? user.avatar : '';
+                    const role = existingProject.collaboratorRole || (user ? (user.role === 'admin' ? 'Editor-in-Chief' : (user.role === 'co-founder' ? 'Co-Founder' : 'Author')) : 'Collaborator');
+                    selectModalCollaborator(existingProject.collaboratorId || (user ? user.id : ''), existingProject.collaboratorName || (user ? user.name : ''), avatar, role);
+                } else {
+                    removeModalCollaborator();
+                }
             } else {
                 titleEl.textContent = 'Create New Project';
                 idField.value = '';
                 titleInput.value = '';
                 subtitleInput.value = '';
                 descInput.value = '';
-                coverSelect.value = 'images/spanish colonisation.png';
-                collabSelect.value = '';
 
                 // Show initial part section (mandatory for creating a project)
                 initialPartSection.style.display = 'block';
@@ -1021,11 +1358,19 @@
                 // Setup Part 1 Quick Import
                 populateInitialPartImport();
 
-                document.querySelectorAll('input[name="projectCategory"]').forEach((cb, idx) => {
-                    cb.checked = idx < 2;
-                });
+                // Categories default
+                modalSelectedCategories = ['History', 'World'];
+                updateModalTopicsUI();
+
+                // Cover default
+                modalSelectedCover = 'images/spanish colonisation.png';
+                selectModalPresetImage('images/spanish colonisation.png', 'modalOptionPreset1');
+
+                // Collaborator clear
+                removeModalCollaborator();
             }
 
+            clearModalCollabSearch();
             overlay.classList.add('active');
         }
 
@@ -1090,31 +1435,25 @@
             const title = document.getElementById('projectTitleInput').value.trim();
             const subtitle = document.getElementById('projectSubtitleInput').value.trim();
             const description = document.getElementById('projectDescriptionInput').value.trim();
-            const cover = document.getElementById('projectCoverSelect').value;
+            const cover = modalSelectedCover;
 
-            // Collaborator resolution
-            const collabSelect = document.getElementById('projectCollaboratorSelect');
-            const selectedCollabVal = collabSelect.value;
-            let collaboratorId = null;
-            let collaboratorName = null;
-            let collaboratorRole = null;
-
-            if (selectedCollabVal) {
-                const allUsers = (typeof DB !== 'undefined' && DB.getAllUsers) ? DB.getAllUsers() : [];
-                const foundUser = allUsers.find(u => u.id === selectedCollabVal || u.name === selectedCollabVal);
-                if (foundUser) {
-                    collaboratorId = foundUser.id;
-                    collaboratorName = foundUser.name;
-                    collaboratorRole = foundUser.role === 'admin' ? 'Founder & Editor-in-Chief' : (foundUser.role === 'co-founder' ? 'Co-Founder & Contributing Editor' : 'Co-Author & Contributor');
-                }
+            if (!title) {
+                alert('Please enter a project title.');
+                return;
+            }
+            if (!description) {
+                alert('Please enter a project overview.');
+                return;
+            }
+            if (!modalSelectedCategories || modalSelectedCategories.length === 0) {
+                alert('Please select at least one category.');
+                return;
             }
 
-            const selectedCats = [];
-            document.querySelectorAll('input[name="projectCategory"]:checked').forEach(cb => {
-                selectedCats.push(cb.value);
-            });
-
-            if (!selectedCats.length) selectedCats.push('General');
+            const collaboratorId = modalSelectedCollaborator ? modalSelectedCollaborator.id : null;
+            const collaboratorName = modalSelectedCollaborator ? modalSelectedCollaborator.name : null;
+            const collaboratorRole = modalSelectedCollaborator ? modalSelectedCollaborator.role : null;
+            const finalCategories = modalSelectedCategories.slice(0, 2);
 
             try {
                 if (id) {
@@ -1124,7 +1463,7 @@
                         subtitle,
                         description,
                         cover,
-                        categories: selectedCats,
+                        categories: finalCategories,
                         collaboratorId,
                         collaboratorName,
                         collaboratorRole
@@ -1158,7 +1497,7 @@
                         subtitle,
                         description,
                         cover,
-                        categories: selectedCats,
+                        categories: finalCategories,
                         collaboratorId,
                         collaboratorName,
                         collaboratorRole,
@@ -1173,13 +1512,16 @@
             }
         }
 
-        function promptDeleteProject(projectId, projectTitle) {
-            if (confirm(`Are you sure you want to delete the series "${projectTitle}"? This cannot be undone.`)) {
+        async function promptDeleteProject(projectId, projectTitle) {
+            const ok = (typeof DB !== 'undefined' && DB.showConfirm)
+                ? await DB.showConfirm(`Are you sure you want to delete the series "${projectTitle}"? This cannot be undone.`)
+                : confirm(`Are you sure you want to delete the series "${projectTitle}"? This cannot be undone.`);
+            if (ok) {
                 try {
                     DB.deleteProject(projectId);
                     navigateTo();
                 } catch (err) {
-                    alert('Error deleting project: ' + err.message);
+                    showAlert('Error deleting project: ' + err.message);
                 }
             }
         }
@@ -1303,28 +1645,40 @@
             const body = document.getElementById('partBodyInput').value.trim();
             const bibliography = document.getElementById('partBibliographyInput').value.trim();
 
+            if (!title) {
+                showAlert('Please enter a title for this part.');
+                return;
+            }
+            if (!body) {
+                showAlert('Please provide the written essay content for this part.');
+                return;
+            }
+
             const partData = { title, subtitle, readTime, body, bibliography };
 
             try {
-                if (currentEditingPartIndex !== null) {
-                    DB.updateProjectPart(projectId, currentEditingPartIndex, partData);
+                if (partId) {
+                    DB.updateProjectPart(projectId, partId, partData);
                 } else {
                     DB.addProjectPart(projectId, partData);
                 }
                 closePartModal();
                 renderProjectDetail(projectId);
             } catch (err) {
-                alert('Error saving part: ' + err.message);
+                showAlert('Error saving part: ' + err.message);
             }
         }
 
-        function promptDeletePart(projectId, partIndex, partTitle) {
-            if (confirm(`Are you sure you want to remove "${partTitle}" from this project?`)) {
+        async function promptDeletePart(projectId, partIndex, partTitle) {
+            const ok = (typeof DB !== 'undefined' && DB.showConfirm)
+                ? await DB.showConfirm(`Are you sure you want to remove "${partTitle}" from this project?`)
+                : confirm(`Are you sure you want to remove "${partTitle}" from this project?`);
+            if (ok) {
                 try {
                     DB.deleteProjectPart(projectId, partIndex);
                     renderProjectDetail(projectId);
                 } catch (err) {
-                    alert('Error removing part: ' + err.message);
+                    showAlert('Error removing part: ' + err.message);
                 }
             }
         }

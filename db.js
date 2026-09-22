@@ -84,14 +84,23 @@ const DB = (function() {
                 email: cerenEmail,
                 password: 'Draxlers.ceren',
                 role: 'co-founder',
-                avatar: 'images/orthaxis.jpg',
+                avatar: null,
                 createdAt: new Date().toISOString()
             });
         } else {
-            // Guarantee co-founder role and default avatar are never lost on legacy data
-            if (!cerenUser.avatar) cerenUser.avatar = 'images/orthaxis.jpg';
+            // Guarantee co-founder role and clean avatar
+            if (cerenUser.avatar && (cerenUser.avatar.includes('orthaxis.jpg') || cerenUser.avatar.includes('orthaxis.png'))) {
+                cerenUser.avatar = null;
+            }
             if (!cerenUser.role || cerenUser.role.toLowerCase() === 'editor') cerenUser.role = 'co-founder';
         }
+
+        // Sanitize any existing user avatars pointing to orthaxis
+        users.forEach(u => {
+            if (u.avatar && (u.avatar.includes('orthaxis.jpg') || u.avatar.includes('orthaxis.png'))) {
+                u.avatar = null;
+            }
+        });
 
         try {
             localStorage.setItem(USERS_KEY, JSON.stringify(users));
@@ -210,8 +219,14 @@ const DB = (function() {
         }
 
         const articles = getCustomArticles();
+        let sanitizedKeywords = articleData.keywords;
+        if (Array.isArray(sanitizedKeywords) && sanitizedKeywords.length > 2) {
+            sanitizedKeywords = sanitizedKeywords.slice(0, 2);
+        }
+
         const newArticle = {
             ...articleData,
+            keywords: sanitizedKeywords || articleData.keywords,
             authorId: user.id,
             author: articleData.author || user.name,
             createdAt: new Date().toISOString()
@@ -249,6 +264,10 @@ const DB = (function() {
         const strId = String(id);
         const articles = getCustomArticles();
         const existingIndex = articles.findIndex(a => String(a.id) === strId);
+
+        if (updatedData.keywords && Array.isArray(updatedData.keywords) && updatedData.keywords.length > 2) {
+            updatedData = { ...updatedData, keywords: updatedData.keywords.slice(0, 2) };
+        }
 
         if (existingIndex === -1) {
             // Seed article being customized or created with specific ID
@@ -345,7 +364,7 @@ const DB = (function() {
                 collaboratorId: 'user-editor-01',
                 collaboratorName: 'Ali Mert Bayar',
                 collaboratorRole: 'Founder & Editor-in-Chief',
-                cover: 'images/orthaxis.jpg',
+                cover: 'images/spanish colonisation.png',
                 categories: ['Culture', 'Technology', 'World'],
                 createdAt: '2026-09-17T14:30:00.000Z',
                 updatedAt: '2026-09-20T11:00:00.000Z',
@@ -436,7 +455,7 @@ const DB = (function() {
             collaboratorName: projectData.collaboratorName || null,
             collaboratorRole: projectData.collaboratorRole || (projectData.collaboratorName ? 'Co-Author & Contributor' : null),
             cover: projectData.cover || 'images/spanish colonisation.png',
-            categories: Array.isArray(projectData.categories) && projectData.categories.length > 0 ? projectData.categories : ['General'],
+            categories: (Array.isArray(projectData.categories) && projectData.categories.length > 0 ? projectData.categories : ['General']).slice(0, 2),
             createdAt: now,
             updatedAt: now,
             parts: projectData.parts
@@ -465,9 +484,15 @@ const DB = (function() {
             throw new Error('Permission denied: You do not have permission to edit this project.');
         }
 
+        let updatedCategories = updatedData.categories !== undefined ? updatedData.categories : existing.categories;
+        if (Array.isArray(updatedCategories) && updatedCategories.length > 2) {
+            updatedCategories = updatedCategories.slice(0, 2);
+        }
+
         const updated = {
             ...existing,
             ...updatedData,
+            categories: updatedCategories,
             id: existing.id,
             authorId: existing.authorId || user.id,
             author: updatedData.author || existing.author || user.name,
@@ -856,9 +881,227 @@ const DB = (function() {
         return true;
     }
 
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // ======================================================================
+    // Custom In-App Modal Overlay for Alerts & Approvals
+    // (Decide inside the application, not in browser/explorer popups)
+    // ======================================================================
+    function showAppDialog(options) {
+        return new Promise((resolve) => {
+            const {
+                title = 'Point of View',
+                message = '',
+                type = 'info', // 'info', 'warning', 'danger', 'success'
+                confirmText = 'Approve',
+                cancelText = 'Cancel',
+                showCancel = false,
+                eyebrow = 'Notification'
+            } = (typeof options === 'string' ? { message: options } : (options || {}));
+
+            let backdrop = document.getElementById('appDialogBackdrop');
+            if (!backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.id = 'appDialogBackdrop';
+                backdrop.className = 'appDialogBackdrop';
+                backdrop.innerHTML = `
+                    <div class="appDialogCard" role="dialog" aria-modal="true" aria-labelledby="appDialogTitle" aria-describedby="appDialogMessage">
+                        <div class="appDialogHeader">
+                            <div class="appDialogIconWrapper" id="appDialogIconSlot"></div>
+                            <div class="appDialogHeaderTexts">
+                                <span class="appDialogEyebrow" id="appDialogEyebrow">Point of View</span>
+                                <h3 class="appDialogTitle" id="appDialogTitle">Notice</h3>
+                            </div>
+                            <button type="button" class="appDialogCloseX" id="appDialogCloseX" aria-label="Close modal">&times;</button>
+                        </div>
+                        <div class="appDialogBody">
+                            <div class="appDialogMessage" id="appDialogMessage"></div>
+                        </div>
+                        <div class="appDialogActions">
+                            <button type="button" class="appDialogCancelBtn" id="appDialogCancelBtn">Cancel</button>
+                            <button type="button" class="appDialogConfirmBtn" id="appDialogConfirmBtn">Approve</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(backdrop);
+            }
+
+            const titleEl = document.getElementById('appDialogTitle');
+            const eyebrowEl = document.getElementById('appDialogEyebrow');
+            const msgEl = document.getElementById('appDialogMessage');
+            const iconSlot = document.getElementById('appDialogIconSlot');
+            const cancelBtn = document.getElementById('appDialogCancelBtn');
+            const confirmBtn = document.getElementById('appDialogConfirmBtn');
+            const closeX = document.getElementById('appDialogCloseX');
+
+            titleEl.textContent = title;
+            eyebrowEl.textContent = eyebrow || (showCancel ? 'Action Confirmation' : 'Notification');
+
+            const rawMsg = String(message || '');
+            if (rawMsg.includes('\n')) {
+                msgEl.innerHTML = rawMsg.split(/\n+/).filter(Boolean).map(p => `<p>${escapeHtml(p)}</p>`).join('');
+            } else {
+                msgEl.textContent = rawMsg;
+            }
+
+            // Styling icon
+            iconSlot.className = `appDialogIconWrapper ${type}`;
+            if (type === 'danger') {
+                iconSlot.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+            } else if (type === 'success') {
+                iconSlot.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+            } else if (type === 'warning') {
+                iconSlot.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+            } else {
+                iconSlot.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
+            }
+
+            confirmBtn.textContent = confirmText || 'Approve';
+            if (showCancel) {
+                cancelBtn.style.display = 'inline-block';
+                cancelBtn.textContent = cancelText || 'Cancel';
+            } else {
+                cancelBtn.style.display = 'none';
+            }
+
+            let resolved = false;
+            function cleanup(result) {
+                if (resolved) return;
+                resolved = true;
+                backdrop.classList.remove('visible');
+                document.removeEventListener('keydown', handleKeydown);
+                cancelBtn.onclick = null;
+                confirmBtn.onclick = null;
+                closeX.onclick = null;
+                backdrop.onclick = null;
+                resolve(result);
+            }
+
+            function handleKeydown(e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cleanup(false);
+                } else if (e.key === 'Enter') {
+                    if (document.activeElement === cancelBtn) {
+                        e.preventDefault();
+                        cleanup(false);
+                    } else {
+                        e.preventDefault();
+                        cleanup(true);
+                    }
+                }
+            }
+
+            confirmBtn.onclick = () => cleanup(true);
+            cancelBtn.onclick = () => cleanup(false);
+            closeX.onclick = () => cleanup(false);
+            backdrop.onclick = (e) => {
+                if (e.target === backdrop) cleanup(false);
+            };
+
+            document.addEventListener('keydown', handleKeydown);
+            backdrop.classList.add('visible');
+            setTimeout(() => {
+                confirmBtn.focus();
+            }, 60);
+        });
+    }
+
+    function showAlert(message, optionsOrCallback) {
+        let opts = { message: String(message || ''), type: 'info', confirmText: 'Approve', eyebrow: 'Notice', title: 'Point of View' };
+        let callback = null;
+
+        if (typeof optionsOrCallback === 'function') {
+            callback = optionsOrCallback;
+        } else if (typeof optionsOrCallback === 'string') {
+            opts.title = optionsOrCallback;
+        } else if (optionsOrCallback && typeof optionsOrCallback === 'object') {
+            opts = { ...opts, ...optionsOrCallback };
+            if (typeof opts.onConfirm === 'function') callback = opts.onConfirm;
+        }
+
+        const lower = opts.message.toLowerCase();
+        if (lower.includes('error') || lower.includes('failed') || lower.includes('denied') || lower.includes('cannot')) {
+            opts.type = 'danger';
+            if (opts.title === 'Point of View') opts.title = 'Attention Required';
+            opts.eyebrow = 'Error Alert';
+        } else if (lower.includes('success') || lower.includes('saved') || lower.includes('restored')) {
+            opts.type = 'success';
+            if (opts.title === 'Point of View') opts.title = 'Success';
+            opts.eyebrow = 'Completed';
+        } else if (lower.includes('please') || lower.includes('required') || lower.includes('must') || lower.includes('validation')) {
+            opts.type = 'warning';
+            if (opts.title === 'Point of View') opts.title = 'Notice';
+            opts.eyebrow = 'Action Required';
+        }
+
+        return showAppDialog({
+            ...opts,
+            showCancel: false
+        }).then(result => {
+            if (callback) callback(result);
+            return result;
+        });
+    }
+
+    function showConfirm(message, optionsOrCallback) {
+        let opts = {
+            message: String(message || ''),
+            title: 'Please Confirm',
+            eyebrow: 'Approve Action',
+            type: 'warning',
+            confirmText: 'Approve',
+            cancelText: 'Cancel'
+        };
+        let callback = null;
+
+        if (typeof optionsOrCallback === 'function') {
+            callback = optionsOrCallback;
+        } else if (typeof optionsOrCallback === 'string') {
+            opts.title = optionsOrCallback;
+        } else if (optionsOrCallback && typeof optionsOrCallback === 'object') {
+            opts = { ...opts, ...optionsOrCallback };
+            if (typeof opts.onConfirm === 'function') callback = opts.onConfirm;
+        }
+
+        const lower = opts.message.toLowerCase();
+        if (lower.includes('delete') || lower.includes('remove') || lower.includes('undone')) {
+            opts.type = 'danger';
+            opts.confirmText = 'Delete';
+            opts.title = 'Confirm Deletion';
+            opts.eyebrow = 'Permanent Action';
+        }
+
+        return showAppDialog({
+            ...opts,
+            showCancel: true
+        }).then(result => {
+            if (callback) callback(result);
+            return result;
+        });
+    }
+
+    // Globally route native window.alert and window.confirm to in-app approve overlay
+    if (typeof window !== 'undefined') {
+        window.alert = function(msg, optionsOrCallback) {
+            return showAlert(msg, optionsOrCallback);
+        };
+        window.confirmAsync = function(msg, optionsOrCallback) {
+            return showConfirm(msg, optionsOrCallback);
+        };
+    }
+
     async function openAdminModal() {
         if (!isAdmin()) {
-            alert('Access denied: Administrator privileges required.');
+            showAlert('Access denied: Administrator privileges required.');
             return;
         }
 
@@ -1027,8 +1270,9 @@ const DB = (function() {
         return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
     }
 
-    function adminDeleteArticlePrompt(id, title) {
-        if (confirm(`Are you sure you want to permanently delete "${title}"?`)) {
+    async function adminDeleteArticlePrompt(id, title) {
+        const ok = await showConfirm(`Are you sure you want to permanently delete "${title}"?`);
+        if (ok) {
             try {
                 deleteArticle(id);
                 // Refresh modal view
@@ -1038,40 +1282,43 @@ const DB = (function() {
                     renderLatestArticles(articlesData);
                 }
             } catch (e) {
-                alert(e.message);
+                showAlert(e.message);
             }
         }
     }
 
-    function adminDeleteUserPrompt(id, name) {
-        if (confirm(`Remove user account for "${name}"?`)) {
+    async function adminDeleteUserPrompt(id, name) {
+        const ok = await showConfirm(`Remove user account for "${name}"?`);
+        if (ok) {
             const res = deleteUser(id);
             if (res.success) {
                 openAdminModal();
             } else {
-                alert(res.error || 'Failed to remove user.');
+                showAlert(res.error || 'Failed to remove user.');
             }
         }
     }
 
-    function adminAssignRolePrompt(id, newRole, name, selectEl) {
+    async function adminAssignRolePrompt(id, newRole, name, selectEl) {
         const roleLabel = newRole === 'co-founder' ? 'Co-Founder' : 'Writer';
-        if (!confirm(`Assign the role "${roleLabel}" to ${name}?\n\nNote: Co-Founder accounts can edit and delete any article and access editorial features.`)) {
+        const ok = await showConfirm(`Assign the role "${roleLabel}" to ${name}?\n\nNote: Co-Founder accounts can edit and delete any article and access editorial features.`);
+        if (!ok) {
             // Revert the select back to its previous value
             if (selectEl) openAdminModal();
             return;
         }
         const res = assignUserRole(id, newRole);
         if (!res.success) {
-            alert(res.error || 'Failed to assign role.');
+            showAlert(res.error || 'Failed to assign role.');
         }
         openAdminModal();
     }
 
-    function adminRestoreArticlesPrompt() {
-        if (confirm('Restore all previously deleted default seed articles?')) {
+    async function adminRestoreArticlesPrompt() {
+        const ok = await showConfirm('Restore all previously deleted default seed articles?');
+        if (ok) {
             restoreDeletedArticles();
-            alert('All seed articles have been restored.');
+            await showAlert('All seed articles have been restored.');
             window.location.reload();
         }
     }
@@ -1079,7 +1326,7 @@ const DB = (function() {
     async function openMyArticlesModal() {
         const user = getCurrentUser();
         if (!user) {
-            alert('Please sign in to view your articles.');
+            await showAlert('Please sign in to view your articles.');
             window.location.href = 'auth.html?redirect=add-essay.html';
             return;
         }
@@ -1193,8 +1440,9 @@ const DB = (function() {
         }
     }
 
-    function myArticlesDeletePrompt(id, title) {
-        if (confirm(`Are you sure you want to permanently delete "${title}"? This action cannot be undone.`)) {
+    async function myArticlesDeletePrompt(id, title) {
+        const ok = await showConfirm(`Are you sure you want to permanently delete "${title}"? This action cannot be undone.`);
+        if (ok) {
             try {
                 deleteArticle(id);
                 openMyArticlesModal();
@@ -1212,7 +1460,7 @@ const DB = (function() {
                     }
                 }
             } catch (e) {
-                alert(e.message || 'Error deleting article.');
+                showAlert(e.message || 'Error deleting article.');
             }
         }
     }
@@ -1410,10 +1658,10 @@ const DB = (function() {
         return { success: true };
     }
 
-    function openAccountSettingsModal() {
+    async function openAccountSettingsModal() {
         const user = getCurrentUser();
         if (!user) {
-            alert('Please sign in to access account settings.');
+            await showAlert('Please sign in to access account settings.');
             window.location.href = 'auth.html';
             return;
         }
@@ -1441,7 +1689,7 @@ const DB = (function() {
 
                     <!-- Profile Info Section -->
                     <div style="display: flex; flex-direction: column; gap: 14px;">
-                        <h4 style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Profile Information</h4>
+                        <h4 style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Profile Information &amp; Socials</h4>
                         
                         <div style="display: flex; flex-direction: column; gap: 6px;">
                             <label style="font-size: 12.5px; font-weight: 600;">Display Name</label>
@@ -1449,8 +1697,24 @@ const DB = (function() {
                         </div>
 
                         <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label style="font-size: 12.5px; font-weight: 600;">Email Address</label>
+                            <label style="font-size: 12.5px; font-weight: 600;">Account Email (Login)</label>
                             <input type="email" id="settingsEmail" value="${escapeQuotes(user.email)}" disabled style="padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 13.5px; outline: none; background: var(--bg-surface-secondary); color: var(--text-muted); cursor: not-allowed;">
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 12.5px; font-weight: 600;">Public Contact Email (Visible on Profile)</label>
+                            <input type="email" id="settingsPublicEmail" value="${escapeQuotes(user.publicEmail || user.email || '')}" placeholder="contact@example.com" style="padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 13.5px; outline: none; background: var(--bg-surface); color: var(--text-primary);">
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <label style="font-size: 12.5px; font-weight: 600;">Instagram</label>
+                                <input type="text" id="settingsInstagram" value="${escapeQuotes(user.instagram || '')}" placeholder="@username or URL" style="padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 13.5px; outline: none; background: var(--bg-surface); color: var(--text-primary);">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <label style="font-size: 12.5px; font-weight: 600;">LinkedIn</label>
+                                <input type="text" id="settingsLinkedin" value="${escapeQuotes(user.linkedin || '')}" placeholder="linkedin.com/in/username" style="padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 13.5px; outline: none; background: var(--bg-surface); color: var(--text-primary);">
+                            </div>
                         </div>
                     </div>
 
@@ -1552,9 +1816,24 @@ const DB = (function() {
         }
 
         const currentUser = getCurrentUser();
-        if (displayName !== currentUser.name) {
-            updateUserProfile({ name: displayName });
-        }
+        const instagram = (document.getElementById('settingsInstagram')?.value || '').trim();
+        const linkedin = (document.getElementById('settingsLinkedin')?.value || '').trim();
+        const publicEmail = (document.getElementById('settingsPublicEmail')?.value || '').trim();
+
+        const profileUpdates = {
+            name: displayName,
+            instagram: instagram,
+            linkedin: linkedin,
+            publicEmail: publicEmail
+        };
+
+        updateUserProfile(profileUpdates);
+        saveAuthorProfile(displayName, {
+            name: displayName,
+            instagram: instagram,
+            linkedin: linkedin,
+            publicEmail: publicEmail
+        });
 
         if (currentPass || newPass || confirmPass) {
             if (!currentPass) {
@@ -1621,7 +1900,7 @@ const DB = (function() {
         } else if (cleanName.toLowerCase() === 'ceren onursal') {
             defaultBio = 'Senior Research Fellow and Historian specializing in colonial institutions, cultural diplomacy, and trans-Atlantic interactions.';
             defaultRole = 'Co-Founder';
-            defaultAvatar = 'images/orthaxis.jpg';
+            defaultAvatar = null;
         }
 
         const currentUser = getCurrentUser();
@@ -1645,6 +1924,9 @@ const DB = (function() {
         return {
             name: userMatch ? userMatch.name : cleanName,
             email: userMatch ? userMatch.email : (saved.email || ''),
+            publicEmail: (saved.publicEmail !== undefined) ? saved.publicEmail : (userMatch?.publicEmail || userMatch?.email || saved.email || ''),
+            instagram: (saved.instagram !== undefined) ? saved.instagram : (userMatch?.instagram || ''),
+            linkedin: (saved.linkedin !== undefined) ? saved.linkedin : (userMatch?.linkedin || ''),
             avatar: (userMatch && userMatch.avatar) ? userMatch.avatar : (saved.avatar || defaultAvatar),
             bio: (userMatch && userMatch.bio) ? userMatch.bio : (saved.bio || defaultBio),
             role: role,
@@ -1742,7 +2024,9 @@ const DB = (function() {
         if (!seen.has('ceren onursal')) {
             const cerenProf = getAuthorProfile('Ceren Onursal');
             cerenProf.role = 'Co-Founder';
-            if (!cerenProf.avatar) cerenProf.avatar = 'images/orthaxis.jpg';
+            if (cerenProf.avatar && (cerenProf.avatar.includes('orthaxis.jpg') || cerenProf.avatar.includes('orthaxis.png'))) {
+                cerenProf.avatar = null;
+            }
             list.push(cerenProf);
             seen.add('ceren onursal');
         }
@@ -1887,10 +2171,18 @@ const DB = (function() {
         return { success: true };
     }
 
+    async function confirmDeleteContactMessage(msgId) {
+        const ok = await showConfirm('Are you sure you want to delete this message?');
+        if (ok) {
+            deleteContactMessage(msgId);
+            openContactInquiriesModal();
+        }
+    }
+
     function openContactInquiriesModal() {
         const user = getCurrentUser();
         if (!user || (!isAdmin() && !isCoFounder(user))) {
-            alert('Access restricted to Co-Founders and Platform Administrators.');
+            showAlert('Access restricted to Co-Founders and Platform Administrators.');
             return;
         }
 
@@ -1941,7 +2233,7 @@ const DB = (function() {
                             <a href="mailto:${safeEmail}?subject=Re: ${encodeURIComponent(msg.subject || 'Inquiry')}" class="inquiryActionBtn replyBtn" title="Send email response">
                                 Reply
                             </a>
-                            <button type="button" class="inquiryActionBtn deleteBtn" onclick="if(confirm('Delete this message?')){ DB.deleteContactMessage('${msg.id}'); DB.openContactInquiriesModal(); }" title="Delete message">
+                            <button type="button" class="inquiryActionBtn deleteBtn" onclick="DB.confirmDeleteContactMessage('${msg.id}')" title="Delete message">
                                 Delete
                             </button>
                         </div>
@@ -2001,7 +2293,10 @@ const DB = (function() {
         if (currentUser && currentUser.name && currentUser.name.trim().toLowerCase() === cleanName.toLowerCase()) {
             updateUserProfile({
                 ...(data.avatar !== undefined ? { avatar: data.avatar } : {}),
-                ...(data.bio !== undefined ? { bio: data.bio } : {})
+                ...(data.bio !== undefined ? { bio: data.bio } : {}),
+                ...(data.instagram !== undefined ? { instagram: data.instagram } : {}),
+                ...(data.linkedin !== undefined ? { linkedin: data.linkedin } : {}),
+                ...(data.publicEmail !== undefined ? { publicEmail: data.publicEmail } : {})
             });
         }
 
@@ -2074,7 +2369,6 @@ const DB = (function() {
         if (profile && profile.avatar) return profile.avatar;
         const clean = authorName.trim().toLowerCase();
         if (clean === 'ali mert bayar') return 'images/mert_img.png';
-        if (clean === 'ceren onursal') return 'images/orthaxis.jpg';
         return null;
     }
 
@@ -2103,7 +2397,7 @@ const DB = (function() {
 
     function openEditorialPicksModal() {
         if (!isAdmin()) {
-            alert('Access denied: Editor privileges required.');
+            showAlert('Access denied: Editor privileges required.');
             return;
         }
 
@@ -2279,7 +2573,7 @@ const DB = (function() {
         try {
             saveEditorialPicks(picks);
         } catch (e) {
-            alert(e.message);
+            showAlert(e.message);
             return;
         }
         closeEditorialPicksModal();
@@ -2363,7 +2657,13 @@ const DB = (function() {
         deleteProject,
         addProjectPart,
         updateProjectPart,
-        deleteProjectPart
+        deleteProjectPart,
+        showAppDialog,
+        dialog: showAppDialog,
+        showAlert,
+        showConfirm,
+        confirm: showConfirm,
+        confirmDeleteContactMessage
     };
 })();
 
