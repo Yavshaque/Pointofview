@@ -125,19 +125,25 @@ const DB = (function() {
     }
 
     function profileToRow(prof, user) {
-        const cleanName = prof.name || user?.name || '';
+        const cleanName = (prof.name || user?.name || '').trim();
+        const users = getAllUsers();
+        const matchingUser = users.find(u => (u.name && u.name.trim().toLowerCase() === cleanName.toLowerCase()) || (u.id && String(u.id) === String(prof.id)));
         const defaultEmail = cleanName ? `${cleanName.toLowerCase().replace(/\s+/g, '.')}@articlewebsite.com` : 'contributor@articlewebsite.com';
+        
+        const finalId = String(prof.id || matchingUser?.id || (user?.name?.toLowerCase() === cleanName.toLowerCase() ? user.id : null) || ('prof-' + (cleanName || 'user').toLowerCase().replace(/\s+/g, '-')));
+        const finalEmail = matchingUser?.email || prof.email || (user?.name?.toLowerCase() === cleanName.toLowerCase() ? user.email : null) || defaultEmail;
+
         return {
-            id: String(prof.id || user?.id || ('prof-' + (cleanName || 'user').toLowerCase().replace(/\s+/g, '-'))),
+            id: finalId,
             name: cleanName,
-            email: prof.email || user?.email || defaultEmail,
-            password: prof.password || user?.password || null,
-            role: prof.role || user?.role || 'writer',
-            bio: prof.bio || user?.bio || '',
-            avatar: prof.avatar || user?.avatar || null,
-            instagram: prof.instagram || user?.instagram || '',
-            linkedin: prof.linkedin || user?.linkedin || '',
-            public_email: prof.publicEmail || prof.public_email || user?.publicEmail || ''
+            email: finalEmail,
+            password: matchingUser?.password || prof.password || (user?.name?.toLowerCase() === cleanName.toLowerCase() ? user.password : null),
+            role: matchingUser?.role || prof.role || 'writer',
+            bio: prof.bio || matchingUser?.bio || '',
+            avatar: prof.avatar || matchingUser?.avatar || null,
+            instagram: prof.instagram || matchingUser?.instagram || '',
+            linkedin: prof.linkedin || matchingUser?.linkedin || '',
+            public_email: prof.publicEmail || prof.public_email || matchingUser?.publicEmail || ''
         };
     }
 
@@ -263,23 +269,59 @@ const DB = (function() {
 
             // 3. Profiles Sync
             const { data: cloudProfiles, error: profError } = await client.from('profiles').select('*');
-            if (!profError && Array.isArray(cloudProfiles) && cloudProfiles.length > 0) {
-                let customProfiles = {};
-                try {
-                    customProfiles = JSON.parse(localStorage.getItem(PROFILES_KEY) || '{}');
-                } catch (e) {}
-                cloudProfiles.forEach(row => {
-                    const mapped = rowToProfile(row);
-                    if (mapped.name) {
-                        customProfiles[mapped.name.toLowerCase()] = {
-                            ...(customProfiles[mapped.name.toLowerCase()] || {}),
-                            ...mapped
-                        };
+            if (!profError && Array.isArray(cloudProfiles)) {
+                if (cloudProfiles.length > 0) {
+                    let customProfiles = {};
+                    try {
+                        customProfiles = JSON.parse(localStorage.getItem(PROFILES_KEY) || '{}');
+                    } catch (e) {}
+                    cloudProfiles.forEach(row => {
+                        const mapped = rowToProfile(row);
+                        if (mapped.name) {
+                            customProfiles[mapped.name.toLowerCase()] = {
+                                ...(customProfiles[mapped.name.toLowerCase()] || {}),
+                                ...mapped
+                            };
+                        }
+                    });
+                    try {
+                        localStorage.setItem(PROFILES_KEY, JSON.stringify(customProfiles));
+                    } catch (e) {}
+
+                    // Also sync cloud profiles into local users and active session
+                    try {
+                        const localUsers = getAllUsers();
+                        let usersChanged = false;
+                        cloudProfiles.forEach(row => {
+                            const mapped = rowToProfile(row);
+                            const u = localUsers.find(user => (user.name && user.name.trim().toLowerCase() === mapped.name?.trim().toLowerCase()) || String(user.id) === String(mapped.id));
+                            if (u) {
+                                if (mapped.avatar && u.avatar !== mapped.avatar) { u.avatar = mapped.avatar; usersChanged = true; }
+                                if (mapped.bio && u.bio !== mapped.bio) { u.bio = mapped.bio; usersChanged = true; }
+                                if (mapped.instagram !== undefined && u.instagram !== mapped.instagram) { u.instagram = mapped.instagram; usersChanged = true; }
+                                if (mapped.linkedin !== undefined && u.linkedin !== mapped.linkedin) { u.linkedin = mapped.linkedin; usersChanged = true; }
+                                if (mapped.publicEmail !== undefined && u.publicEmail !== mapped.publicEmail) { u.publicEmail = mapped.publicEmail; usersChanged = true; }
+                            }
+                        });
+                        if (usersChanged) {
+                            localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
+                            const current = getCurrentUser();
+                            if (current) {
+                                const refreshed = localUsers.find(u => String(u.id) === String(current.id));
+                                if (refreshed) {
+                                    localStorage.setItem(SESSION_KEY, JSON.stringify({ user: refreshed, token: 'session-' + refreshed.id }));
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                } else {
+                    // Initial sync of existing profiles to Supabase cloud
+                    const localUsers = getAllUsers();
+                    if (localUsers.length > 0) {
+                        const rows = localUsers.map(u => profileToRow(getAuthorProfile(u.name) || u, u));
+                        await client.from('profiles').upsert(rows, { onConflict: 'id' });
                     }
-                });
-                try {
-                    localStorage.setItem(PROFILES_KEY, JSON.stringify(customProfiles));
-                } catch (e) {}
+                }
             }
 
             // 4. Contact Messages Sync (if admin / co-founder)
@@ -2254,6 +2296,7 @@ const DB = (function() {
         }
 
         return {
+            id: userMatch ? userMatch.id : ('prof-' + cleanName.toLowerCase().replace(/\s+/g, '-')),
             name: userMatch ? userMatch.name : cleanName,
             email: userMatch ? userMatch.email : (saved.email || ''),
             publicEmail: (saved.publicEmail !== undefined) ? saved.publicEmail : (userMatch?.publicEmail || userMatch?.email || saved.email || ''),
