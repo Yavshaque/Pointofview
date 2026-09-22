@@ -82,6 +82,145 @@ header {
     color: var(--text-primary);
 }
 
+#headerUL li a[aria-current="page"],
+#headerUL li a.active,
+#headerUL li a.activeNavLink {
+    color: #ffffff !important;
+    border-bottom: 2px solid #b91c1c;
+    padding-bottom: 4px;
+}
+
+@media (max-width: 1180px) {
+    header {
+        padding: 0 24px;
+    }
+
+    #headerUL li {
+        margin: 0 10px;
+    }
+
+    #headerUL li a {
+        font-size: 13px;
+    }
+}
+
+.headerDirectionText {
+    display: none;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 8px;
+    opacity: 0.95;
+}
+
+@media (max-width: 820px) {
+    header,
+    .studioHeader,
+    .authHeader {
+        height: 56px !important;
+        min-height: 56px !important;
+        padding: 0 16px !important;
+        flex-wrap: nowrap !important;
+        row-gap: 0 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    .headers {
+        height: 100% !important;
+    }
+
+    #headerLeft,
+    .studioHeaderLeft {
+        flex: 0 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+    }
+
+    #headerLeft #logo,
+    .studioHeaderLeft #logo,
+    #logo {
+        width: 76px !important;
+        height: auto !important;
+    }
+
+    #headerCenter,
+    .studioHeaderCenter {
+        flex: 1 1 auto !important;
+        order: 2 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        padding: 0 8px !important;
+    }
+
+    #headerUL {
+        display: none !important;
+    }
+
+    .headerDirectionText {
+        display: inline-block !important;
+    }
+
+    #headerRight,
+    .studioHeaderRight {
+        flex: 0 0 auto !important;
+        order: 3 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+    }
+
+    /* Remove write article button from the mobile header */
+    #publishNavBtn,
+    .publishNavBtn {
+        display: none !important;
+    }
+
+    /* Hide back to website & top publish button from share article / studio / reader page on mobile */
+    .studioHeaderRight .backHomeBtn,
+    .studioHeaderRight #studioTopPublishBtn,
+    .studioHeaderRight .studioTopPublishBtn,
+    .authHeader .backHomeBtn,
+    .authHeader #headerRight .backHomeBtn,
+    .backHomeBtn {
+        display: none !important;
+    }
+
+    .userHeaderPill {
+        min-width: 0 !important;
+        height: 34px !important;
+        padding: 0 11px !important;
+        font-size: 12.5px !important;
+        max-width: 140px !important;
+    }
+
+    .userHeaderPill .userNameText {
+        max-width: 80px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+
+    #signInButton {
+        min-width: 0 !important;
+        height: 34px !important;
+        padding: 0 14px !important;
+        font-size: 12.5px !important;
+    }
+}
+
 #publishNavBtn,
 .publishNavBtn,
 .userHeaderPill {

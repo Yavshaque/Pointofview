@@ -52,7 +52,7 @@
     object-position: center;
     border-radius: 25px;
     display: block;
-    transition: transform 0.6s ease;
+    transition: transform 0.6s ease, opacity 0.22s ease;
 }
 
 #thumbnailImage img:hover {
@@ -69,23 +69,21 @@
     flex-direction: row;
     justify-content: space-between;
     padding: 0 18px;
-    z-index: 12;
+    z-index: 35 !important;
     pointer-events: none;
     margin-top: 0;
+    transition: opacity 0.22s ease;
 }
 
 .buttons {
-    pointer-events: auto;
+    pointer-events: auto !important;
+    position: relative;
     margin: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
     padding: 0;
     height: 48px;
     width: 48px;
     border: 1.5px solid rgba(255, 255, 255, 0.35);
-    z-index: 12;
+    z-index: 35 !important;
     border-radius: 50%;
     background: rgba(15, 20, 32, 0.78);
     backdrop-filter: blur(14px) saturate(160%);
@@ -96,6 +94,10 @@
     justify-content: center;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
     transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .buttons:hover {
@@ -114,10 +116,56 @@
     height: 22px;
     filter: brightness(0) invert(1);
     transition: transform 0.2s ease;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
 }
 
 .buttons:hover img {
     filter: brightness(0) invert(1);
+}
+
+/* Slide Indicator Dots */
+.heroDots {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 15;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(11, 15, 25, 0.65);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    pointer-events: auto;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.heroDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.42);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+}
+
+.heroDot:hover {
+    background: rgba(255, 255, 255, 0.85);
+    transform: scale(1.15);
+}
+
+.heroDot.active {
+    width: 22px;
+    background: #880003;
+    box-shadow: 0 0 10px rgba(136, 0, 3, 0.75);
 }
 
 #articleContent {
@@ -325,6 +373,89 @@
     background-color: #dc2626;
     border-color: #dc2626;
     transform: translateY(-1px);
+}
+
+/* Keep the featured story readable on narrow phone screens. */
+@media (max-width: 520px) {
+    .article {
+        aspect-ratio: 4 / 5;
+        min-height: 460px;
+        border-radius: 20px;
+    }
+
+    #thumbnailImage {
+        border-radius: 20px;
+    }
+
+    #thumbnailImage img {
+        object-position: center;
+        border-radius: 20px;
+    }
+
+    #buttonsContainer {
+        padding: 0 10px;
+    }
+
+    .buttons {
+        width: 38px;
+        height: 38px;
+    }
+
+    .buttons img {
+        width: 17px;
+        height: 17px;
+    }
+
+    #articleContent {
+        border-radius: 0 0 20px 20px;
+        padding: 18px 18px 16px;
+        gap: 8px;
+    }
+
+    #articleTitle {
+        gap: 8px;
+    }
+
+    #articleTitle h2 {
+        font-size: 1.15em;
+        -webkit-line-clamp: 3;
+    }
+
+    #articleTitle a img {
+        width: 30px;
+    }
+
+    #articleDescription p {
+        font-size: 0.8em;
+        -webkit-line-clamp: 2;
+    }
+
+    #articleInfo {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    #parameters,
+    #keyInfo {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .infoCard {
+        font-size: 11px;
+        padding: 4px 9px;
+    }
+
+    .heroAuthorName {
+        font-size: 11px;
+    }
+
+    .heroAuthorAvatar {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 /* ==========================================================================

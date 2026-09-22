@@ -7,7 +7,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="stylesheet" href="style.css?v=2.4">
     <script src="articles-data.js?v=2.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js?v=2.2"></script>
@@ -20,6 +22,7 @@
             </a>
         </div>
         <div class="headers" id="headerCenter">
+            <span class="headerDirectionText">Writer Profile</span>
             <ul id="headerUL">
                 <li><a href="index.html#mainContent">Home</a></li>
                 <li><a href="index.html#content">Articles</a></li>
@@ -120,7 +123,10 @@
                     <h2 class="profileFeedTitle" id="profileFeedTitle">Published Articles</h2>
                     <span class="profileArticlesCountBadge" id="feedCountBadge">0</span>
                 </div>
-                <a href="add-essay.html" class="adminAddBtn" id="profileWriteBtn" style="padding: 8px 16px; font-size: 13px; text-decoration: none;">+ Write New Dispatch</a>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <a href="add-essay.html" class="adminAddBtn" id="profileWriteBtn" style="padding: 8px 14px; font-size: 13px; text-decoration: none;">+ Write Article</a>
+                    <a href="projects.html" class="adminAddBtn" id="profileProjectsBtn" style="padding: 8px 14px; font-size: 13px; text-decoration: none; background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.15);">Projects &rarr;</a>
+                </div>
             </div>
 
             <div class="profileArticlesGrid" id="profileArticlesGrid">

@@ -1154,6 +1154,71 @@
     }
 }
 
+@media (max-width: 520px) {
+    .projectsContainer {
+        padding: 18px 12px 48px;
+    }
+
+    .projectsHeroCard {
+        padding: 28px 22px;
+        border-radius: 22px;
+        gap: 24px;
+    }
+
+    .projectsHeroTitle {
+        font-size: 1.8rem;
+    }
+
+    .projectsHeroLead {
+        font-size: 1rem;
+        line-height: 1.55;
+    }
+
+    .projectsHeroActions {
+        gap: 10px;
+    }
+
+    .createProjectBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .projectsCountBadge {
+        align-self: flex-start;
+    }
+
+    .projectsControlsBar {
+        align-items: stretch;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .projectsSearchBox {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+
+    .projectsFilterChips {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+    }
+
+    .projectsFilterChips::-webkit-scrollbar {
+        display: none;
+    }
+
+    .projectFilterChip {
+        flex: 0 0 auto;
+    }
+
+    .projectCardCoverWrapper {
+        height: 190px;
+    }
+}
+
 /* ==========================================================================
    Project Collaboration & Co-Authorship Styles
    ========================================================================== */

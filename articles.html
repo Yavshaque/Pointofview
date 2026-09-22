@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Articles | Point of View</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="stylesheet" href="style.css?v=3.1">
+    <script src="articles-data.js?v=3.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js?v=3.1"></script>
+</head>
+<body>
+    <header>
+        <div class="headers" id="headerLeft">
+            <a href="index.html" class="logoLink" title="Home">
+                <img src="images/logo.png" alt="Logo" id="logo">
+            </a>
+        </div>
+        <div class="headers" id="headerCenter">
+            <span class="headerDirectionText">Articles</span>
+            <ul id="headerUL">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="articles.html" aria-current="page" style="color: #ffffff; border-bottom: 2px solid #b91c1c; padding-bottom: 4px;">Articles</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="index.html#ourTeam">About</a></li>
+                <li><a href="index.html#contactSection">Contact</a></li>
+            </ul>
+        </div>
+        <div class="headers" id="headerRight">
+            <a href="add-essay.html" id="publishNavBtn" class="publishNavBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>Add Article</span>
+            </a>
+            <a href="auth.html" id="signInButton">Sign In</a>
+        </div>
+    </header>
+
+    <main id="content" class="articlesPageContent">
+        <div class="sectionHeaderRow">
+            <div>
+                <span class="sectionBadge">The archive</span>
+                <h1 class="sectionTitle">Explore Articles</h1>
+                <p class="articlesPageIntro">Thoughtful perspectives on science, politics, history, culture, and the world around us.</p>
+            </div>
+            <div class="categoryFilters" id="categoryFilters">
+                <button type="button" class="filterBtn active" data-category="all">All</button>
+            </div>
+        </div>
+        <div id="latestArticles" aria-live="polite"></div>
+    </main>
+
+    <footer>
+        <div class="footerContainer">
+            <div class="footerTop">
+                <div class="footerBrand">
+                    <img src="images/logo.png" alt="Logo">
+                    <p>Point of View publishes clear, thoughtful articles and editorial projects about science, politics, and the world.</p>
+                </div>
+                <div class="footerNav">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="articles.html">Articles</a></li>
+                        <li><a href="projects.html">Projects &amp; Series</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footerBottom"><p>&copy; 2026 Point of View by Youth. All rights reserved.</p></div>
+        </div>
+    </footer>
+
+    <script src="script.js?v=3.1"></script>
+</body>
+</html>
