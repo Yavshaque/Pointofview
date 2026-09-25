@@ -3,16 +3,16 @@
  * Modular file-based CSS architecture.
  */
 
-@import url('css/variables.css?v=3.1');
-@import url('css/base.css?v=3.1');
-@import url('css/header.css?v=3.1');
-@import url('css/hero.css?v=3.1');
-@import url('css/articles.css?v=3.1');
-@import url('css/team-contact.css?v=3.1');
-@import url('css/auth.css?v=3.1');
-@import url('css/add-essay.css?v=3.1');
-@import url('css/reader.css?v=3.1');
-@import url('css/projects.css?v=3.1');
-@import url('css/profile.css?v=3.1');
-@import url('css/modals.css?v=3.1');
-@import url('css/responsive.css?v=3.1');
+@import url('css/variables.css?v=3.3');
+@import url('css/base.css?v=3.3');
+@import url('css/header.css?v=3.3');
+@import url('css/hero.css?v=3.3');
+@import url('css/articles.css?v=3.3');
+@import url('css/team-contact.css?v=3.3');
+@import url('css/auth.css?v=3.3');
+@import url('css/add-essay.css?v=3.3');
+@import url('css/reader.css?v=3.3');
+@import url('css/projects.css?v=3.3');
+@import url('css/profile.css?v=3.3');
+@import url('css/modals.css?v=3.3');
+@import url('css/responsive.css?v=3.3');

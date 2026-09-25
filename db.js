@@ -62,7 +62,8 @@ const DB = (function() {
             read_time: parseInt(a.readTime || a.read_time, 10) || 5,
             body: a.body || '',
             keywords: Array.isArray(a.keywords) ? a.keywords : [],
-            bibliography: a.bibliography || ''
+            bibliography: a.bibliography || '',
+            project_id: a.projectId || a.project_id || null
         };
     }
 
@@ -82,6 +83,7 @@ const DB = (function() {
             body: r.body,
             keywords: Array.isArray(r.keywords) ? r.keywords : (typeof r.keywords === 'string' ? JSON.parse(r.keywords || '[]') : []),
             bibliography: r.bibliography || '',
+            projectId: r.project_id || r.projectId || null,
             createdAt: r.created_at
         };
     }
@@ -629,8 +631,26 @@ const DB = (function() {
             keywords: sanitizedKeywords || articleData.keywords,
             authorId: user.id,
             author: articleData.author || user.name,
+            projectId: articleData.projectId || null,
             createdAt: new Date().toISOString()
         };
+
+        if (newArticle.projectId) {
+            try {
+                const partData = {
+                    id: 'part-' + Date.now(),
+                    title: newArticle.title,
+                    subtitle: newArticle.description || '',
+                    readTime: newArticle.readTime || 5,
+                    body: newArticle.body || '',
+                    bibliography: newArticle.bibliography || '',
+                    linkedArticleId: newArticle.id
+                };
+                addProjectPart(newArticle.projectId, partData);
+            } catch (e) {
+                console.warn('Could not link article to project:', e);
+            }
+        }
 
         articles.unshift(newArticle);
         localStorage.setItem(ARTICLES_KEY, JSON.stringify(articles));
@@ -681,6 +701,8 @@ const DB = (function() {
         if (updatedData.keywords && Array.isArray(updatedData.keywords) && updatedData.keywords.length > 2) {
             updatedData = { ...updatedData, keywords: updatedData.keywords.slice(0, 2) };
         }
+
+        updatedData.projectId = updatedData.projectId !== undefined ? updatedData.projectId : ((existingIndex !== -1 && articles[existingIndex].projectId) || null);
 
         let savedArticle = null;
         if (existingIndex === -1) {
@@ -761,6 +783,20 @@ const DB = (function() {
             console.error('Error reading projects:', e);
         }
         return [];
+    }
+
+    function getProjectsForUser() {
+        const user = getCurrentUser();
+        if (!user) return [];
+        const projects = getProjects();
+        return projects.filter(p => {
+            if (isAdmin()) return true;
+            if (p.authorId && String(p.authorId) === String(user.id)) return true;
+            if (p.author && user.name && p.author.trim().toLowerCase() === user.name.trim().toLowerCase()) return true;
+            if (p.collaboratorId && String(p.collaboratorId) === String(user.id)) return true;
+            if (p.collaboratorName && user.name && p.collaboratorName.trim().toLowerCase() === user.name.trim().toLowerCase()) return true;
+            return false;
+        });
     }
 
     function getProjectById(id) {
@@ -3084,6 +3120,7 @@ const DB = (function() {
         openContactInquiriesModal,
         closeContactInquiriesModal,
         getProjects,
+        getProjectsForUser,
         getProjectById,
         canEditProject,
         saveProject,

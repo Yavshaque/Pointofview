@@ -15,6 +15,7 @@ let articlesData = [];
 let slideInterval = null;
 let touchStartX = 0;
 let touchStartY = 0;
+let downsideCategoryBarObserver = null;
 
 const DEFAULT_ARTICLES = [];
 
@@ -35,38 +36,64 @@ function initializeArticles(baseData) {
         console.error('Error reading custom articles:', e);
     }
 
+    const databaseArticles = Array.isArray(baseData) ? baseData : [];
     const deletedIds = (typeof DB !== 'undefined' && DB.getDeletedArticleIds) ? DB.getDeletedArticleIds() : new Set();
     const customIds = new Set(customArticles.map(a => String(a.id)));
     
     // External base articles (only if explicitly supplied)
-    let filteredBase = [];
-    if (Array.isArray(baseData) && baseData.length > 0) {
-        filteredBase = baseData.filter(a => !customIds.has(String(a.id)));
-    }
+    const filteredBase = databaseArticles.filter(a => !customIds.has(String(a.id)));
 
     let activeProjects = [];
     if (typeof DB !== 'undefined' && DB.getProjects) {
         const projects = DB.getProjects();
-        activeProjects = projects.filter(p => p.parts && p.parts.length > 0).map(p => {
-            const firstPart = p.parts[0];
+        activeProjects = (projects || []).map(p => {
+            const rawParts = p.parts;
+            const partsList = Array.isArray(rawParts)
+                ? rawParts
+                : (typeof rawParts === 'string' ? (() => { try { return JSON.parse(rawParts); } catch(e){ return []; } })() : []);
+            
+            const firstPart = partsList[0] || {};
+            const totalReadTime = partsList.reduce((acc, part) => {
+                const rt = part && part.readTime ? parseInt(part.readTime, 10) : 4;
+                return acc + (isNaN(rt) ? 4 : rt);
+            }, 0) || 4;
+
+            let categories = ['Series'];
+            if (Array.isArray(p.categories) && p.categories.length) {
+                categories = p.categories;
+            } else if (typeof p.categories === 'string') {
+                try { categories = JSON.parse(p.categories || '["Series"]'); } catch(e){ categories = ['Series']; }
+            }
+
             return {
                 id: p.id,
-                title: p.title,
-                author: p.author,
-                date: firstPart.date || p.createdAt || '2026-01-01',
+                title: p.title || 'Untitled Project',
+                author: p.author || 'Anonymous',
+                date: (firstPart && firstPart.date) || p.createdAt || '2026-01-01',
                 image: p.cover || 'images/spanish colonisation.png',
-                readTime: p.parts.reduce((acc, part) => acc + (part.readTime || 4), 0),
-                description: p.subtitle || p.description,
-                keywords: p.categories || ['Series'],
-                isProject: true
+                readTime: totalReadTime,
+                description: p.subtitle || p.description || '',
+                keywords: categories,
+                isProject: true,
+                collaboratorName: p.collaboratorName || null,
+                collaboratorId: p.collaboratorId || null,
+                isCollab: !!(p.collaboratorName)
             };
         });
     }
 
-    articlesData = [...activeProjects, ...customArticles, ...filteredBase].filter(a => {
+    // Both articles and projects are included in the hero slider, except articles linked to a project.
+    // Cloud-synced database articles are merged through customArticles; static database articles
+    // remain supported through baseData.
+    const mergedItems = [...activeProjects, ...customArticles, ...filteredBase];
+    articlesData = mergedItems.filter(a => {
         if (!a) return false;
         if (deletedIds.has(String(a.id))) return false;
         if (typeof DB !== 'undefined' && DB.isDummyItem && DB.isDummyItem(a)) return false;
+        // Do not show articles linked to a project in the hero carousel or grid (the project is already displayed)
+        const linkedPid = a.projectId ?? a.project_id;
+        const normalizedProjectId = linkedPid == null ? '' : String(linkedPid).trim().toLowerCase();
+        if (!a.isProject && normalizedProjectId && normalizedProjectId !== 'null' && normalizedProjectId !== 'undefined') return false;
         const title = (a.title || '').trim().toLowerCase();
         if (title.includes('demographic collapse')) return false;
         if (title.includes('mercantilism')) return false;
@@ -206,12 +233,14 @@ if (buttonsContainer) {
 }
 
 if (heroSlider) {
-    heroSlider.addEventListener('mouseenter', () => {
-        if (slideInterval) clearInterval(slideInterval);
-    });
-    heroSlider.addEventListener('mouseleave', () => {
-        startAutoSlide();
-    });
+    if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        heroSlider.addEventListener('mouseenter', () => {
+            if (slideInterval) clearInterval(slideInterval);
+        });
+        heroSlider.addEventListener('mouseleave', () => {
+            startAutoSlide();
+        });
+    }
 
     heroSlider.addEventListener('touchstart', (event) => {
         const touch = event.changedTouches[0];
@@ -234,6 +263,7 @@ if (heroSlider) {
         } else {
             goToPrevSlide();
         }
+        startAutoSlide();
     }, { passive: true });
 }
 
@@ -272,37 +302,8 @@ function renderMiniAvatarHTML(authorName, className = 'cardAuthorAvatar') {
     }
 }
 
-function renderHeroDots(activeIdx, totalCount) {
-    const dotsContainer = document.getElementById('heroDots');
-    if (!dotsContainer) return;
-    if (totalCount <= 1) {
-        dotsContainer.style.display = 'none';
-        dotsContainer.innerHTML = '';
-        return;
-    }
-    dotsContainer.style.display = 'flex';
-    dotsContainer.innerHTML = Array.from({ length: totalCount }, (_, i) => {
-        const isActive = i === activeIdx;
-        return `<button type="button" class="heroDot ${isActive ? 'active' : ''}" data-index="${i}" aria-label="Go to slide ${i + 1}"></button>`;
-    }).join('');
-
-    dotsContainer.querySelectorAll('.heroDot').forEach(dot => {
-        dot.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const targetIdx = parseInt(dot.getAttribute('data-index'), 10);
-            if (!isNaN(targetIdx) && targetIdx !== currentIndex) {
-                currentIndex = targetIdx;
-                updateDOM(currentIndex);
-                startAutoSlide();
-            }
-        });
-    });
-}
-
 function updateDOM(index) {
     const buttonsContainer = document.getElementById('buttonsContainer');
-    const dotsContainer = document.getElementById('heroDots');
 
     if (!articlesData || !articlesData.length) {
         if (thumbnailImage) {
@@ -322,11 +323,10 @@ function updateDOM(index) {
         }
         if (parametersDiv) parametersDiv.innerHTML = '';
         if (keyInfoDiv) keyInfoDiv.innerHTML = '';
+        const heroProjectBadge = document.getElementById('heroProjectBadge');
+        if (heroProjectBadge) heroProjectBadge.style.display = 'none';
         if (buttonsContainer) {
             buttonsContainer.style.display = 'none';
-        }
-        if (dotsContainer) {
-            dotsContainer.style.display = 'none';
         }
         return;
     }
@@ -345,13 +345,16 @@ function updateDOM(index) {
     const isProject = currentArticle.isProject === true;
     const articleHref = isProject ? `projects.html?id=${encodeURIComponent(currentArticle.id)}` : `article.html?id=${encodeURIComponent(currentArticle.id)}`;
 
+    // Show/hide top-left project badge on hero grid
+    const heroProjectBadge = document.getElementById('heroProjectBadge');
+    if (heroProjectBadge) {
+        heroProjectBadge.style.display = isProject ? 'inline-flex' : 'none';
+    }
+
     // Show/hide navigation buttons depending on slide count
     if (buttonsContainer) {
         buttonsContainer.style.display = (articlesData && articlesData.length > 1) ? 'flex' : 'none';
     }
-
-    // Render slide dots
-    renderHeroDots(currentIndex, articlesData.length);
 
     // Update hero image with smooth crossfade
     if (thumbnailImage) {
@@ -390,19 +393,46 @@ function updateDOM(index) {
     if (parametersDiv) {
         const authorName = currentArticle.author || 'Ali Mert Bayar';
         const avatarHtml = renderMiniAvatarHTML(authorName, 'heroAuthorAvatar');
-        parametersDiv.innerHTML = `
-            <div class="infoCard heroAuthorPill" id="infoCard">
-                <a href="profile.html?author=${encodeURIComponent(authorName)}" class="heroAuthorLink" title="View ${authorName}'s profile">
-                    ${avatarHtml}
-                    <span class="heroAuthorName">By ${authorName}</span>
-                </a>
-            </div>
-            <p class="infoCard" id="readTime">${currentArticle.readTime} min read</p>
-        `;
+        let authorDisplay = '';
+        
+        if (currentArticle.isCollab && currentArticle.collaboratorName) {
+            const collabAvatarHtml = renderMiniAvatarHTML(currentArticle.collaboratorName, 'heroAuthorAvatar heroCollabAvatar');
+            authorDisplay = `
+                <div class="infoCard heroAuthorPill" id="infoCard">
+                    <div class="heroAuthorsAvatarsGroup">
+                        <a href="profile.html?author=${encodeURIComponent(authorName)}" class="heroAuthorAvatarLink" title="View ${authorName}'s profile">
+                            ${avatarHtml}
+                        </a>
+                        <a href="profile.html?author=${encodeURIComponent(currentArticle.collaboratorName)}" class="heroAuthorAvatarLink" title="View ${currentArticle.collaboratorName}'s profile">
+                            ${collabAvatarHtml}
+                        </a>
+                    </div>
+                    <span class="heroAuthorName">By <a href="profile.html?author=${encodeURIComponent(authorName)}" class="heroAuthorInlineLink">${authorName}</a> &amp; <a href="profile.html?author=${encodeURIComponent(currentArticle.collaboratorName)}" class="heroAuthorInlineLink">${currentArticle.collaboratorName}</a></span>
+                </div>
+                <p class="infoCard" id="readTime">${currentArticle.readTime} min read</p>
+            `;
+        } else {
+            authorDisplay = `
+                <div class="infoCard heroAuthorPill" id="infoCard">
+                    <a href="profile.html?author=${encodeURIComponent(authorName)}" class="heroAuthorAvatarLink" title="View ${authorName}'s profile">
+                        ${avatarHtml}
+                    </a>
+                    <span class="heroAuthorName">By <a href="profile.html?author=${encodeURIComponent(authorName)}" class="heroAuthorInlineLink">${authorName}</a></span>
+                </div>
+                <p class="infoCard" id="readTime">${currentArticle.readTime} min read</p>
+            `;
+        }
+        parametersDiv.innerHTML = authorDisplay;
     }
 
     // Update category keywords, edit pill, and delete pill
     if (keyInfoDiv) {
+        if (currentArticle.isCollab) {
+            keyInfoDiv.classList.add('heroCollabKeyInfo');
+        } else {
+            keyInfoDiv.classList.remove('heroCollabKeyInfo');
+        }
+
         let keyHtml = '';
         if (currentArticle.keywords && Array.isArray(currentArticle.keywords)) {
             keyHtml += currentArticle.keywords
@@ -455,7 +485,7 @@ function renderLatestArticles(articles) {
         const mainCategory = (article.keywords && article.keywords.find(k => k.toLowerCase() !== 'published')) || 'World';
         const readTime = article.readTime || 4;
 
-        const projectContentBadge = isProject ? `<span class="sectionBadge" style="display=inline-block;font-size: 9.5px; padding: 2px 9px; margin: 0px; align-self: flex-start;">Project</span>` : '';
+        const projectContentBadge = isProject ? `<span class="sectionBadge" style="font-size: 9.5px; padding: 2px 9px; margin: 0px; align-self: flex-start;">Project</span>` : '';
 
         articleCard.innerHTML = `
             <a href="${articleHref}" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; flex: 1;">
@@ -477,7 +507,7 @@ function renderLatestArticles(articles) {
                 <div class="cardAuthorRow">
                     <a href="profile.html?author=${encodeURIComponent(authorName)}" class="cardAuthorLink" title="View ${authorName}'s profile">
                         ${avatarHtml}
-                        <span class="cardAuthorName">${authorName}</span>
+                        <span class="cardAuthorName">${article.isCollab && article.collaboratorName ? `${authorName} & ${article.collaboratorName}` : authorName}</span>
                     </a>
                 </div>
                 ${editPill ? `<div class="cardEditWrapper">${editPill}</div>` : ''}
@@ -584,8 +614,6 @@ function renderCategoryFilters(articles) {
     container.innerHTML = html;
     setupCategoryFilters();
 }
-
-let downsideCategoryBarObserver = null;
 
 function initDownsideCategoryBar() {
     const categoryBar = document.getElementById('categoryFilters');

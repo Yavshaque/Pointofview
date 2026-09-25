@@ -13,6 +13,89 @@
     <script src="articles-data.js?v=2.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="db.js?v=2.2"></script>
+    <style>
+        .projectLinkToggle {
+            margin-top: 6px;
+        }
+        .toggleProjectLinkBtn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #a78bfa;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .toggleProjectLinkBtn:hover {
+            background: rgba(139, 92, 246, 0.18);
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+        .toggleProjectLinkBtn.active {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.4);
+            color: #c4b5fd;
+        }
+        .projectLinkPanel {
+            margin-top: 10px;
+            padding: 14px;
+            background: rgba(139, 92, 246, 0.06);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .projectSelectDropdown {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(15, 20, 35, 0.8);
+            color: #ffffff;
+            font-size: 13.5px;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .projectSelectDropdown:focus {
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+        .projectSelectDropdown option {
+            background: #1a1f35;
+            color: #ffffff;
+        }
+        .unlinkProjectBtn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            align-self: flex-start;
+        }
+        .unlinkProjectBtn:hover {
+            background: rgba(239, 68, 68, 0.18);
+        }
+        .projectLinkHint {
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.4);
+            margin: 0;
+            line-height: 1.4;
+        }
+    </style>
 </head>
 <body class="publishStudioBody">
     <!-- Studio Header -->
@@ -177,6 +260,31 @@
                         <textarea id="articleBibliography" name="bibliography" rows="4" maxlength="1500" placeholder="List academic papers, book citations, primary sources, or web links cited in this research (one citation per line)..." oninput="handleBibInput(this.value)"></textarea>
                         <div class="progressTrack"><div class="progressBar" id="bibBar"></div></div>
                         <span style="font-size: 11.5px; color: var(--text-muted); margin-top: 4px; display: block;">Enter each citation or source on a new line. Standard citation styles (APA, MLA, Chicago) and web URLs are supported.</span>
+                    </div>
+
+                    <!-- Link to Project -->
+                    <div class="studioFieldGroup" id="projectLinkSection">
+                        <label class="studioLabel">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                            Link to Project <span style="font-weight: 400; color: rgba(255,255,255,0.4); font-size: 12px;">(optional)</span>
+                        </label>
+                        <div class="projectLinkToggle">
+                            <button type="button" id="toggleProjectLink" class="toggleProjectLinkBtn" onclick="toggleProjectLinkPanel()">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                                Add to a Project
+                            </button>
+                        </div>
+                        <div id="projectLinkPanel" class="projectLinkPanel" style="display: none;">
+                            <select id="projectSelect" class="projectSelectDropdown">
+                                <option value="">— Select a project —</option>
+                            </select>
+                            <button type="button" class="unlinkProjectBtn" id="unlinkProjectBtn" onclick="unlinkFromProject()" style="display: none;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                Remove from Project
+                            </button>
+                            <p class="projectLinkHint">This article will become a part of the selected project and won't appear separately in the homepage.</p>
+                        </div>
+                        <input type="hidden" id="linkedProjectId" value="">
                     </div>
 
                     <!-- Read time preview -->
@@ -356,6 +464,66 @@
             }
         });
 
+        function toggleProjectLinkPanel() {
+            const panel = document.getElementById('projectLinkPanel');
+            const btn = document.getElementById('toggleProjectLink');
+            if (!panel || !btn) return;
+            
+            if (panel.style.display === 'none') {
+                panel.style.display = 'flex';
+                btn.classList.add('active');
+                btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Cancel';
+                populateProjectDropdown();
+            } else {
+                panel.style.display = 'none';
+                btn.classList.remove('active');
+                btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Add to a Project';
+                document.getElementById('linkedProjectId').value = '';
+                document.getElementById('projectSelect').value = '';
+                document.getElementById('unlinkProjectBtn').style.display = 'none';
+            }
+        }
+
+        function populateProjectDropdown() {
+            const select = document.getElementById('projectSelect');
+            if (!select || typeof DB === 'undefined') return;
+            
+            const userProjects = DB.getProjectsForUser ? DB.getProjectsForUser() : [];
+            
+            // Clear existing options except the default
+            select.innerHTML = '<option value="">\u2014 Select a project \u2014</option>';
+            
+            if (userProjects.length === 0) {
+                select.innerHTML += '<option value="" disabled>No projects available</option>';
+                return;
+            }
+            
+            userProjects.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                const partCount = (p.parts || []).length;
+                opt.textContent = `${p.title} (${partCount} part${partCount !== 1 ? 's' : ''})`;
+                select.appendChild(opt);
+            });
+            
+            // Pre-select if already linked
+            const currentLinked = document.getElementById('linkedProjectId').value;
+            if (currentLinked) {
+                select.value = currentLinked;
+            }
+            
+            select.addEventListener('change', function() {
+                document.getElementById('linkedProjectId').value = this.value;
+                document.getElementById('unlinkProjectBtn').style.display = this.value ? 'inline-flex' : 'none';
+            });
+        }
+
+        function unlinkFromProject() {
+            document.getElementById('linkedProjectId').value = '';
+            document.getElementById('projectSelect').value = '';
+            document.getElementById('unlinkProjectBtn').style.display = 'none';
+        }
+
         async function initEditMode(id) {
             let article = typeof DB.getArticleById === 'function' ? DB.getArticleById(id) : null;
             if (!article && typeof DB !== 'undefined' && DB.isSupabaseConfigured && DB.isSupabaseConfigured()) {
@@ -471,6 +639,20 @@
                 selectCustomImageOption();
                 document.getElementById('customImageUrl').value = img;
                 handleCustomUrlInput(img);
+            }
+
+            if (article.projectId) {
+                document.getElementById('linkedProjectId').value = article.projectId;
+                // Auto-open the panel
+                const panel = document.getElementById('projectLinkPanel');
+                const btn = document.getElementById('toggleProjectLink');
+                if (panel && btn) {
+                    panel.style.display = 'flex';
+                    btn.classList.add('active');
+                    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Cancel';
+                    populateProjectDropdown();
+                    document.getElementById('unlinkProjectBtn').style.display = 'inline-flex';
+                }
             }
         }
 
@@ -963,7 +1145,8 @@
                     description: description,
                     body: body,
                     keywords: [...finalTopics],
-                    bibliography: bibliography
+                    bibliography: bibliography,
+                    projectId: (document.getElementById('linkedProjectId') ? document.getElementById('linkedProjectId').value : '') || null
                 };
 
                 try {
@@ -988,6 +1171,8 @@
             const formattedDate = `${now.getFullYear()}-${now.getDate()}-${now.getMonth() + 1}`;
             const newArticleId = 'custom-' + Date.now();
 
+            const linkedProjectId = document.getElementById('linkedProjectId') ? document.getElementById('linkedProjectId').value : '';
+
             const newArticle = {
                 id: newArticleId,
                 title: title,
@@ -998,7 +1183,8 @@
                 description: description,
                 body: body,
                 keywords: [...finalTopics],
-                bibliography: bibliography
+                bibliography: bibliography,
+                projectId: linkedProjectId || null
             };
 
             // Save to database via DB engine

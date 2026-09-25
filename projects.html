@@ -9,11 +9,140 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="images/logo.png">
     <link rel="apple-touch-icon" href="images/logo.png">
-    <link rel="stylesheet" href="style.css?v=2.4">
+    <link rel="stylesheet" href="style.css?v=3.3">
     <script src="articles-data.js?v=2.2"></script>
     <script src="projects-data.js?v=2.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js?v=2.2"></script>
+    <script src="db.js?v=3.3"></script>
+    <style>
+        /* Project Parts Grid Layout */
+        .projectPartsGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            padding: 0;
+        }
+
+        .projectPartCard {
+            background: rgba(20, 27, 45, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .projectPartCard:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .projectPartCardNumber {
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.35);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .projectPartCardNumber::before {
+            content: 'Part ';
+        }
+
+        .projectPartCardBody {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .projectPartCardTitle {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .projectPartCardSubtitle {
+            font-size: 12.5px;
+            color: rgba(255, 255, 255, 0.55);
+            margin: 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .projectPartCardMeta {
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .projectPartCardFooter {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .projectPartCardActions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .projectPartCardActions .partEditBtn,
+        .projectPartCardActions .partDeleteBtn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 5px 8px;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .projectPartCardActions .partEditBtn:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .projectPartCardActions .partDeleteBtn:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .leaveCollabBtn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .leaveCollabBtn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+    </style>
 </head>
 <body class="projectsPageBody">
     <!-- Navigation Header -->
@@ -27,8 +156,7 @@
                 <li><a href="index.html">Home</a></li>
                 <li><a href="index.html#content">Articles</a></li>
                 <li><a href="projects.html" aria-current="page" style="color: #ffffff; border-bottom: 2px solid #b91c1c; padding-bottom: 4px;">Projects</a></li>
-                <li><a href="index.html#ourTeam">About</a></li>
-                <li><a href="index.html#contactSection">Contact</a></li>
+                <li><a href="#publishSection">Publish</a></li>
             </ul>
         </div>
         <div class="headers" id="headerRight" style="display: flex; gap: 12px; align-items: center;">
@@ -116,7 +244,7 @@
 
                 <div class="projectDetailStatsBar">
                     <div class="projectAuthorCard">
-                        <div class="projectAuthorAvatarLarge" id="projectDetailAuthorAvatar"></div>
+                        <div id="projectDetailAuthorAvatar" class="projectDetailAvatarsRow"></div>
                         <div class="projectAuthorTitleGroup">
                             <strong id="projectDetailAuthorName"></strong>
                             <span id="projectDetailAuthorRole"></span>
@@ -130,7 +258,6 @@
             <section class="projectPartsListCard">
                 <div class="projectPartsListHeader">
                     <h2>Table of Contents</h2>
-                    <div id="addPartSlot"></div>
                 </div>
                 <div class="projectPartsItemsContainer" id="projectPartsContainer"></div>
             </section>
@@ -635,7 +762,10 @@
                                 </div>
                                 <div class="projectAuthorMeta">
                                     <span class="projectAuthorName">
-                                        ${escapeHtml(proj.author || 'Editorial Staff')}${proj.collaboratorName ? ` &amp; ${escapeHtml(proj.collaboratorName)} <span class="projectCollabBadge">Collab</span>` : ''}
+                                        ${proj.collaboratorName 
+                                            ? `<a href="profile.html?author=${encodeURIComponent(proj.author)}" class="projectAuthorLink" title="View ${escapeHtml(proj.author)}'s profile">${escapeHtml(proj.author)}</a> &amp; <a href="profile.html?author=${encodeURIComponent(proj.collaboratorName)}" class="projectAuthorLink" title="View ${escapeHtml(proj.collaboratorName)}'s profile">${escapeHtml(proj.collaboratorName)}</a>` 
+                                            : `<a href="profile.html?author=${encodeURIComponent(proj.author || 'Editorial Staff')}" class="projectAuthorLink" title="View ${escapeHtml(proj.author || 'Editorial Staff')}'s profile">${escapeHtml(proj.author || 'Editorial Staff')}</a>`
+                                        }
                                     </span>
                                     <span class="projectAuthorRole">${escapeHtml(proj.collaboratorName ? 'Co-Authored Series' : (proj.authorRole || 'Author & Contributor'))}</span>
                                 </div>
@@ -716,22 +846,27 @@
             const avatar = (typeof DB !== 'undefined' && DB.getAuthorAvatar) ? DB.getAuthorAvatar(project.author) : null;
             const collabAvatar = (project.collaboratorName && typeof DB !== 'undefined' && DB.getAuthorAvatar) ? DB.getAuthorAvatar(project.collaboratorName) : null;
             const avatarEl = document.getElementById('projectDetailAuthorAvatar');
+            const authorNameEl = document.getElementById('projectDetailAuthorName');
+            avatarEl.className = 'projectDetailAvatarsRow';
             if (project.collaboratorName) {
                 avatarEl.innerHTML = `
-                    <div style="display: flex; align-items: center;">
-                        ${avatar ? `<img src="${avatar}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="">` : `<div style="width: 36px; height: 36px; border-radius: 50%; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;">${(project.author || 'A').charAt(0).toUpperCase()}</div>`}
-                        ${collabAvatar ? `<img src="${collabAvatar}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-left: -10px; border: 2px solid #0f172a;" alt="">` : `<div style="width: 36px; height: 36px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; margin-left: -10px; border: 2px solid #0f172a;">${project.collaboratorName.charAt(0).toUpperCase()}</div>`}
-                    </div>
+                    <a href="profile.html?author=${encodeURIComponent(project.author)}" class="projectAuthorAvatarLink" title="View ${escapeHtml(project.author)}'s profile">
+                        ${avatar ? `<img src="${avatar}" class="projectDetailAvatarCircle" alt="${escapeHtml(project.author)}">` : `<div class="projectDetailAvatarCircle">${(project.author || 'A').charAt(0).toUpperCase()}</div>`}
+                    </a>
+                    <a href="profile.html?author=${encodeURIComponent(project.collaboratorName)}" class="projectAuthorAvatarLink" title="View ${escapeHtml(project.collaboratorName)}'s profile">
+                        ${collabAvatar ? `<img src="${collabAvatar}" class="projectDetailAvatarCircle" alt="${escapeHtml(project.collaboratorName)}">` : `<div class="projectDetailAvatarCircle">${project.collaboratorName.charAt(0).toUpperCase()}</div>`}
+                    </a>
                 `;
-                document.getElementById('projectDetailAuthorName').innerHTML = `${escapeHtml(project.author)} &amp; ${escapeHtml(project.collaboratorName)} <span class="projectCollabBadge">Collaboration</span>`;
+                authorNameEl.innerHTML = `<a href="profile.html?author=${encodeURIComponent(project.author)}" class="projectAuthorLink" title="View ${escapeHtml(project.author)}'s profile">${escapeHtml(project.author)}</a> &amp; <a href="profile.html?author=${encodeURIComponent(project.collaboratorName)}" class="projectAuthorLink" title="View ${escapeHtml(project.collaboratorName)}'s profile">${escapeHtml(project.collaboratorName)}</a> <span class="projectCollabBadge">Collaboration</span>`;
                 document.getElementById('projectDetailAuthorRole').textContent = 'Co-Authored Series';
             } else {
-                if (avatar) {
-                    avatarEl.innerHTML = `<img src="${avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" alt="">`;
-                } else {
-                    avatarEl.textContent = (project.author || 'A').charAt(0).toUpperCase();
-                }
-                document.getElementById('projectDetailAuthorName').textContent = project.author || 'Editorial Staff';
+                avatarEl.innerHTML = `
+                    <a href="profile.html?author=${encodeURIComponent(project.author || 'Editorial Staff')}" class="projectAuthorAvatarLink" title="View ${escapeHtml(project.author || 'Editorial Staff')}'s profile">
+                        ${avatar ? `<img src="${avatar}" class="projectDetailAvatarCircle" alt="${escapeHtml(project.author || '')}">` : `<div class="projectDetailAvatarCircle">${(project.author || 'A').charAt(0).toUpperCase()}</div>`}
+                    </a>
+                `;
+                const authorOnly = project.author || 'Editorial Staff';
+                authorNameEl.innerHTML = `<a href="profile.html?author=${encodeURIComponent(authorOnly)}" class="projectAuthorLink" title="View ${escapeHtml(authorOnly)}'s profile">${escapeHtml(authorOnly)}</a>`;
                 document.getElementById('projectDetailAuthorRole').textContent = project.authorRole || 'Author & Contributor';
             }
 
@@ -744,11 +879,10 @@
 
             // Author Management Toolbar
             const manageSlot = document.getElementById('projectDetailManageSlot');
-            const addPartSlot = document.getElementById('addPartSlot');
             const canEdit = (typeof DB !== 'undefined' && DB.canEditProject) ? DB.canEditProject(project) : false;
 
             if (canEdit) {
-                manageSlot.innerHTML = `
+                let manageSlotHtml = `
                     <button type="button" class="projectActionButton" id="editProjectDetailsBtn">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         Edit Details
@@ -758,20 +892,21 @@
                         Delete Project
                     </button>
                 `;
-                addPartSlot.innerHTML = `
-                    <button type="button" class="projectActionButton primary" id="addPartToProjectBtn">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                        Add Part / Essay
-                    </button>
-                `;
+                if (project.collaboratorName && DB.canEditProject(project)) {
+                    manageSlotHtml += `
+                        <button class="leaveCollabBtn" onclick="handleLeaveCollab('${escapeHtml(project.id)}')">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Leave Collaboration
+                        </button>
+                    `;
+                }
+                manageSlot.innerHTML = manageSlotHtml;
 
                 // Wire up actions
                 document.getElementById('editProjectDetailsBtn').addEventListener('click', () => openProjectModal(project));
                 document.getElementById('deleteProjectBtn').addEventListener('click', () => promptDeleteProject(project.id, project.title));
-                document.getElementById('addPartToProjectBtn').addEventListener('click', () => openPartModal(project.id));
             } else {
                 manageSlot.innerHTML = '';
-                addPartSlot.innerHTML = '';
             }
 
             // Table of Contents Rows
@@ -779,44 +914,53 @@
             if (parts.length === 0) {
                 partsContainer.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-                        <p style="margin-bottom: 12px;">This project currently has no essay parts published.</p>
-                        ${canEdit ? `<button type="button" class="projectActionButton primary" onclick="openPartModal('${project.id}')">Add First Part</button>` : ''}
+                        <p style="margin-bottom: 8px; font-size: 14px;">This project currently has no essay parts published.</p>
+                        <p style="font-size: 13px; color: rgba(255, 255, 255, 0.45);">You can link essays to this project from the Write Article page.</p>
                     </div>
                 `;
                 return;
             }
 
-            partsContainer.innerHTML = parts.map((part, index) => {
-                const partNumFormatted = String(index + 1).padStart(2, '0');
-                return `
-                    <div class="projectPartRowCard">
-                        <div class="projectPartRowLeft">
-                            <div class="projectPartNumberBox">${partNumFormatted}</div>
-                            <div class="projectPartRowDetails">
-                                <h3 class="projectPartRowTitle">${escapeHtml(part.title)}</h3>
-                                ${part.subtitle ? `<p class="projectPartRowSubtitle">${escapeHtml(part.subtitle)}</p>` : ''}
-                                <div class="projectPartRowMeta">
-                                    <span>${part.readTime || 4} min read</span>
-                                    ${part.bibliography ? `<span>&bull; References included</span>` : ''}
-                                </div>
-                            </div>
+            partsContainer.innerHTML = '';
+            partsContainer.className = 'projectPartsGrid';
+
+            parts.forEach((part, idx) => {
+                const partCard = document.createElement('div');
+                partCard.className = 'projectPartCard';
+                
+                const partNumber = String(idx + 1).padStart(2, '0');
+                const subtitle = part.subtitle ? `<p class="projectPartCardSubtitle">${escapeHtml(part.subtitle)}</p>` : '';
+                const readTime = part.readTime || Math.max(1, Math.ceil((part.body || '').split(/\\s+/).length / 200));
+                const hasBib = part.bibliography && part.bibliography.trim().length > 0;
+                const metaText = `${readTime} min read${hasBib ? ' \\u00b7 References included' : ''}`;
+                
+                let actionsHtml = '';
+                if (canEdit) {
+                    actionsHtml = `
+                        <div class="projectPartCardActions">
+                            <button class="partEditBtn" onclick="openPartModal('${project.id}', ${idx})" title="Edit Part">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                            <button class="partDeleteBtn" onclick="promptDeletePart('${project.id}', ${idx}, '${escapeQuotes(part.title)}')" title="Delete Part">&times;</button>
                         </div>
-                        <div class="projectPartRowActions">
-                            ${canEdit ? `
-                                <button type="button" class="projectActionButton" onclick="openPartModal('${project.id}', ${index})" title="Edit Essay Part">
-                                    Edit
-                                </button>
-                                <button type="button" class="projectActionButton danger" onclick="promptDeletePart('${project.id}', ${index}, '${escapeQuotes(part.title)}')" title="Remove Part">
-                                    &times;
-                                </button>
-                            ` : ''}
-                            <a href="projects.html?id=${encodeURIComponent(project.id)}&part=${index}" class="readPartBtn" onclick="event.preventDefault(); navigateTo('${project.id}', ${index});">
-                                Read Part &rarr;
-                            </a>
-                        </div>
+                    `;
+                }
+                
+                partCard.innerHTML = `
+                    <div class="projectPartCardNumber">${partNumber}</div>
+                    <div class="projectPartCardBody">
+                        <h3 class="projectPartCardTitle">${escapeHtml(part.title || 'Untitled Part')}</h3>
+                        ${subtitle}
+                        <span class="projectPartCardMeta">${metaText}</span>
+                    </div>
+                    <div class="projectPartCardFooter">
+                        <a href="projects.html?id=${encodeURIComponent(project.id)}&part=${idx}" class="readPartBtn" onclick="event.preventDefault(); navigateTo('${project.id}', ${idx});">Read Part &rarr;</a>
+                        ${actionsHtml}
                     </div>
                 `;
-            }).join('');
+                
+                partsContainer.appendChild(partCard);
+            });
         }
 
         // ======================================================================
@@ -882,9 +1026,10 @@
             }
 
             if (project.collaboratorName) {
-                document.getElementById('seriesReaderAuthor').innerHTML = `${escapeHtml(project.author)} &amp; ${escapeHtml(project.collaboratorName)} <span class="projectCollabBadge">Collab</span>`;
+                document.getElementById('seriesReaderAuthor').innerHTML = `<a href="profile.html?author=${encodeURIComponent(project.author)}" class="projectAuthorLink" title="View ${escapeHtml(project.author)}'s profile">${escapeHtml(project.author)}</a> &amp; <a href="profile.html?author=${encodeURIComponent(project.collaboratorName)}" class="projectAuthorLink" title="View ${escapeHtml(project.collaboratorName)}'s profile">${escapeHtml(project.collaboratorName)}</a> <span class="projectCollabBadge">Collaboration</span>`;
             } else {
-                document.getElementById('seriesReaderAuthor').textContent = project.author || 'Editorial Staff';
+                const authorOnly = project.author || 'Editorial Staff';
+                document.getElementById('seriesReaderAuthor').innerHTML = `<a href="profile.html?author=${encodeURIComponent(authorOnly)}" class="projectAuthorLink" title="View ${escapeHtml(authorOnly)}'s profile">${escapeHtml(authorOnly)}</a>`;
             }
             document.getElementById('seriesReaderDate').textContent = project.createdAt ? new Date(project.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recent';
 
@@ -1227,7 +1372,7 @@
                                 ${avatarHtml}
                                 <div class="collabItemDetails">
                                     <div class="collabItemName">${escapeHtml(u.name)}</div>
-                                    <div class="collabItemRole">${escapeHtml(roleLabel)} &bull; ${escapeHtml(u.email || '')}</div>
+                                    <div class="collabItemRole">${escapeHtml(roleLabel)}</div>
                                 </div>
                             </div>
                         `;
@@ -1668,6 +1813,46 @@
                     showAlert('Error removing part: ' + err.message);
                 }
             }
+        }
+
+        async function handleLeaveCollab(projectId) {
+            const confirmed = (typeof DB !== 'undefined' && DB.showConfirm)
+                ? await DB.showConfirm('Are you sure you want to leave this collaboration? The other author will remain as the sole contributor.')
+                : confirm('Are you sure you want to leave this collaboration?');
+            if (!confirmed) return;
+            
+            const project = DB.getProjectById(projectId);
+            if (!project) return;
+            
+            const currentUser = DB.getCurrentUser();
+            if (!currentUser) return;
+            
+            // Determine if current user is the collaborator or the owner
+            const isCollaborator = project.collaboratorId && String(project.collaboratorId) === String(currentUser.id);
+            
+            if (isCollaborator) {
+                // Remove collaborator fields
+                DB.updateProject(projectId, {
+                    collaboratorId: null,
+                    collaboratorName: null,
+                    collaboratorRole: null
+                });
+            } else {
+                // Owner is leaving: swap collaborator to owner
+                DB.updateProject(projectId, {
+                    author: project.collaboratorName,
+                    authorId: project.collaboratorId,
+                    authorRole: project.collaboratorRole || 'Author & Contributor',
+                    collaboratorId: null,
+                    collaboratorName: null,
+                    collaboratorRole: null
+                });
+            }
+            
+            if (typeof DB !== 'undefined' && DB.showAlert) {
+                DB.showAlert('You have left this collaboration.');
+            }
+            renderProjectDetail(projectId);
         }
 
         // ======================================================================

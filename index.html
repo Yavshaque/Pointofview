@@ -9,10 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="images/logo.png">
     <link rel="apple-touch-icon" href="images/logo.png">
-    <link rel="stylesheet" href="style.css?v=3.1">
-    <script src="articles-data.js?v=3.1"></script>
+    <link rel="stylesheet" href="style.css?v=3.3">
+    <script src="articles-data.js?v=3.3"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js?v=3.1"></script>
+    <script src="db.js?v=3.3"></script>
 </head>
 <body>
     <header>
@@ -48,7 +48,16 @@
                     <div id="thumbnailImage">
                         <img src="images/logo.png" alt="Point of View">
                     </div>
-                    <div id="heroDots" class="heroDots" aria-label="Carousel slide pagination"></div>
+                    <!-- Top-left Project Tag for Hero Slider -->
+                    <div id="heroProjectBadge" class="heroProjectBadge" style="display: none;">Project</div>
+                    <div id="buttonsContainer" style="display: none;">
+                        <button id="leftButton" class="buttons prevBtn" type="button" aria-label="Previous Article" onclick="window.goToPrevSlide && window.goToPrevSlide(event)">
+                            <img src="images/left arrow.png" alt="Previous">
+                        </button>
+                        <button id="rightButton" class="buttons nextBtn" type="button" aria-label="Next Article" onclick="window.goToNextSlide && window.goToNextSlide(event)">
+                            <img src="images/right arrow.png" alt="Next">
+                        </button>
+                    </div>
                     <div id="articleContent">
                         <div id="articleText">
                             <div id="articleTitle"> 
@@ -261,7 +270,7 @@
             </div>
         </div>
     </footer>
-    <script src="script.js?v=3.1"></script>
+    <script src="script.js?v=3.3"></script>
     <script>
         // ── Our Team: sync member profile photos from localStorage ──────────
         function syncTeamMemberPhotos() {
