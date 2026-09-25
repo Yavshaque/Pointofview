@@ -104,6 +104,14 @@ function initializeArticles(baseData) {
         return true;
     });
 
+    const seenIds = new Set();
+    articlesData = articlesData.filter(item => {
+        const idKey = String(item.id);
+        if (seenIds.has(idKey)) return false;
+        seenIds.add(idKey);
+        return true;
+    });
+
     if (!articlesData.length) {
         currentIndex = 0;
     } else if (currentIndex >= articlesData.length) {
@@ -152,6 +160,14 @@ if (typeof document !== 'undefined') {
             ? window.ARTICLES_DATABASE
             : [];
         initializeArticles(base);
+    });
+    document.addEventListener('editorialPicksUpdated', () => {
+        renderHeroCompanion(articlesData);
+    });
+    document.addEventListener('userRoleUpdated', () => {
+        updateDOM(currentIndex);
+        renderHeroCompanion(articlesData);
+        renderLatestArticles(articlesData);
     });
 }
 

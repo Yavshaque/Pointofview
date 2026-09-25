@@ -17,6 +17,7 @@ const DB = (function() {
     const ARTICLES_KEY = 'custom_articles';
     const DELETED_KEY = 'deleted_articles';
     const EDITORIAL_PICKS_KEY = 'article_website_editorial_picks';
+    const EDITORIAL_PICKS_CLOUD_TABLE = 'editorial_picks';
     const CONTACT_MESSAGES_KEY = 'article_website_contact_messages';
     const PROJECTS_KEY = 'article_website_projects';
     const PROFILES_KEY = 'article_website_profiles';
@@ -296,27 +297,71 @@ const DB = (function() {
                         let usersChanged = false;
                         cloudProfiles.forEach(row => {
                             const mapped = rowToProfile(row);
-                            const u = localUsers.find(user => (user.name && user.name.trim().toLowerCase() === mapped.name?.trim().toLowerCase()) || String(user.id) === String(mapped.id));
+                            const cleanName = (mapped.name || '').trim();
+                            if (!cleanName || cleanName.startsWith('[SYSTEM]')) return;
+
+                            let u = localUsers.find(user => 
+                                (user.name && user.name.trim().toLowerCase() === cleanName.toLowerCase()) || 
+                                (user.id && String(user.id) === String(mapped.id)) ||
+                                (user.email && mapped.email && user.email.trim().toLowerCase() === mapped.email.trim().toLowerCase())
+                            );
+
+                            const mappedRole = (mapped.role || '').trim().toLowerCase();
+                            const normalizedMappedRole = (mappedRole === 'co-founder' || mappedRole === 'co founder' || mappedRole === 'cofounder') ? 'co-founder' : (mappedRole === 'admin' ? 'admin' : (mappedRole === 'writer' ? 'writer' : 'editor'));
+
                             if (u) {
                                 if (mapped.password && u.password !== mapped.password) { u.password = mapped.password; usersChanged = true; }
+                                if (normalizedMappedRole && u.role !== normalizedMappedRole) { u.role = normalizedMappedRole; usersChanged = true; }
                                 if (mapped.avatar && u.avatar !== mapped.avatar) { u.avatar = mapped.avatar; usersChanged = true; }
                                 if (mapped.bio && u.bio !== mapped.bio) { u.bio = mapped.bio; usersChanged = true; }
                                 if (mapped.instagram !== undefined && u.instagram !== mapped.instagram) { u.instagram = mapped.instagram; usersChanged = true; }
                                 if (mapped.linkedin !== undefined && u.linkedin !== mapped.linkedin) { u.linkedin = mapped.linkedin; usersChanged = true; }
                                 if (mapped.publicEmail !== undefined && u.publicEmail !== mapped.publicEmail) { u.publicEmail = mapped.publicEmail; usersChanged = true; }
+                            } else {
+                                localUsers.push({
+                                    id: mapped.id || ('user-' + Date.now()),
+                                    name: cleanName,
+                                    email: mapped.email || `${cleanName.toLowerCase().replace(/\s+/g, '.')}@articlewebsite.com`,
+                                    password: mapped.password || null,
+                                    role: normalizedMappedRole || 'writer',
+                                    avatar: mapped.avatar || null,
+                                    bio: mapped.bio || '',
+                                    instagram: mapped.instagram || '',
+                                    linkedin: mapped.linkedin || '',
+                                    publicEmail: mapped.publicEmail || '',
+                                    createdAt: mapped.createdAt || new Date().toISOString()
+                                });
+                                usersChanged = true;
                             }
                         });
+
                         if (usersChanged) {
                             localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
-                            const current = getCurrentUser();
-                            if (current) {
-                                const refreshed = localUsers.find(u => String(u.id) === String(current.id));
-                                if (refreshed) {
-                                    localStorage.setItem(SESSION_KEY, JSON.stringify({ user: refreshed, token: 'session-' + refreshed.id }));
+                        }
+
+                        // Refresh active session and re-render header if role or profile updated
+                        const current = getCurrentUser();
+                        if (current) {
+                            const refreshed = localUsers.find(u => 
+                                String(u.id) === String(current.id) ||
+                                (u.email && current.email && u.email.trim().toLowerCase() === current.email.trim().toLowerCase()) ||
+                                (u.name && current.name && u.name.trim().toLowerCase() === current.name.trim().toLowerCase())
+                            );
+                            if (refreshed && (refreshed.role !== current.role || refreshed.avatar !== current.avatar)) {
+                                createSession(refreshed);
+                                if (document.getElementById('authHeaderSlot')) {
+                                    renderHeaderAuth('authHeaderSlot');
+                                } else if (document.getElementById('headerRight')) {
+                                    renderHeaderAuth('headerRight');
+                                }
+                                if (typeof document !== 'undefined') {
+                                    document.dispatchEvent(new CustomEvent('userRoleUpdated', { detail: { user: refreshed } }));
                                 }
                             }
                         }
-                    } catch (e) {}
+                    } catch (e) {
+                        console.warn('Error syncing cloud profiles into local users:', e);
+                    }
                 } else {
                     // Initial sync of existing profiles to Supabase cloud
                     const localUsers = getAllUsers();
@@ -338,6 +383,13 @@ const DB = (function() {
                         localStorage.setItem(CONTACT_MESSAGES_KEY, JSON.stringify(mappedMsgs));
                     } catch (e) {}
                 }
+            }
+
+            // 5. Editorial Picks Sync (syncs on every device so picks stay identical)
+            try {
+                await pullEditorialPicksFromCloud();
+            } catch (picksErr) {
+                console.warn('Error pulling cloud editorial picks:', picksErr);
             }
 
             // Dispatch notification event for dynamic UI components
@@ -587,7 +639,25 @@ const DB = (function() {
             const raw = localStorage.getItem(SESSION_KEY);
             if (raw) {
                 const session = JSON.parse(raw);
-                return session.user || null;
+                const sessionUser = session.user || null;
+                if (!sessionUser) return null;
+
+                const users = getAllUsers();
+                const fresh = users.find(u => String(u.id) === String(sessionUser.id));
+                if (fresh) {
+                    const roleChanged = (fresh.role || '') !== (sessionUser.role || '');
+                    const profileChanged = (fresh.avatar || null) !== (sessionUser.avatar || null) || (fresh.bio || null) !== (sessionUser.bio || null);
+                    if (roleChanged || profileChanged) {
+                        createSession(fresh);
+                    }
+                    return {
+                        ...sessionUser,
+                        role: fresh.role,
+                        avatar: fresh.avatar || null,
+                        bio: fresh.bio || null
+                    };
+                }
+                return sessionUser;
             }
         } catch (e) {
             return null;
@@ -609,18 +679,25 @@ const DB = (function() {
             const raw = localStorage.getItem(ARTICLES_KEY);
             if (raw) {
                 const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed)) {
+                if (Array.isArray(parsed) && parsed.length > 0) {
                     const sanitized = parsed.filter(a => !isDummyItem(a));
                     if (sanitized.length !== parsed.length) {
                         localStorage.setItem(ARTICLES_KEY, JSON.stringify(sanitized));
                     }
-                    return sanitized;
+                    if (sanitized.length > 0) return sanitized;
                 }
             }
-            return [];
-        } catch (e) {
-            return [];
+        } catch (e) {}
+
+        // Fallback to static articles database (e.g. from articles-data.js)
+        if (typeof window !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE) && window.ARTICLES_DATABASE.length > 0) {
+            const valid = window.ARTICLES_DATABASE.filter(a => !isDummyItem(a));
+            try {
+                localStorage.setItem(ARTICLES_KEY, JSON.stringify(valid));
+            } catch (e) {}
+            return valid;
         }
+        return [];
     }
 
     function saveArticle(articleData) {
@@ -651,6 +728,7 @@ const DB = (function() {
                     title: newArticle.title,
                     subtitle: newArticle.description || '',
                     readTime: newArticle.readTime || 5,
+                    image: newArticle.image || null,
                     body: newArticle.body || '',
                     bibliography: newArticle.bibliography || '',
                     linkedArticleId: newArticle.id
@@ -780,16 +858,25 @@ const DB = (function() {
             const raw = localStorage.getItem(PROJECTS_KEY);
             if (raw) {
                 const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed)) {
+                if (Array.isArray(parsed) && parsed.length > 0) {
                     const sanitized = parsed.filter(p => !isDummyItem(p));
                     if (sanitized.length !== parsed.length) {
                         localStorage.setItem(PROJECTS_KEY, JSON.stringify(sanitized));
                     }
-                    return sanitized;
+                    if (sanitized.length > 0) return sanitized;
                 }
             }
         } catch (e) {
             console.error('Error reading projects:', e);
+        }
+
+        // Fallback to static projects database (e.g. from projects-data.js)
+        if (typeof window !== 'undefined' && Array.isArray(window.PROJECTS_DATABASE) && window.PROJECTS_DATABASE.length > 0) {
+            const valid = window.PROJECTS_DATABASE.filter(p => !isDummyItem(p));
+            try {
+                localStorage.setItem(PROJECTS_KEY, JSON.stringify(valid));
+            } catch (e) {}
+            return valid;
         }
         return [];
     }
@@ -978,6 +1065,8 @@ const DB = (function() {
             title: (partData.title || `Part ${partNumber}: Untitled Essay`).trim(),
             subtitle: (partData.subtitle || '').trim(),
             readTime: parseInt(partData.readTime, 10) || 4,
+            image: partData.image || null,
+            linkedArticleId: partData.linkedArticleId || null,
             body: (partData.body || '').trim(),
             bibliography: (partData.bibliography || '').trim()
         };
@@ -1006,6 +1095,8 @@ const DB = (function() {
         project.parts[idx] = {
             ...project.parts[idx],
             ...partData,
+            image: partData.image !== undefined ? partData.image : (project.parts[idx].image || null),
+            linkedArticleId: partData.linkedArticleId !== undefined ? partData.linkedArticleId : (project.parts[idx].linkedArticleId || null),
             id: project.parts[idx].id
         };
 
@@ -1044,11 +1135,15 @@ const DB = (function() {
     function isAdmin() {
         const user = getCurrentUser();
         if (!user) return false;
-        if (user.role === 'admin' || user.role === 'co-founder') return true;
-        if (user.name && user.name.trim().toLowerCase() === 'ali mert bayar') return true;
+        const r = (user.role || '').toLowerCase().trim();
+        if (r === 'admin' || r === 'co-founder' || r === 'admin & co-founder' || r === 'co-founder & admin' || r === 'cofounder') return true;
+        if (user.name) {
+            const n = user.name.trim().toLowerCase();
+            if (n === 'ali mert bayar' || n === 'ceren onursal') return true;
+        }
         if (user.email) {
             const e = user.email.trim().toLowerCase();
-            if (e === 'editor@articlewebsite.com' || e === 'mert.bayar.200807@gmail.com' || e === 'alimertbayar@gmail.com') return true;
+            if (e === 'editor@articlewebsite.com' || e === 'mert.bayar.200807@gmail.com' || e === 'alimertbayar@gmail.com' || e === 'cerenonursal2008@gmail.com' || e === 'ceren@articlewebsite.com') return true;
         }
         return false;
     }
@@ -1056,12 +1151,15 @@ const DB = (function() {
     function isCoFounder(targetUser) {
         const user = targetUser || getCurrentUser();
         if (!user) return false;
-        const r = (user.role || '').toLowerCase();
-        if (r === 'co-founder' || r === 'admin') return true;
-        if (user.name && user.name.trim().toLowerCase() === 'ali mert bayar') return true;
+        const r = (user.role || '').toLowerCase().trim();
+        if (r === 'co-founder' || r === 'admin' || r === 'admin & co-founder' || r === 'co-founder & admin' || r === 'cofounder') return true;
+        if (user.name) {
+            const n = user.name.trim().toLowerCase();
+            if (n === 'ali mert bayar' || n === 'ceren onursal') return true;
+        }
         if (user.email) {
             const e = user.email.trim().toLowerCase();
-            if (e === 'editor@articlewebsite.com' || e === 'mert.bayar.200807@gmail.com' || e === 'alimertbayar@gmail.com') return true;
+            if (e === 'editor@articlewebsite.com' || e === 'mert.bayar.200807@gmail.com' || e === 'alimertbayar@gmail.com' || e === 'cerenonursal2008@gmail.com' || e === 'ceren@articlewebsite.com') return true;
         }
         return false;
     }
@@ -1130,7 +1228,7 @@ const DB = (function() {
         if (!isAdmin()) {
             throw new Error('Permission denied: Only admins can assign roles.');
         }
-        const ALLOWED_ROLES = ['editor', 'writer', 'co-founder'];
+        const ALLOWED_ROLES = ['editor', 'writer', 'co-founder', 'admin'];
         if (!ALLOWED_ROLES.includes(newRole)) {
             return { success: false, error: 'Invalid role: ' + newRole };
         }
@@ -1146,9 +1244,47 @@ const DB = (function() {
         }
         users[idx].role = newRole;
         localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        const targetUser = users[idx];
+
+        // Keep custom profile role in sync
+        let customProfiles = {};
+        try {
+            customProfiles = JSON.parse(localStorage.getItem(PROFILES_KEY) || '{}');
+        } catch (e) {
+            customProfiles = {};
+        }
+        const profileKey = (targetUser.name || '').trim().toLowerCase();
+        if (profileKey) {
+            if (!customProfiles[profileKey]) customProfiles[profileKey] = {};
+            customProfiles[profileKey].name = targetUser.name;
+            customProfiles[profileKey].role = newRole === 'co-founder' ? 'Co-Founder' : (newRole === 'admin' ? 'Admin' : (newRole === 'writer' ? 'Writer' : 'Editor'));
+            localStorage.setItem(PROFILES_KEY, JSON.stringify(customProfiles));
+        }
+
+        // Sync role update to Supabase profiles
+        const client = getSupabaseClient();
+        if (client) {
+            const authorProf = getAuthorProfile(targetUser.name) || targetUser;
+            const row = profileToRow(authorProf, targetUser);
+            row.role = newRole;
+
+            // Upsert by primary ID
+            client.from('profiles')
+                .upsert([row], { onConflict: 'id' })
+                .catch(err => console.error('Supabase role sync network error:', err));
+
+            // Also update any matching records by email or name to prevent ID mismatches across devices
+            if (targetUser.email) {
+                client.from('profiles').update({ role: newRole }).ilike('email', targetUser.email.trim()).then(() => {});
+            }
+            if (targetUser.name) {
+                client.from('profiles').update({ role: newRole }).ilike('name', targetUser.name.trim()).then(() => {});
+            }
+        }
+
         // If this user is currently logged in, refresh their session
         const current = getCurrentUser();
-        if (current && current.id === users[idx].id) {
+        if (current && (current.id === users[idx].id || (current.email && current.email.toLowerCase() === (users[idx].email || '').toLowerCase()))) {
             createSession(users[idx]);
         }
         return { success: true };
@@ -1301,7 +1437,7 @@ const DB = (function() {
                                 <span>Account Settings</span>
                             </button>
 
-                            ${user.role === 'admin' ? `
+                            ${isFounder ? `
                             <button type="button" class="dropdownItem dropdownItemAdmin" onclick="DB.openAdminModal()">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                                 <span>Admin Console</span>
@@ -2410,6 +2546,28 @@ const DB = (function() {
         customProfiles[key].role = displayRole;
         localStorage.setItem(PROFILES_KEY, JSON.stringify(customProfiles));
 
+        // 3. Sync role update to Supabase profiles
+        const client = getSupabaseClient();
+        if (client) {
+            const authorProf = getAuthorProfile(cleanName) || {};
+            const profileRow = profileToRow(authorProf, userIdx !== -1 ? users[userIdx] : { name: cleanName, role: lowerRole });
+            profileRow.role = lowerRole;
+            client.from('profiles')
+                .upsert([profileRow], { onConflict: 'id' })
+                .then(({ error }) => {
+                    if (error) console.error('Supabase assignAuthorRole error:', error);
+                    else console.log('⚡ Role updated in Supabase cloud for:', cleanName, lowerRole);
+                })
+                .catch(err => console.error('Supabase assignAuthorRole network error:', err));
+
+            if (cleanName) {
+                client.from('profiles').update({ role: lowerRole }).ilike('name', cleanName).then(() => {});
+            }
+            if (userIdx !== -1 && users[userIdx].email) {
+                client.from('profiles').update({ role: lowerRole }).ilike('email', users[userIdx].email.trim()).then(() => {});
+            }
+        }
+
         if (typeof document !== 'undefined' && typeof CustomEvent !== 'undefined') {
             document.dispatchEvent(new CustomEvent('coFoundersUpdated', { detail: { authorName: cleanName, role: displayRole } }));
         }
@@ -2872,17 +3030,107 @@ const DB = (function() {
         return [];
     }
 
-    function saveEditorialPicks(pickIds) {
-        if (!isAdmin()) {
-            throw new Error('Permission denied: Only editors can curate picks.');
+    async function pullEditorialPicksFromCloud() {
+        const client = getSupabaseClient();
+        if (!client) return { success: false, reason: 'no_client' };
+        try {
+            // 1. Try dedicated table first if available
+            const { data, error } = await client
+                .from(EDITORIAL_PICKS_CLOUD_TABLE)
+                .select('slot, article_id')
+                .order('slot', { ascending: true });
+            if (!error && Array.isArray(data) && data.length > 0) {
+                const picks = data
+                    .sort((a, b) => (a.slot || 0) - (b.slot || 0))
+                    .map(row => String(row.article_id || '').trim())
+                    .filter(Boolean)
+                    .slice(0, 3);
+                localStorage.setItem(EDITORIAL_PICKS_KEY, JSON.stringify(picks));
+                return { success: true, picks };
+            }
+
+            // 2. Fallback to profiles metadata storage (id: 'editorial_picks')
+            const { data: profData, error: profErr } = await client
+                .from('profiles')
+                .select('bio')
+                .eq('id', 'editorial_picks')
+                .maybeSingle();
+
+            if (!profErr && profData && profData.bio) {
+                try {
+                    const parsed = JSON.parse(profData.bio);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        const picks = parsed.map(String).filter(Boolean).slice(0, 3);
+                        localStorage.setItem(EDITORIAL_PICKS_KEY, JSON.stringify(picks));
+                        return { success: true, picks };
+                    }
+                } catch (e) {}
+            }
+            return { success: false, reason: 'no_data' };
+        } catch (err) {
+            console.warn('Supabase editorial picks pull network error:', err);
+            return { success: false, reason: 'network_error' };
         }
-        localStorage.setItem(EDITORIAL_PICKS_KEY, JSON.stringify(pickIds.map(String)));
+    }
+
+    async function pushEditorialPicksToCloud(pickIds) {
+        const client = getSupabaseClient();
+        if (!client) return { success: false, reason: 'no_client' };
+        const sanitized = (Array.isArray(pickIds) ? pickIds : []).map(String).filter(Boolean).slice(0, 3);
+
+        // Always save to profiles metadata table row for 100% reliable cross-device persistence
+        try {
+            await client.from('profiles').upsert([{
+                id: 'editorial_picks',
+                name: '[SYSTEM] Editorial Picks',
+                email: 'system@articlewebsite.com',
+                role: 'system',
+                bio: JSON.stringify(sanitized)
+            }], { onConflict: 'id' });
+        } catch (metaErr) {
+            console.warn('Failed saving editorial picks to profiles metadata:', metaErr);
+        }
+
+        // Also attempt dedicated table if present
+        try {
+            const payload = sanitized.map((id, index) => ({
+                slot: index + 1,
+                article_id: id
+            }));
+            if (payload.length > 0) {
+                await client.from(EDITORIAL_PICKS_CLOUD_TABLE).upsert(payload, { onConflict: 'slot' });
+            }
+            await client.from(EDITORIAL_PICKS_CLOUD_TABLE).delete().gt('slot', sanitized.length);
+        } catch (tableErr) {
+            // Optional table may not exist; metadata row above succeeds
+        }
+
+        return { success: true, picks: sanitized };
+    }
+
+    function saveEditorialPicks(pickIds) {
+        if (!isAdmin() && !isCoFounder()) {
+            throw new Error('Permission denied: Only editors and co-founders can curate picks.');
+        }
+        const normalized = (Array.isArray(pickIds) ? pickIds : []).map(String).filter(Boolean).slice(0, 3);
+        localStorage.setItem(EDITORIAL_PICKS_KEY, JSON.stringify(normalized));
+
+        // Async cloud sync for cross-device consistency
+        pushEditorialPicksToCloud(normalized).then((res) => {
+            if (!res.success) {
+                console.warn('Editorial picks cloud sync skipped/failed:', res.reason || 'unknown');
+            }
+        });
+
+        if (typeof document !== 'undefined') {
+            document.dispatchEvent(new CustomEvent('editorialPicksUpdated', { detail: { picks: normalized } }));
+        }
         return { success: true };
     }
 
     function openEditorialPicksModal() {
-        if (!isAdmin()) {
-            showAlert('Access denied: Editor privileges required.');
+        if (!isAdmin() && !isCoFounder()) {
+            showAlert('Access denied: Editor or Co-Founder privileges required.');
             return;
         }
 
@@ -3149,6 +3397,8 @@ const DB = (function() {
         getSupabaseClient,
         syncCloudData,
         syncLocalToSupabase,
+        pullEditorialPicksFromCloud,
+        pushEditorialPicksToCloud,
         SUPABASE_URL
     };
 })();
@@ -3171,5 +3421,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auto-sync cloud database in background if Supabase is configured
     if (typeof DB !== 'undefined' && DB.isSupabaseConfigured && DB.isSupabaseConfigured()) {
         DB.syncCloudData();
+        if (!window.__dbCloudAutoSyncStarted) {
+            window.__dbCloudAutoSyncStarted = true;
+            window.setInterval(() => {
+                DB.syncCloudData();
+            }, 45000);
+            window.addEventListener('focus', () => DB.syncCloudData());
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) DB.syncCloudData();
+            });
+        }
     }
 });
