@@ -298,6 +298,7 @@ const DB = (function() {
                             const mapped = rowToProfile(row);
                             const u = localUsers.find(user => (user.name && user.name.trim().toLowerCase() === mapped.name?.trim().toLowerCase()) || String(user.id) === String(mapped.id));
                             if (u) {
+                                if (mapped.password && u.password !== mapped.password) { u.password = mapped.password; usersChanged = true; }
                                 if (mapped.avatar && u.avatar !== mapped.avatar) { u.avatar = mapped.avatar; usersChanged = true; }
                                 if (mapped.bio && u.bio !== mapped.bio) { u.bio = mapped.bio; usersChanged = true; }
                                 if (mapped.instagram !== undefined && u.instagram !== mapped.instagram) { u.instagram = mapped.instagram; usersChanged = true; }
@@ -544,10 +545,18 @@ const DB = (function() {
     function loginUser({ email, password }) {
         init();
         const cleanEmail = (email || '').trim().toLowerCase();
-        const cleanPassword = (password || '').trim();
+        const cleanPassword = password || '';
 
         const users = getAllUsers();
-        const found = users.find(u => u.email.toLowerCase() === cleanEmail && u.password === cleanPassword);
+        const found = users.find(u => {
+            const userEmail = (u.email || '').toLowerCase();
+            const isCeren = (u.name || '').trim().toLowerCase() === 'ceren onursal';
+            const isCerenEmail = isCeren && [
+                'ceren@articlewebsite.com',
+                'cerenonursal2008@gmail.com'
+            ].includes(cleanEmail);
+            return (userEmail === cleanEmail || isCerenEmail) && u.password === cleanPassword;
+        });
 
         if (!found) {
             return { success: false, error: 'Invalid email address or password.' };

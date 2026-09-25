@@ -304,7 +304,8 @@
 }
 
 .readerBodyText h2,
-.readerBodyText h3 {
+.readerBodyText h3,
+.readerBodyText h1 {
     font-family: 'Playfair Display', Georgia, serif;
     font-size: 1.6rem;
     font-weight: 700;
@@ -526,4 +527,3 @@
 .bibLink:hover {
     color: #5b92ff;
 }
-

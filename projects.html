@@ -1046,18 +1046,10 @@
                 authorActionsSlot.innerHTML = '';
             }
 
-            // Body paragraphs
+            // Render the same lightweight rich-text syntax used by standalone
+            // articles instead of displaying project parts as plain text.
             const bodyEl = document.getElementById('seriesReaderBody');
-            bodyEl.innerHTML = '';
-            const paragraphs = (currentPart.body || '').split(/\n\s*\n/);
-            paragraphs.forEach(paragraphText => {
-                const trimmed = paragraphText.trim();
-                if (trimmed) {
-                    const p = document.createElement('p');
-                    p.textContent = trimmed;
-                    bodyEl.appendChild(p);
-                }
-            });
+            renderProjectPartBody(bodyEl, currentPart.body || '');
 
             // Bibliography
             const bibSection = document.getElementById('seriesReaderBibliography');
@@ -1130,6 +1122,53 @@
                 nextLabel.textContent = 'End of Series';
                 nextBtn.onclick = (e) => e.preventDefault();
             }
+        }
+
+        function renderProjectPartBody(container, text) {
+            container.innerHTML = '';
+            if (!text) return;
+
+            text.split(/\n\s*\n/).forEach(block => {
+                const trimmed = block.trim();
+                if (!trimmed) return;
+
+                const headingMatch = trimmed.match(/^#{1,3}\s+(.+)$/);
+                if (headingMatch) {
+                    const heading = document.createElement(trimmed.startsWith('# ') ? 'h2' : 'h3');
+                    heading.innerHTML = formatProjectInlineText(headingMatch[1]);
+                    container.appendChild(heading);
+                    return;
+                }
+
+                if (/^>\s?/.test(trimmed)) {
+                    const quote = document.createElement('blockquote');
+                    const paragraph = document.createElement('p');
+                    paragraph.innerHTML = formatProjectInlineText(trimmed.replace(/^>\s?/gm, ''));
+                    quote.appendChild(paragraph);
+                    container.appendChild(quote);
+                    return;
+                }
+
+                const paragraph = document.createElement('p');
+                paragraph.innerHTML = formatProjectInlineText(trimmed);
+                container.appendChild(paragraph);
+            });
+        }
+
+        function formatProjectInlineText(value) {
+            let safe = String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            safe = safe
+                .replace(/&lt;(strong|b)&gt;([\s\S]*?)&lt;\/\1&gt;/gi, '<strong>$2</strong>')
+                .replace(/&lt;(em|i)&gt;([\s\S]*?)&lt;\/\1&gt;/gi, '<em>$2</em>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/__(.+?)__/g, '<strong>$1</strong>')
+                .replace(/(^|[^\*])\*([^\*]+?)\*([^\*]|$)/g, '$1<em>$2</em>$3')
+                .replace(/(^|[^_])_([^_]+?)_([^_]|$)/g, '$1<em>$2</em>$3')
+                .replace(/\n/g, '<br>');
+            return safe;
         }
 
         // ======================================================================
