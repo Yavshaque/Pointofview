@@ -13,6 +13,7 @@
     <script src="articles-data.js?v=3.5"></script>
     <script src="projects-data.js?v=3.5"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="db.js?v=3.6"></script>
     <style>
         .projectCollabBadge {
             background: rgba(147, 51, 234, 0.22);
@@ -163,7 +164,7 @@
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const articleId = urlParams.get('id');
 
@@ -178,12 +179,27 @@
                 return;
             }
 
-            // 1. Check custom articles in localStorage first
+            // 1. Check asynchronous DB lookup (checks local cache and Supabase cloud)
+            if (typeof DB !== 'undefined' && DB.getArticleByIdAsync) {
+                try {
+                    const article = await DB.getArticleByIdAsync(articleId);
+                    if (article) {
+                        displayArticle(article);
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('Error fetching article via DB:', e);
+                }
+            }
+
+            // 2. Check custom articles in localStorage
             let customArticles = [];
             try {
-                const stored = localStorage.getItem('custom_articles');
-                if (stored) {
-                    customArticles = JSON.parse(stored);
+                if (typeof DB !== 'undefined' && DB.getCustomArticles) {
+                    customArticles = DB.getCustomArticles();
+                } else {
+                    const stored = localStorage.getItem('custom_articles');
+                    if (stored) customArticles = JSON.parse(stored);
                 }
             } catch (e) {
                 console.error('Error reading localStorage:', e);
@@ -195,7 +211,7 @@
                 return;
             }
 
-            // 2. Check window.ARTICLES_DATABASE (instant synchronous baseline)
+            // 3. Check window.ARTICLES_DATABASE (instant synchronous baseline)
             if (typeof window.ARTICLES_DATABASE !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE)) {
                 const foundBase = window.ARTICLES_DATABASE.find(a => String(a.id) === String(articleId));
                 if (foundBase) {
@@ -204,7 +220,7 @@
                 }
             }
 
-            // 3. Fallback to Supabase cloud if configured, otherwise show not found
+            // 4. Fallback directly to Supabase cloud query
             fetchFromCloudOrNotFound(articleId);
         });
 
@@ -215,7 +231,8 @@
                     client.from('articles').select('*').eq('id', String(id)).maybeSingle()
                         .then(({ data: cloudArt, error: cloudErr }) => {
                             if (!cloudErr && cloudArt) {
-                                displayArticle(cloudArt);
+                                const mapped = (typeof DB.rowToArticle === 'function') ? DB.rowToArticle(cloudArt) : cloudArt;
+                                displayArticle(mapped);
                             } else {
                                 showNotFound();
                             }
@@ -225,6 +242,8 @@
                 }
             }
             showNotFound();
+        }
+
         function escapeHtml(str) {
             if (!str) return '';
             return String(str)

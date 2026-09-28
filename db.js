@@ -58,6 +58,11 @@ const DB = (function() {
                 kwList.push(encodedCollab);
             }
         }
+        if (a.showInHeroAndGrid && !kwList.includes('featured_home')) {
+            kwList.push('featured_home');
+        } else if (a.showInHeroAndGrid === false) {
+            kwList = kwList.filter(k => k !== 'featured_home');
+        }
         return {
             id: String(a.id),
             title: a.title || 'Untitled Article',
@@ -97,27 +102,28 @@ const DB = (function() {
         }
 
         return {
-            id: r.id,
-            title: r.title,
+            id: String(r.id),
+            title: r.title || 'Untitled Article',
             subtitle: r.subtitle || '',
             description: r.description || '',
-            author: r.author,
-            authorId: r.author_id || r.authorId,
-            author_id: r.author_id,
+            author: r.author || 'Anonymous',
+            authorId: r.author_id || r.authorId || null,
+            author_id: r.author_id || r.authorId || null,
             isCollab: isCollab,
             collaboratorId: collabId,
             collaboratorName: collabName,
             collaboratorRole: collabRole,
-            date: r.date,
-            image: r.image,
-            readTime: r.read_time || r.readTime || 5,
-            read_time: r.read_time,
-            body: r.body,
+            date: r.date || null,
+            image: r.image || null,
+            readTime: parseInt(r.read_time || r.readTime, 10) || 5,
+            read_time: parseInt(r.read_time || r.readTime, 10) || 5,
+            body: r.body || '',
             keywords: kw,
             bibliography: r.bibliography || '',
             projectId: r.project_id || r.projectId || null,
+            project_id: r.project_id || r.projectId || null,
             showInHeroAndGrid: isFeatured,
-            createdAt: r.created_at
+            createdAt: r.created_at || r.createdAt || new Date().toISOString()
         };
     }
 
@@ -226,16 +232,6 @@ const DB = (function() {
     }
 
     function isDummyItem(item) {
-        if (!item) return false;
-        const strId = String(item.id || '').trim();
-        if (['0', '1', '2', '3', 'proj-atlantic-world', 'proj-colonial-culture'].includes(strId)) return true;
-        const title = (item.title || '').trim().toLowerCase();
-        if (title.includes('demographic collapse')) return true;
-        if (title.includes('mercantilism')) return true;
-        if (title.includes('racial classes and social stratification')) return true;
-        if (title.includes('technological and cultural exchanges')) return true;
-        if (title.includes('the atlantic world')) return true;
-        if (title.includes('colonial social orders')) return true;
         return false;
     }
 
@@ -248,55 +244,33 @@ const DB = (function() {
 
         isSyncingCloud = true;
         try {
-            // 1. Articles Sync
+            // 1. Articles Sync from Supabase Cloud
             const { data: cloudArticles, error: artError } = await client.from('articles').select('*');
             if (!artError && Array.isArray(cloudArticles)) {
-                // Delete dummy articles from Supabase Cloud
-                for (const row of cloudArticles) {
-                    if (isDummyItem(row)) {
-                        console.log('Purging dummy article from Supabase cloud:', row.id, row.title);
-                        client.from('articles').delete().eq('id', row.id).then(() => {});
-                    }
-                }
-
-                const validCloud = cloudArticles.filter(row => !isDummyItem(row));
                 const localArticles = getCustomArticles();
                 const localMap = new Map();
                 localArticles.forEach(a => localMap.set(String(a.id), a));
-                validCloud.forEach(row => {
+                cloudArticles.forEach(row => {
                     const mapped = rowToArticle(row);
-                    if (!isDummyItem(mapped)) {
-                        localMap.set(String(mapped.id), mapped);
-                    }
+                    localMap.set(String(mapped.id), mapped);
                 });
-                const mergedArticles = Array.from(localMap.values()).filter(a => !isDummyItem(a));
+                const mergedArticles = Array.from(localMap.values());
                 try {
                     localStorage.setItem(ARTICLES_KEY, JSON.stringify(mergedArticles));
                 } catch (e) {}
             }
 
-            // 2. Projects Sync
+            // 2. Projects Sync from Supabase Cloud
             const { data: cloudProjects, error: projError } = await client.from('projects').select('*');
             if (!projError && Array.isArray(cloudProjects)) {
-                // Delete dummy projects from Supabase Cloud
-                for (const row of cloudProjects) {
-                    if (isDummyItem(row)) {
-                        console.log('Purging dummy project from Supabase cloud:', row.id, row.title);
-                        client.from('projects').delete().eq('id', row.id).then(() => {});
-                    }
-                }
-
-                const validCloudProjects = cloudProjects.filter(row => !isDummyItem(row));
-                const mappedProjects = validCloudProjects.map(rowToProject).filter(p => !isDummyItem(p));
                 const localProjects = getProjects();
                 const projMap = new Map();
-                mappedProjects.forEach(p => projMap.set(String(p.id), p));
-                localProjects.forEach(p => {
-                    if (!projMap.has(String(p.id)) && !isDummyItem(p)) {
-                        projMap.set(String(p.id), p);
-                    }
+                localProjects.forEach(p => projMap.set(String(p.id), p));
+                cloudProjects.forEach(row => {
+                    const mapped = rowToProject(row);
+                    projMap.set(String(mapped.id), mapped);
                 });
-                const finalProjects = Array.from(projMap.values()).filter(p => !isDummyItem(p));
+                const finalProjects = Array.from(projMap.values());
                 try {
                     localStorage.setItem(PROJECTS_KEY, JSON.stringify(finalProjects));
                 } catch (e) {}
@@ -712,42 +686,48 @@ const DB = (function() {
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (Array.isArray(parsed) && parsed.length > 0) {
-                    const sanitized = parsed.filter(a => !isDummyItem(a));
-                    if (sanitized.length !== parsed.length) {
-                        localStorage.setItem(ARTICLES_KEY, JSON.stringify(sanitized));
-                    }
-                    if (sanitized.length > 0) return sanitized;
+                    return parsed;
                 }
             }
         } catch (e) {}
 
         // Fallback to static articles database (e.g. from articles-data.js)
         if (typeof window !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE) && window.ARTICLES_DATABASE.length > 0) {
-            const valid = window.ARTICLES_DATABASE.filter(a => !isDummyItem(a));
-            try {
-                localStorage.setItem(ARTICLES_KEY, JSON.stringify(valid));
-            } catch (e) {}
-            return valid;
+            return window.ARTICLES_DATABASE;
         }
         return [];
     }
 
-    function saveArticle(articleData) {
+    async function saveArticle(articleData) {
         const user = getCurrentUser();
         if (!user) {
             throw new Error('Authentication required: You must be signed in to publish an article.');
         }
 
         const articles = getCustomArticles();
-        let sanitizedKeywords = articleData.keywords;
-        if (Array.isArray(sanitizedKeywords) && sanitizedKeywords.length > 2) {
-            sanitizedKeywords = sanitizedKeywords.slice(0, 2);
+        let rawKeywords = Array.isArray(articleData.keywords) ? [...articleData.keywords] : [];
+        let systemKeywords = rawKeywords.filter(k => typeof k === 'string' && (k.startsWith('collab:') || k === 'featured_home'));
+        let topicKeywords = rawKeywords.filter(k => typeof k === 'string' && !k.startsWith('collab:') && k !== 'featured_home');
+        if (topicKeywords.length > 2) {
+            topicKeywords = topicKeywords.slice(0, 2);
         }
 
-        const isFeatured = articleData.showInHeroAndGrid === true || (Array.isArray(sanitizedKeywords) && sanitizedKeywords.includes('featured_home'));
+        const isFeatured = articleData.showInHeroAndGrid === true || rawKeywords.includes('featured_home');
+        if (isFeatured && !systemKeywords.includes('featured_home')) {
+            systemKeywords.push('featured_home');
+        }
+
+        if (articleData.isCollab && articleData.collaboratorName) {
+            const collabTag = 'collab:' + encodeURIComponent(articleData.collaboratorName);
+            if (!systemKeywords.includes(collabTag)) {
+                systemKeywords.push(collabTag);
+            }
+        }
+
+        const finalKeywords = [...topicKeywords, ...systemKeywords];
         const newArticle = {
             ...articleData,
-            keywords: sanitizedKeywords || articleData.keywords,
+            keywords: finalKeywords,
             authorId: articleData.authorId || user.id,
             author: articleData.author || user.name,
             isCollab: articleData.isCollab || false,
@@ -782,19 +762,25 @@ const DB = (function() {
             }
         }
 
-        articles.unshift(newArticle);
+        const existingIdx = articles.findIndex(a => String(a.id) === String(newArticle.id));
+        if (existingIdx !== -1) {
+            articles[existingIdx] = newArticle;
+        } else {
+            articles.unshift(newArticle);
+        }
         localStorage.setItem(ARTICLES_KEY, JSON.stringify(articles));
 
-        // Asynchronously sync to Supabase cloud
+        // Directly await Supabase cloud upsert so the cloud database is guaranteed updated
         const client = getSupabaseClient();
         if (client) {
-            client.from('articles')
-                .upsert([articleToRow(newArticle)], { onConflict: 'id' })
-                .then(({ error }) => {
-                    if (error) console.error('Supabase cloud insert article error:', error);
-                    else console.log('Article saved to Supabase cloud!');
-                })
-                .catch(err => console.error('Supabase network error saving article:', err));
+            try {
+                const row = articleToRow(newArticle);
+                const { error } = await client.from('articles').upsert([row], { onConflict: 'id' });
+                if (error) console.error('Supabase cloud insert article error:', error);
+                else console.log('✅ Article saved to Supabase cloud table articles:', newArticle.id);
+            } catch (err) {
+                console.error('Supabase network error saving article:', err);
+            }
         }
 
         return newArticle;
@@ -818,7 +804,39 @@ const DB = (function() {
         return custom.find(a => String(a.id) === strId) || null;
     }
 
-    function updateArticle(id, updatedData) {
+    async function getArticleByIdAsync(id) {
+        if (id === null || id === undefined) return null;
+        const strId = String(id);
+        const local = getArticleById(strId);
+        if (local) return local;
+
+        const client = getSupabaseClient();
+        if (client) {
+            try {
+                const { data, error } = await client.from('articles').select('*').eq('id', strId).maybeSingle();
+                if (!error && data) {
+                    const article = rowToArticle(data);
+                    const current = getCustomArticles();
+                    if (!current.some(a => String(a.id) === strId)) {
+                        current.unshift(article);
+                        localStorage.setItem(ARTICLES_KEY, JSON.stringify(current));
+                    }
+                    return article;
+                }
+            } catch (e) {
+                console.warn('Error fetching article from Supabase:', e);
+            }
+        }
+
+        if (typeof window !== 'undefined' && Array.isArray(window.ARTICLES_DATABASE)) {
+            const found = window.ARTICLES_DATABASE.find(a => String(a.id) === strId);
+            if (found) return found;
+        }
+
+        return null;
+    }
+
+    async function updateArticle(id, updatedData) {
         const user = getCurrentUser();
         if (!user) {
             throw new Error('Authentication required: You must be signed in to edit an article.');
@@ -829,30 +847,53 @@ const DB = (function() {
         const existingIndex = articles.findIndex(a => String(a.id) === strId);
         const previousProjectId = (existingIndex !== -1 && articles[existingIndex]) ? articles[existingIndex].projectId : null;
 
-        if (updatedData.keywords && Array.isArray(updatedData.keywords) && updatedData.keywords.length > 2) {
-            updatedData = { ...updatedData, keywords: updatedData.keywords.slice(0, 2) };
+        let rawKeywords = Array.isArray(updatedData.keywords) ? [...updatedData.keywords] : [];
+        let systemKeywords = rawKeywords.filter(k => typeof k === 'string' && (k.startsWith('collab:') || k === 'featured_home'));
+        let topicKeywords = rawKeywords.filter(k => typeof k === 'string' && !k.startsWith('collab:') && k !== 'featured_home');
+        if (topicKeywords.length > 2) {
+            topicKeywords = topicKeywords.slice(0, 2);
         }
 
+        const isFeatured = updatedData.showInHeroAndGrid !== undefined
+            ? !!updatedData.showInHeroAndGrid
+            : ((existingIndex !== -1 && articles[existingIndex].showInHeroAndGrid) || rawKeywords.includes('featured_home'));
+
+        if (isFeatured && !systemKeywords.includes('featured_home')) {
+            systemKeywords.push('featured_home');
+        } else if (!isFeatured) {
+            systemKeywords = systemKeywords.filter(k => k !== 'featured_home');
+        }
+
+        const collabName = updatedData.collaboratorName !== undefined
+            ? updatedData.collaboratorName
+            : (existingIndex !== -1 ? articles[existingIndex].collaboratorName : null);
+        const isCollab = updatedData.isCollab !== undefined
+            ? (updatedData.isCollab && !!collabName)
+            : (existingIndex !== -1 ? (articles[existingIndex].isCollab && !!collabName) : false);
+
+        if (isCollab && collabName) {
+            const collabTag = 'collab:' + encodeURIComponent(collabName);
+            if (!systemKeywords.includes(collabTag)) {
+                systemKeywords.push(collabTag);
+            }
+        } else {
+            systemKeywords = systemKeywords.filter(k => typeof k !== 'string' || !k.startsWith('collab:'));
+        }
+
+        updatedData.keywords = [...topicKeywords, ...systemKeywords];
         updatedData.projectId = updatedData.projectId !== undefined ? updatedData.projectId : (previousProjectId || null);
-        updatedData.showInHeroAndGrid = updatedData.showInHeroAndGrid !== undefined
-            ? updatedData.showInHeroAndGrid
-            : ((existingIndex !== -1 && articles[existingIndex].showInHeroAndGrid) || false);
-        updatedData.isCollab = updatedData.isCollab !== undefined
-            ? updatedData.isCollab
-            : ((existingIndex !== -1 && articles[existingIndex].isCollab) || false);
+        updatedData.showInHeroAndGrid = isFeatured;
+        updatedData.isCollab = isCollab;
         updatedData.collaboratorId = updatedData.collaboratorId !== undefined
             ? updatedData.collaboratorId
             : ((existingIndex !== -1 && articles[existingIndex].collaboratorId) || null);
-        updatedData.collaboratorName = updatedData.collaboratorName !== undefined
-            ? updatedData.collaboratorName
-            : ((existingIndex !== -1 && articles[existingIndex].collaboratorName) || null);
+        updatedData.collaboratorName = collabName;
         updatedData.collaboratorRole = updatedData.collaboratorRole !== undefined
             ? updatedData.collaboratorRole
             : ((existingIndex !== -1 && articles[existingIndex].collaboratorRole) || null);
 
         let savedArticle = null;
         if (existingIndex === -1) {
-            // Seed article being customized or created with specific ID
             const target = { id: id, ...updatedData };
             if (!canEditArticle(target)) {
                 throw new Error('Permission denied: You do not have permission to edit this article.');
@@ -943,16 +984,17 @@ const DB = (function() {
             }
         }
 
-        // Asynchronously sync update to Supabase cloud
+        // Directly await Supabase cloud upsert so cloud update is guaranteed
         const client = getSupabaseClient();
         if (client && savedArticle) {
-            client.from('articles')
-                .upsert([articleToRow(savedArticle)], { onConflict: 'id' })
-                .then(({ error }) => {
-                    if (error) console.error('Supabase cloud update article error:', error);
-                    else console.log('Article updated in Supabase cloud!');
-                })
-                .catch(err => console.error('Supabase network error updating article:', err));
+            try {
+                const row = articleToRow(savedArticle);
+                const { error } = await client.from('articles').upsert([row], { onConflict: 'id' });
+                if (error) console.error('Supabase cloud update article error:', error);
+                else console.log('✅ Article updated in Supabase cloud table articles:', savedArticle.id);
+            } catch (err) {
+                console.error('Supabase network error updating article:', err);
+            }
         }
 
         return savedArticle;
@@ -971,11 +1013,7 @@ const DB = (function() {
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (Array.isArray(parsed) && parsed.length > 0) {
-                    const sanitized = parsed.filter(p => !isDummyItem(p));
-                    if (sanitized.length !== parsed.length) {
-                        localStorage.setItem(PROJECTS_KEY, JSON.stringify(sanitized));
-                    }
-                    if (sanitized.length > 0) return sanitized;
+                    return parsed;
                 }
             }
         } catch (e) {
@@ -984,11 +1022,7 @@ const DB = (function() {
 
         // Fallback to static projects database (e.g. from projects-data.js)
         if (typeof window !== 'undefined' && Array.isArray(window.PROJECTS_DATABASE) && window.PROJECTS_DATABASE.length > 0) {
-            const valid = window.PROJECTS_DATABASE.filter(p => !isDummyItem(p));
-            try {
-                localStorage.setItem(PROJECTS_KEY, JSON.stringify(valid));
-            } catch (e) {}
-            return valid;
+            return window.PROJECTS_DATABASE;
         }
         return [];
     }
@@ -1344,7 +1378,7 @@ const DB = (function() {
         return false;
     }
 
-    function deleteArticle(id) {
+    async function deleteArticle(id) {
         const user = getCurrentUser();
         if (!user) {
             throw new Error('Authentication required: You must be signed in to delete an article.');
@@ -1385,17 +1419,16 @@ const DB = (function() {
         deleted.add(strId);
         localStorage.setItem(DELETED_KEY, JSON.stringify(Array.from(deleted)));
 
-        // Asynchronously sync delete to Supabase cloud
+        // Directly await Supabase cloud delete
         const client = getSupabaseClient();
         if (client) {
-            client.from('articles')
-                .delete()
-                .eq('id', strId)
-                .then(({ error }) => {
-                    if (error) console.error('Supabase cloud delete article error:', error);
-                    else console.log('Article deleted from Supabase cloud!');
-                })
-                .catch(err => console.error('Supabase network error deleting article:', err));
+            try {
+                const { error } = await client.from('articles').delete().eq('id', strId);
+                if (error) console.error('Supabase cloud delete article error:', error);
+                else console.log('✅ Article deleted from Supabase cloud table articles:', strId);
+            } catch (err) {
+                console.error('Supabase network error deleting article:', err);
+            }
         }
 
         return { success: true, id: strId };
@@ -3518,6 +3551,7 @@ const DB = (function() {
         assignUserRole,
         assignAuthorRole,
         getArticleById,
+        getArticleByIdAsync,
         canEditArticle,
         canDeleteArticle,
         renderHeaderAuth,

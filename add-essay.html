@@ -13,7 +13,7 @@
     <script src="articles-data.js?v=3.5"></script>
     <script src="projects-data.js?v=3.5"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js?v=3.5"></script>
+    <script src="db.js?v=3.6"></script>
     <style>
         .projectLinkToggle {
             margin-top: 6px;
@@ -1482,13 +1482,13 @@
                 };
 
                 try {
-                    DB.updateArticle(editArticleId, updatedArticleData);
+                    await DB.updateArticle(editArticleId, updatedArticleData);
                 } catch (err) {
                     alert(err.message || 'Error updating article.');
                     return;
                 }
 
-                syncArticleToBackend(updatedArticleData);
+                await syncArticleToBackend(updatedArticleData);
                 const redirectUrl = `article.html?id=${encodeURIComponent(editArticleId)}`;
                 window.location.href = redirectUrl;
                 return;
@@ -1531,13 +1531,13 @@
 
             // Save to database via DB engine
             try {
-                DB.saveArticle(newArticle);
+                await DB.saveArticle(newArticle);
             } catch (err) {
                 alert(err.message || 'Error saving article.');
                 return;
             }
 
-            syncArticleToBackend(newArticle);
+            await syncArticleToBackend(newArticle);
             const redirectUrl = `article.html?id=${encodeURIComponent(newArticleId)}`;
             window.location.href = redirectUrl;
         }

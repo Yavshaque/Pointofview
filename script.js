@@ -89,20 +89,15 @@ function initializeArticles(baseData) {
     articlesData = mergedItems.filter(a => {
         if (!a) return false;
         if (deletedIds.has(String(a.id))) return false;
-        if (typeof DB !== 'undefined' && DB.isDummyItem && DB.isDummyItem(a)) return false;
-        // Do not show articles linked to a project in the hero carousel or grid (the project is already displayed),
-        // UNLESS the author opted to also display it on the homepage hero/grid.
+
+        // Show standalone articles in hero slider and grid layout.
+        // If an article is assigned to a project, show it in hero/grid ONLY IF opted-in via showInHeroAndGrid.
         const isFeaturedOnHome = a.showInHeroAndGrid === true || (Array.isArray(a.keywords) && a.keywords.includes('featured_home'));
         const linkedPid = a.projectId ?? a.project_id;
         const normalizedProjectId = linkedPid == null ? '' : String(linkedPid).trim().toLowerCase();
-        if (!a.isProject && normalizedProjectId && normalizedProjectId !== 'null' && normalizedProjectId !== 'undefined' && !isFeaturedOnHome) return false;
-        const title = (a.title || '').trim().toLowerCase();
-        if (title.includes('demographic collapse')) return false;
-        if (title.includes('mercantilism')) return false;
-        if (title.includes('racial classes and social stratification')) return false;
-        if (title.includes('technological and cultural exchanges')) return false;
-        if (title.includes('the atlantic world')) return false;
-        if (title.includes('colonial social orders')) return false;
+        const hasProject = normalizedProjectId && normalizedProjectId !== 'null' && normalizedProjectId !== 'undefined';
+        if (!a.isProject && hasProject && !isFeaturedOnHome) return false;
+
         return true;
     });
 
