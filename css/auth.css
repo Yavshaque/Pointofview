@@ -33,6 +33,10 @@
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     transition: all 0.2s ease;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
 }
 
 .backHomeBtn:hover {

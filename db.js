@@ -51,6 +51,13 @@ const DB = (function() {
 
     // Mapping Helpers between JS Domain Objects and Supabase Cloud Tables
     function articleToRow(a) {
+        let kwList = Array.isArray(a.keywords) ? [...a.keywords] : [];
+        if (a.isCollab && a.collaboratorName) {
+            const encodedCollab = 'collab:' + encodeURIComponent(a.collaboratorName);
+            if (!kwList.some(k => typeof k === 'string' && k.startsWith('collab:'))) {
+                kwList.push(encodedCollab);
+            }
+        }
         return {
             id: String(a.id),
             title: a.title || 'Untitled Article',
@@ -62,13 +69,33 @@ const DB = (function() {
             image: a.image || null,
             read_time: parseInt(a.readTime || a.read_time, 10) || 5,
             body: a.body || '',
-            keywords: Array.isArray(a.keywords) ? a.keywords : [],
+            keywords: kwList,
             bibliography: a.bibliography || '',
             project_id: a.projectId || a.project_id || null
         };
     }
 
     function rowToArticle(r) {
+        const kw = Array.isArray(r.keywords) ? r.keywords : (typeof r.keywords === 'string' ? JSON.parse(r.keywords || '[]') : []);
+        const isFeatured = r.showInHeroAndGrid === true || r.show_in_hero === true || (Array.isArray(kw) && kw.includes('featured_home'));
+        let isCollab = r.is_collab === true || r.isCollab === true;
+        let collabName = r.collaborator_name || r.collaboratorName || null;
+        let collabId = r.collaborator_id || r.collaboratorId || null;
+        let collabRole = r.collaborator_role || r.collaboratorRole || null;
+
+        if (!collabName && Array.isArray(kw)) {
+            const collabKw = kw.find(k => typeof k === 'string' && k.startsWith('collab:'));
+            if (collabKw) {
+                try {
+                    collabName = decodeURIComponent(collabKw.substring(7));
+                    isCollab = true;
+                } catch (e) {
+                    collabName = collabKw.substring(7);
+                    isCollab = true;
+                }
+            }
+        }
+
         return {
             id: r.id,
             title: r.title,
@@ -77,14 +104,19 @@ const DB = (function() {
             author: r.author,
             authorId: r.author_id || r.authorId,
             author_id: r.author_id,
+            isCollab: isCollab,
+            collaboratorId: collabId,
+            collaboratorName: collabName,
+            collaboratorRole: collabRole,
             date: r.date,
             image: r.image,
             readTime: r.read_time || r.readTime || 5,
             read_time: r.read_time,
             body: r.body,
-            keywords: Array.isArray(r.keywords) ? r.keywords : (typeof r.keywords === 'string' ? JSON.parse(r.keywords || '[]') : []),
+            keywords: kw,
             bibliography: r.bibliography || '',
             projectId: r.project_id || r.projectId || null,
+            showInHeroAndGrid: isFeatured,
             createdAt: r.created_at
         };
     }
@@ -712,12 +744,18 @@ const DB = (function() {
             sanitizedKeywords = sanitizedKeywords.slice(0, 2);
         }
 
+        const isFeatured = articleData.showInHeroAndGrid === true || (Array.isArray(sanitizedKeywords) && sanitizedKeywords.includes('featured_home'));
         const newArticle = {
             ...articleData,
             keywords: sanitizedKeywords || articleData.keywords,
-            authorId: user.id,
+            authorId: articleData.authorId || user.id,
             author: articleData.author || user.name,
+            isCollab: articleData.isCollab || false,
+            collaboratorId: articleData.collaboratorId || null,
+            collaboratorName: articleData.collaboratorName || null,
+            collaboratorRole: articleData.collaboratorRole || null,
             projectId: articleData.projectId || null,
+            showInHeroAndGrid: isFeatured,
             createdAt: new Date().toISOString()
         };
 
@@ -731,7 +769,12 @@ const DB = (function() {
                     image: newArticle.image || null,
                     body: newArticle.body || '',
                     bibliography: newArticle.bibliography || '',
-                    linkedArticleId: newArticle.id
+                    linkedArticleId: newArticle.id,
+                    author: newArticle.author,
+                    isCollab: newArticle.isCollab || false,
+                    collaboratorName: newArticle.collaboratorName || null,
+                    collaboratorId: newArticle.collaboratorId || null,
+                    collaboratorRole: newArticle.collaboratorRole || null
                 };
                 addProjectPart(newArticle.projectId, partData);
             } catch (e) {
@@ -784,12 +827,28 @@ const DB = (function() {
         const strId = String(id);
         const articles = getCustomArticles();
         const existingIndex = articles.findIndex(a => String(a.id) === strId);
+        const previousProjectId = (existingIndex !== -1 && articles[existingIndex]) ? articles[existingIndex].projectId : null;
 
         if (updatedData.keywords && Array.isArray(updatedData.keywords) && updatedData.keywords.length > 2) {
             updatedData = { ...updatedData, keywords: updatedData.keywords.slice(0, 2) };
         }
 
-        updatedData.projectId = updatedData.projectId !== undefined ? updatedData.projectId : ((existingIndex !== -1 && articles[existingIndex].projectId) || null);
+        updatedData.projectId = updatedData.projectId !== undefined ? updatedData.projectId : (previousProjectId || null);
+        updatedData.showInHeroAndGrid = updatedData.showInHeroAndGrid !== undefined
+            ? updatedData.showInHeroAndGrid
+            : ((existingIndex !== -1 && articles[existingIndex].showInHeroAndGrid) || false);
+        updatedData.isCollab = updatedData.isCollab !== undefined
+            ? updatedData.isCollab
+            : ((existingIndex !== -1 && articles[existingIndex].isCollab) || false);
+        updatedData.collaboratorId = updatedData.collaboratorId !== undefined
+            ? updatedData.collaboratorId
+            : ((existingIndex !== -1 && articles[existingIndex].collaboratorId) || null);
+        updatedData.collaboratorName = updatedData.collaboratorName !== undefined
+            ? updatedData.collaboratorName
+            : ((existingIndex !== -1 && articles[existingIndex].collaboratorName) || null);
+        updatedData.collaboratorRole = updatedData.collaboratorRole !== undefined
+            ? updatedData.collaboratorRole
+            : ((existingIndex !== -1 && articles[existingIndex].collaboratorRole) || null);
 
         let savedArticle = null;
         if (existingIndex === -1) {
@@ -829,6 +888,59 @@ const DB = (function() {
             articles[existingIndex] = updated;
             localStorage.setItem(ARTICLES_KEY, JSON.stringify(articles));
             savedArticle = updated;
+        }
+
+        // Project linking sync
+        const newProjectId = savedArticle.projectId;
+        if (previousProjectId && String(previousProjectId) !== String(newProjectId)) {
+            try {
+                const oldProj = getProjectById(previousProjectId);
+                if (oldProj && Array.isArray(oldProj.parts)) {
+                    const remainingParts = oldProj.parts.filter(pt =>
+                        !(pt.linkedArticleId && String(pt.linkedArticleId) === String(savedArticle.id)) &&
+                        String(pt.id) !== String(savedArticle.id)
+                    );
+                    updateProject(previousProjectId, { parts: remainingParts });
+                }
+            } catch (e) {
+                console.warn('Could not remove article from old project:', e);
+            }
+        }
+
+        if (newProjectId) {
+            try {
+                const targetProj = getProjectById(newProjectId);
+                if (targetProj) {
+                    const parts = Array.isArray(targetProj.parts) ? [...targetProj.parts] : [];
+                    const partIdx = parts.findIndex(pt =>
+                        (pt.linkedArticleId && String(pt.linkedArticleId) === String(savedArticle.id)) ||
+                        String(pt.id) === String(savedArticle.id)
+                    );
+                    const partData = {
+                        id: partIdx !== -1 ? parts[partIdx].id : ('part-' + Date.now()),
+                        title: savedArticle.title,
+                        subtitle: savedArticle.description || '',
+                        readTime: savedArticle.readTime || 5,
+                        image: savedArticle.image || null,
+                        body: savedArticle.body || '',
+                        bibliography: savedArticle.bibliography || '',
+                        linkedArticleId: savedArticle.id,
+                        author: savedArticle.author,
+                        isCollab: savedArticle.isCollab || false,
+                        collaboratorName: savedArticle.collaboratorName || null,
+                        collaboratorId: savedArticle.collaboratorId || null,
+                        collaboratorRole: savedArticle.collaboratorRole || null
+                    };
+                    if (partIdx !== -1) {
+                        parts[partIdx] = { ...parts[partIdx], ...partData };
+                    } else {
+                        parts.push(partData);
+                    }
+                    updateProject(newProjectId, { parts: parts });
+                }
+            } catch (e) {
+                console.warn('Could not update project parts for article:', e);
+            }
         }
 
         // Asynchronously sync update to Supabase cloud
@@ -900,6 +1012,63 @@ const DB = (function() {
         const strId = String(id);
         const projects = getProjects();
         return projects.find(p => String(p.id) === strId) || null;
+    }
+
+    function getProjectParts(id) {
+        if (!id) return [];
+        const strId = String(id);
+        const project = getProjectById(strId);
+        if (!project) return [];
+
+        const parts = Array.isArray(project.parts) ? [...project.parts] : [];
+
+        // Dynamically find all custom articles linked to this project
+        const allArticles = getCustomArticles();
+        const linkedArticles = allArticles.filter(a => a && a.projectId && String(a.projectId) === strId);
+
+        linkedArticles.forEach(art => {
+            const existingIdx = parts.findIndex(p =>
+                (p.linkedArticleId && String(p.linkedArticleId) === String(art.id)) ||
+                (p.id && String(p.id) === String(art.id)) ||
+                (p.title && art.title && p.title.trim().toLowerCase() === art.title.trim().toLowerCase())
+            );
+
+            const partData = {
+                id: existingIdx !== -1 ? parts[existingIdx].id : ('part-art-' + art.id),
+                title: art.title || 'Untitled Essay',
+                subtitle: art.description || '',
+                readTime: art.readTime || 5,
+                image: art.image || null,
+                body: art.body || '',
+                bibliography: art.bibliography || '',
+                linkedArticleId: art.id,
+                author: art.author,
+                isCollab: art.isCollab || false,
+                collaboratorName: art.collaboratorName || null,
+                collaboratorId: art.collaboratorId || null,
+                collaboratorRole: art.collaboratorRole || null
+            };
+
+            if (existingIdx !== -1) {
+                parts[existingIdx] = { ...parts[existingIdx], ...partData };
+            } else {
+                parts.push(partData);
+            }
+        });
+
+        // Sync back into project object in memory & localStorage if new parts found
+        if (parts.length !== (project.parts || []).length) {
+            try {
+                const projects = getProjects();
+                const pIdx = projects.findIndex(p => String(p.id) === strId);
+                if (pIdx !== -1) {
+                    projects[pIdx].parts = parts;
+                    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+                }
+            } catch (e) {}
+        }
+
+        return parts;
     }
 
     function canEditProject(project) {
@@ -1194,6 +1363,22 @@ const DB = (function() {
         // 1. Remove from custom_articles if present
         const filtered = custom.filter(a => String(a.id) !== strId);
         localStorage.setItem(ARTICLES_KEY, JSON.stringify(filtered));
+
+        // 1b. If linked to a project, remove from project parts
+        if (existingCustom && existingCustom.projectId) {
+            try {
+                const proj = getProjectById(existingCustom.projectId);
+                if (proj && Array.isArray(proj.parts)) {
+                    const remainingParts = proj.parts.filter(pt =>
+                        !(pt.linkedArticleId && String(pt.linkedArticleId) === strId) &&
+                        String(pt.id) !== strId
+                    );
+                    updateProject(existingCustom.projectId, { parts: remainingParts });
+                }
+            } catch (e) {
+                console.warn('Could not remove deleted article from project parts:', e);
+            }
+        }
 
         // 2. Add to deleted blacklist to hide seed or custom articles permanently
         const deleted = getDeletedArticleIds();
@@ -3379,6 +3564,7 @@ const DB = (function() {
         getProjects,
         getProjectsForUser,
         getProjectById,
+        getProjectParts,
         canEditProject,
         saveProject,
         updateProject,

@@ -90,10 +90,12 @@ function initializeArticles(baseData) {
         if (!a) return false;
         if (deletedIds.has(String(a.id))) return false;
         if (typeof DB !== 'undefined' && DB.isDummyItem && DB.isDummyItem(a)) return false;
-        // Do not show articles linked to a project in the hero carousel or grid (the project is already displayed)
+        // Do not show articles linked to a project in the hero carousel or grid (the project is already displayed),
+        // UNLESS the author opted to also display it on the homepage hero/grid.
+        const isFeaturedOnHome = a.showInHeroAndGrid === true || (Array.isArray(a.keywords) && a.keywords.includes('featured_home'));
         const linkedPid = a.projectId ?? a.project_id;
         const normalizedProjectId = linkedPid == null ? '' : String(linkedPid).trim().toLowerCase();
-        if (!a.isProject && normalizedProjectId && normalizedProjectId !== 'null' && normalizedProjectId !== 'undefined') return false;
+        if (!a.isProject && normalizedProjectId && normalizedProjectId !== 'null' && normalizedProjectId !== 'undefined' && !isFeaturedOnHome) return false;
         const title = (a.title || '').trim().toLowerCase();
         if (title.includes('demographic collapse')) return false;
         if (title.includes('mercantilism')) return false;
@@ -452,7 +454,7 @@ function updateDOM(index) {
         let keyHtml = '';
         if (currentArticle.keywords && Array.isArray(currentArticle.keywords)) {
             keyHtml += currentArticle.keywords
-                .filter(keyword => keyword.toLowerCase() !== 'published')
+                .filter(keyword => keyword.toLowerCase() !== 'published' && keyword.toLowerCase() !== 'featured_home')
                 .slice(0, 2)
                 .map(keyword => `<p class="infoCard">${keyword}</p>`)
                 .join('');
@@ -498,7 +500,7 @@ function renderLatestArticles(articles) {
             </a>
         ` : '';
 
-        const mainCategory = (article.keywords && article.keywords.find(k => k.toLowerCase() !== 'published')) || 'World';
+        const mainCategory = (article.keywords && article.keywords.find(k => k.toLowerCase() !== 'published' && k.toLowerCase() !== 'featured_home')) || 'World';
         const readTime = article.readTime || 4;
 
         const projectContentBadge = isProject ? `<span class="sectionBadge" style="font-size: 9.5px; padding: 2px 9px; margin: 0px; align-self: flex-start;">Project</span>` : '';
@@ -600,7 +602,7 @@ function renderCategoryFilters(articles) {
         if (art.keywords && Array.isArray(art.keywords)) {
             art.keywords.forEach(kw => {
                 const clean = (kw || '').trim();
-                if (clean && clean.toLowerCase() !== 'published') {
+                if (clean && clean.toLowerCase() !== 'published' && clean.toLowerCase() !== 'featured_home') {
                     const lower = clean.toLowerCase();
                     if (!catMap.has(lower)) {
                         catMap.set(lower, clean);
@@ -766,7 +768,8 @@ function renderHeroCompanion(articles) {
 
     container.innerHTML = featured.map((art, idx) => {
         const rankNum = String(idx + 1).padStart(2, '0');
-        const category = (art.keywords && art.keywords[0]) || 'Analysis';
+        const validKws = (art.keywords || []).filter(k => k.toLowerCase() !== 'published' && k.toLowerCase() !== 'featured_home');
+        const category = validKws[0] || 'Analysis';
         const readTime = art.readTime ? `${art.readTime} min read` : '4 min read';
         const href = `article.html?id=${encodeURIComponent(art.id)}`;
 

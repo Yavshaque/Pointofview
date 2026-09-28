@@ -9,10 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="images/logo.png">
     <link rel="apple-touch-icon" href="images/logo.png">
-    <link rel="stylesheet" href="style.css?v=2.4">
-    <script src="articles-data.js?v=2.2"></script>
+    <link rel="stylesheet" href="style.css?v=3.5">
+    <script src="articles-data.js?v=3.5"></script>
+    <script src="projects-data.js?v=3.5"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="db.js?v=2.2"></script>
+    <script src="db.js?v=3.5"></script>
     <style>
         .projectLinkToggle {
             margin-top: 6px;
@@ -89,13 +90,74 @@
         .unlinkProjectBtn:hover {
             background: rgba(239, 68, 68, 0.18);
         }
+        .subProjectHomeOption {
+            margin-top: 4px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+        .subProjectCheckboxLabel {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .subProjectCheckboxLabel input[type="checkbox"] {
+            margin-top: 3px;
+            accent-color: #8b5cf6;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .subProjectCheckboxText {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .subProjectCheckboxText strong {
+            font-size: 13px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .subProjectCheckboxText small {
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.55);
+            line-height: 1.35;
+        }
         .projectLinkHint {
             font-size: 11.5px;
             color: rgba(255, 255, 255, 0.4);
             margin: 0;
             line-height: 1.4;
         }
+        .useProjectCollabBtn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #c084fc;
+            background: rgba(147, 51, 234, 0.16);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            justify-content: center;
+        }
+        .useProjectCollabBtn:hover {
+            background: rgba(147, 51, 234, 0.28);
+            border-color: rgba(168, 85, 247, 0.6);
+            color: #e9d5ff;
+        }
+        .collabToggleRow {
+            margin-top: 6px;
+        }
     </style>
+    <link rel="stylesheet" href="css/projects.css?v=3.5">
 </head>
 <body class="publishStudioBody">
     <!-- Studio Header -->
@@ -243,9 +305,9 @@
                             <div class="toolbarDivider"></div>
                             <div class="toolbarGroup">
                                 <span class="toolbarLabel">Structure:</span>
+                                <button type="button" class="toolbarBtn" onclick="applyFormat('mainTitle')" title="Insert Main Title (### Title ###)">### Title ###</button>
                                 <button type="button" class="toolbarBtn" onclick="applyFormat('heading')" title="Insert Subheading">## Heading</button>
                                 <button type="button" class="toolbarBtn" onclick="applyFormat('quote')" title="Insert Blockquote">&ldquo; Quote</button>
-                                <button type="button" class="toolbarBtn" onclick="insertSnippet('\n\n')" title="Add paragraph break">+ Paragraph</button>
                             </div>
                         </div>
                         <textarea id="articleBody" name="body" rows="12" placeholder="Write your full article content here. Separate paragraphs with double line breaks..." required oninput="handleBodyInput(this.value)"></textarea>
@@ -282,9 +344,69 @@
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                                 Remove from Project
                             </button>
-                            <p class="projectLinkHint">This article will become a part of the selected project and won't appear separately in the homepage.</p>
+                            <div id="subProjectHomeOption" class="subProjectHomeOption" style="display: none;">
+                                <label class="subProjectCheckboxLabel">
+                                    <input type="checkbox" id="showInHeroAndGrid" name="showInHeroAndGrid">
+                                    <span class="subProjectCheckboxText">
+                                        <strong>Display on Homepage</strong>
+                                        <small>Show this sub-project article in the main grid and hero slider on the homepage</small>
+                                    </span>
+                                </label>
+                            </div>
+                            <p class="projectLinkHint" id="projectLinkHint">This article will become a part of the selected project.</p>
                         </div>
                         <input type="hidden" id="linkedProjectId" value="">
+                    </div>
+
+                    <!-- Article Collaboration (Optional) -->
+                    <div class="studioFieldGroup" id="articleCollabSection">
+                        <label class="studioLabel">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            Article Collaboration <span style="font-weight: 400; color: rgba(255,255,255,0.4); font-size: 12px;">(optional)</span>
+                        </label>
+                        <div class="collabToggleRow">
+                            <button type="button" id="toggleArticleCollab" class="toggleProjectLinkBtn" onclick="toggleArticleCollabPanel()">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                                Add Co-Author / Collaborator
+                            </button>
+                        </div>
+                        <div id="articleCollabPanel" class="projectLinkPanel" style="display: none;">
+                            <!-- Quick button if project has a collaborator -->
+                            <div id="quickProjectCollabOption" style="display: none; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                                <button type="button" id="useProjectCollabBtn" class="useProjectCollabBtn" onclick="applyProjectCollaborator()">
+                                    🤝 Set as Collaboration with <span id="projectCollabNameSpan" style="font-weight: 700; text-decoration: underline;"></span>
+                                </button>
+                            </div>
+
+                            <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 6px 0;">
+                                Search registered writers by name to co-author this article with you.
+                            </p>
+                            <div class="collaboratorSearchWrapper" id="articleCollabSearchWrapper">
+                                <div class="collaboratorSearchInputBox">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                    <input type="text" id="articleCollabSearchInput" placeholder="Search registered writer by name..." autocomplete="off">
+                                    <button type="button" class="collabClearSearchBtn hidden" id="articleCollabClearSearchBtn" onclick="clearArticleCollabSearch()">&times;</button>
+                                </div>
+                                <div class="collaboratorSearchResults hidden" id="articleCollabSearchResults"></div>
+                            </div>
+
+                            <!-- Selected Collaborator Card -->
+                            <div class="selectedCollaboratorCard hidden" id="selectedArticleCollabCard">
+                                <div class="selectedCollabInfo">
+                                    <div class="selectedCollabAvatar" id="selectedArticleCollabAvatar">A</div>
+                                    <div>
+                                        <div class="selectedCollabName" id="selectedArticleCollabName">Writer Name</div>
+                                        <span class="selectedCollabRole" id="selectedArticleCollabRole">Author</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="removeCollaboratorBtn" onclick="removeSelectedArticleCollaborator()" title="Remove Co-Author">✕ Remove</button>
+                            </div>
+
+                            <input type="hidden" id="articleCollaboratorId" value="">
+                            <input type="hidden" id="articleCollaboratorName" value="">
+                            <input type="hidden" id="articleCollaboratorRole" value="">
+                            <input type="hidden" id="articleIsCollab" value="false">
+                        </div>
                     </div>
 
                     <!-- Read time preview -->
@@ -481,6 +603,8 @@
                 document.getElementById('linkedProjectId').value = '';
                 document.getElementById('projectSelect').value = '';
                 document.getElementById('unlinkProjectBtn').style.display = 'none';
+                if (document.getElementById('subProjectHomeOption')) document.getElementById('subProjectHomeOption').style.display = 'none';
+                if (document.getElementById('showInHeroAndGrid')) document.getElementById('showInHeroAndGrid').checked = false;
             }
         }
 
@@ -510,11 +634,18 @@
             const currentLinked = document.getElementById('linkedProjectId').value;
             if (currentLinked) {
                 select.value = currentLinked;
+                if (document.getElementById('subProjectHomeOption')) {
+                    document.getElementById('subProjectHomeOption').style.display = 'block';
+                }
             }
             
             select.addEventListener('change', function() {
                 document.getElementById('linkedProjectId').value = this.value;
                 document.getElementById('unlinkProjectBtn').style.display = this.value ? 'inline-flex' : 'none';
+                if (document.getElementById('subProjectHomeOption')) {
+                    document.getElementById('subProjectHomeOption').style.display = this.value ? 'block' : 'none';
+                }
+                checkProjectCollaboratorAvailability();
             });
         }
 
@@ -522,6 +653,201 @@
             document.getElementById('linkedProjectId').value = '';
             document.getElementById('projectSelect').value = '';
             document.getElementById('unlinkProjectBtn').style.display = 'none';
+            if (document.getElementById('subProjectHomeOption')) document.getElementById('subProjectHomeOption').style.display = 'none';
+            if (document.getElementById('showInHeroAndGrid')) document.getElementById('showInHeroAndGrid').checked = false;
+            checkProjectCollaboratorAvailability();
+        }
+
+        let articleCollabSearchInitialized = false;
+
+        function toggleArticleCollabPanel() {
+            const panel = document.getElementById('articleCollabPanel');
+            const btn = document.getElementById('toggleArticleCollab');
+            if (!panel || !btn) return;
+
+            if (panel.style.display === 'none') {
+                panel.style.display = 'flex';
+                btn.classList.add('active');
+                btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Cancel Collaboration';
+                initArticleCollaboratorSearch();
+                checkProjectCollaboratorAvailability();
+            } else {
+                panel.style.display = 'none';
+                btn.classList.remove('active');
+                btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Add Co-Author / Collaborator';
+                removeSelectedArticleCollaborator();
+            }
+        }
+
+        function checkProjectCollaboratorAvailability() {
+            const pid = document.getElementById('linkedProjectId') ? document.getElementById('linkedProjectId').value : '';
+            const quickOption = document.getElementById('quickProjectCollabOption');
+            const nameSpan = document.getElementById('projectCollabNameSpan');
+            if (!quickOption) return;
+
+            if (pid && typeof DB !== 'undefined' && DB.getProjectById) {
+                const project = DB.getProjectById(pid);
+                if (project && project.collaboratorName) {
+                    if (nameSpan) nameSpan.textContent = project.collaboratorName;
+                    quickOption.style.display = 'block';
+                    return;
+                }
+            }
+            quickOption.style.display = 'none';
+        }
+
+        function applyProjectCollaborator() {
+            const pid = document.getElementById('linkedProjectId') ? document.getElementById('linkedProjectId').value : '';
+            if (!pid || typeof DB === 'undefined' || !DB.getProjectById) return;
+            const project = DB.getProjectById(pid);
+            if (!project || !project.collaboratorName) return;
+
+            const allUsers = typeof DB.getAllUsers === 'function' ? DB.getAllUsers() : [];
+            const user = allUsers.find(u =>
+                (project.collaboratorId && String(u.id) === String(project.collaboratorId)) ||
+                (u.name && u.name.trim().toLowerCase() === project.collaboratorName.trim().toLowerCase())
+            );
+
+            const avatar = user ? user.avatar : ((typeof DB.getAuthorAvatar === 'function') ? DB.getAuthorAvatar(project.collaboratorName) : '');
+            const role = project.collaboratorRole || (user ? (user.role === 'admin' ? 'Editor-in-Chief' : (user.role === 'co-founder' ? 'Co-Founder' : 'Author')) : 'Author');
+
+            selectArticleCollaborator(
+                project.collaboratorId || (user ? user.id : ''),
+                project.collaboratorName,
+                avatar,
+                role
+            );
+        }
+
+        function initArticleCollaboratorSearch() {
+            if (articleCollabSearchInitialized) return;
+            articleCollabSearchInitialized = true;
+
+            const input = document.getElementById('articleCollabSearchInput');
+            const clearBtn = document.getElementById('articleCollabClearSearchBtn');
+            const resultsBox = document.getElementById('articleCollabSearchResults');
+
+            if (!input || !resultsBox) return;
+
+            input.addEventListener('input', (e) => {
+                const q = e.target.value.trim().toLowerCase();
+                if (clearBtn) clearBtn.classList.toggle('hidden', !q);
+
+                if (!q) {
+                    resultsBox.innerHTML = '';
+                    resultsBox.classList.add('hidden');
+                    return;
+                }
+
+                const currentUser = (typeof DB !== 'undefined' && DB.getCurrentUser) ? DB.getCurrentUser() : null;
+                const allUsers = (typeof DB !== 'undefined' && DB.getAllUsers) ? DB.getAllUsers() : [];
+
+                const matches = allUsers.filter(u => {
+                    if (!u.name) return false;
+                    if (currentUser && (String(u.id) === String(currentUser.id) || (u.email && currentUser.email && u.email.toLowerCase() === currentUser.email.toLowerCase()))) return false;
+                    return u.name.toLowerCase().includes(q) || (u.email && u.email.toLowerCase() === q);
+                });
+
+                if (matches.length === 0) {
+                    resultsBox.innerHTML = `<div class="collabNoResults">No registered writers found matching "${escapeHtml(q)}"</div>`;
+                } else {
+                    resultsBox.innerHTML = matches.map(u => {
+                        const initial = u.name ? u.name.charAt(0).toUpperCase() : 'W';
+                        const avatarHtml = u.avatar ? `<img src="${u.avatar}" class="collabItemAvatar" alt="">` : `<div class="collabItemAvatar">${initial}</div>`;
+                        const roleLabel = u.role === 'admin' ? 'Editor-in-Chief' : (u.role === 'co-founder' ? 'Co-Founder' : 'Author');
+                        return `
+                            <div class="collaboratorResultItem" onclick="selectArticleCollaborator('${escapeHtml(u.id || '')}', '${escapeHtml(u.name || '')}', '${escapeHtml(u.avatar || '')}', '${escapeHtml(roleLabel)}')">
+                                ${avatarHtml}
+                                <div class="collabItemDetails">
+                                    <div class="collabItemName">${escapeHtml(u.name)}</div>
+                                    <div class="collabItemRole">${escapeHtml(roleLabel)}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                resultsBox.classList.remove('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!document.getElementById('articleCollabSearchWrapper')?.contains(e.target)) {
+                    resultsBox.classList.add('hidden');
+                }
+            });
+        }
+
+        function clearArticleCollabSearch() {
+            const input = document.getElementById('articleCollabSearchInput');
+            const clearBtn = document.getElementById('articleCollabClearSearchBtn');
+            const resultsBox = document.getElementById('articleCollabSearchResults');
+            if (input) input.value = '';
+            if (clearBtn) clearBtn.classList.add('hidden');
+            if (resultsBox) resultsBox.classList.add('hidden');
+        }
+
+        function selectArticleCollaborator(id, name, avatar, role) {
+            const idEl = document.getElementById('articleCollaboratorId');
+            const nameEl = document.getElementById('articleCollaboratorName');
+            const roleEl = document.getElementById('articleCollaboratorRole');
+            const isCollabEl = document.getElementById('articleIsCollab');
+
+            if (idEl) idEl.value = id || '';
+            if (nameEl) nameEl.value = name || '';
+            if (roleEl) roleEl.value = role || 'Author';
+            if (isCollabEl) isCollabEl.value = 'true';
+
+            const card = document.getElementById('selectedArticleCollabCard');
+            const nameDisplay = document.getElementById('selectedArticleCollabName');
+            const roleDisplay = document.getElementById('selectedArticleCollabRole');
+            const avatarDisplay = document.getElementById('selectedArticleCollabAvatar');
+
+            if (nameDisplay) nameDisplay.textContent = name;
+            if (roleDisplay) roleDisplay.textContent = role;
+            if (avatarDisplay) {
+                if (avatar) {
+                    avatarDisplay.innerHTML = `<img src="${avatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else {
+                    avatarDisplay.textContent = name ? name.charAt(0).toUpperCase() : 'W';
+                }
+            }
+
+            if (card) card.classList.remove('hidden');
+            clearArticleCollabSearch();
+            updateArticleAuthorSimulation();
+        }
+
+        function removeSelectedArticleCollaborator() {
+            const idEl = document.getElementById('articleCollaboratorId');
+            const nameEl = document.getElementById('articleCollaboratorName');
+            const roleEl = document.getElementById('articleCollaboratorRole');
+            const isCollabEl = document.getElementById('articleIsCollab');
+
+            if (idEl) idEl.value = '';
+            if (nameEl) nameEl.value = '';
+            if (roleEl) roleEl.value = '';
+            if (isCollabEl) isCollabEl.value = 'false';
+
+            const card = document.getElementById('selectedArticleCollabCard');
+            if (card) card.classList.add('hidden');
+            clearArticleCollabSearch();
+            updateArticleAuthorSimulation();
+        }
+
+        function updateArticleAuthorSimulation() {
+            const author = (document.getElementById('articleAuthor')?.value || '').trim() || 'Ali Mert Bayar';
+            const collabName = (document.getElementById('articleCollaboratorName')?.value || '').trim();
+            const isCollab = document.getElementById('articleIsCollab')?.value === 'true' && !!collabName;
+
+            const simCardAuthor = document.getElementById('simCardAuthor');
+            const simHeroAuthor = document.getElementById('simHeroAuthor');
+
+            if (isCollab) {
+                if (simCardAuthor) simCardAuthor.textContent = `${author} & ${collabName}`;
+                if (simHeroAuthor) simHeroAuthor.textContent = `By ${author} & ${collabName}`;
+            } else {
+                if (simCardAuthor) simCardAuthor.textContent = author;
+                if (simHeroAuthor) simHeroAuthor.textContent = `By ${author}`;
+            }
         }
 
         async function initEditMode(id) {
@@ -652,6 +978,37 @@
                     btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Cancel';
                     populateProjectDropdown();
                     document.getElementById('unlinkProjectBtn').style.display = 'inline-flex';
+                    if (document.getElementById('subProjectHomeOption')) {
+                        document.getElementById('subProjectHomeOption').style.display = 'block';
+                    }
+                }
+            }
+
+            const isFeatured = article.showInHeroAndGrid === true || (Array.isArray(article.keywords) && article.keywords.includes('featured_home'));
+            if (document.getElementById('showInHeroAndGrid')) {
+                document.getElementById('showInHeroAndGrid').checked = !!isFeatured;
+            }
+
+            // Populate collaboration if article has collaborator
+            if (article.isCollab || article.collaboratorName) {
+                const collabPanel = document.getElementById('articleCollabPanel');
+                const collabToggleBtn = document.getElementById('toggleArticleCollab');
+                if (collabPanel && collabToggleBtn) {
+                    collabPanel.style.display = 'flex';
+                    collabToggleBtn.classList.add('active');
+                    collabToggleBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Cancel Collaboration';
+                    initArticleCollaboratorSearch();
+                    checkProjectCollaboratorAvailability();
+
+                    const avatar = (article.collaboratorName && typeof DB !== 'undefined' && DB.getAuthorAvatar)
+                        ? DB.getAuthorAvatar(article.collaboratorName)
+                        : '';
+                    selectArticleCollaborator(
+                        article.collaboratorId || '',
+                        article.collaboratorName || '',
+                        avatar,
+                        article.collaboratorRole || 'Author'
+                    );
                 }
             }
         }
@@ -760,6 +1117,11 @@
                     prefix = '<u>';
                     suffix = '</u>';
                     placeholder = 'Underlined text';
+                    break;
+                case 'mainTitle':
+                    prefix = '\n\n### ';
+                    suffix = ' ###\n\n';
+                    placeholder = 'Main Title';
                     break;
                 case 'heading':
                     prefix = '\n\n## ';
@@ -904,8 +1266,7 @@
             }
 
             const previewText = val.trim() || 'Ali Mert Bayar';
-            document.getElementById('simCardAuthor').textContent = previewText;
-            document.getElementById('simHeroAuthor').textContent = `By ${previewText}`;
+            updateArticleAuthorSimulation();
 
             const avatarSrc = (typeof DB !== 'undefined' && DB.getAuthorAvatar) ? DB.getAuthorAvatar(previewText) : (previewText.toLowerCase() === 'ali mert bayar' ? 'images/mert_img.png' : null);
             const cardAvatar = document.getElementById('simCardAvatar');
@@ -1051,59 +1412,6 @@
             return Array.from(map.values());
         }
 
-        function downloadUpdatedData(type, targetArticle) {
-            const allArticles = getCombinedArticlesList(targetArticle);
-            if (type === 'json') {
-                const content = JSON.stringify(allArticles, null, 4);
-                triggerFileDownload('articles.json', content, 'application/json');
-            } else if (type === 'js') {
-                const content = '/**\n * Point of View / Article Website\n * Central articles database - available synchronously to all pages.\n * Compatible with static hosts (GitHub Pages) and local environments.\n */\nwindow.ARTICLES_DATABASE = ' + JSON.stringify(allArticles, null, 4) + ';\n';
-                triggerFileDownload('articles-data.js', content, 'application/javascript');
-            }
-        }
-
-        function triggerFileDownload(filename, text, mimeType) {
-            const blob = new Blob([text], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        let pendingRedirectUrl = null;
-
-        function showSyncModal(targetArticle, redirectUrl) {
-            pendingRedirectUrl = redirectUrl;
-            const modal = document.getElementById('syncModalOverlay');
-            if (!modal) {
-                window.location.href = redirectUrl;
-                return;
-            }
-
-            const downloadJsBtn = document.getElementById('syncDownloadJsBtn');
-            const downloadJsonBtn = document.getElementById('syncDownloadJsonBtn');
-            const continueBtn = document.getElementById('syncContinueBtn');
-
-            if (downloadJsBtn) {
-                downloadJsBtn.onclick = () => downloadUpdatedData('js', targetArticle);
-            }
-            if (downloadJsonBtn) {
-                downloadJsonBtn.onclick = () => downloadUpdatedData('json', targetArticle);
-            }
-            if (continueBtn) {
-                continueBtn.onclick = () => {
-                    modal.classList.remove('active');
-                    window.location.href = pendingRedirectUrl;
-                };
-            }
-
-            modal.classList.add('active');
-        }
-
         async function handlePublish(event) {
             event.preventDefault();
 
@@ -1130,23 +1438,47 @@
             const readTime = Math.max(1, Math.ceil(words / 200));
 
             const finalTopics = selectedTopics.slice(0, 2);
+            const collabId = document.getElementById('articleCollaboratorId') ? document.getElementById('articleCollaboratorId').value.trim() : '';
+            const collabName = document.getElementById('articleCollaboratorName') ? document.getElementById('articleCollaboratorName').value.trim() : '';
+            const collabRole = document.getElementById('articleCollaboratorRole') ? document.getElementById('articleCollaboratorRole').value.trim() : '';
+            const isCollab = document.getElementById('articleIsCollab')?.value === 'true' && !!collabName;
 
             // EDIT MODE: Update existing article
             if (isEditMode && editArticleId !== null) {
                 const now = new Date();
                 const fallbackDate = `${now.getFullYear()}-${now.getDate()}-${now.getMonth() + 1}`;
+                const isFeatured = !!(document.getElementById('showInHeroAndGrid') && document.getElementById('showInHeroAndGrid').checked);
+                let articleKeywords = [...finalTopics];
+                if (isFeatured) {
+                    if (!articleKeywords.includes('featured_home')) articleKeywords.push('featured_home');
+                } else {
+                    articleKeywords = articleKeywords.filter(k => k !== 'featured_home');
+                }
+
+                if (isCollab && collabName) {
+                    const encodedCollab = 'collab:' + encodeURIComponent(collabName);
+                    if (!articleKeywords.includes(encodedCollab)) articleKeywords.push(encodedCollab);
+                } else {
+                    articleKeywords = articleKeywords.filter(k => typeof k !== 'string' || !k.startsWith('collab:'));
+                }
+
                 const updatedArticleData = {
                     id: editArticleId,
                     title: title,
                     author: author,
+                    isCollab: isCollab,
+                    collaboratorId: isCollab ? (collabId || null) : null,
+                    collaboratorName: isCollab ? (collabName || null) : null,
+                    collaboratorRole: isCollab ? (collabRole || 'Author') : null,
                     date: (originalArticleData && originalArticleData.date) ? originalArticleData.date : fallbackDate,
                     image: selectedCover,
                     readTime: readTime,
                     description: description,
                     body: body,
-                    keywords: [...finalTopics],
+                    keywords: articleKeywords,
                     bibliography: bibliography,
-                    projectId: (document.getElementById('linkedProjectId') ? document.getElementById('linkedProjectId').value : '') || null
+                    projectId: (document.getElementById('linkedProjectId') ? document.getElementById('linkedProjectId').value : '') || null,
+                    showInHeroAndGrid: isFeatured
                 };
 
                 try {
@@ -1156,13 +1488,9 @@
                     return;
                 }
 
-                const synced = await syncArticleToBackend(updatedArticleData);
+                syncArticleToBackend(updatedArticleData);
                 const redirectUrl = `article.html?id=${encodeURIComponent(editArticleId)}`;
-                if (synced) {
-                    window.location.href = redirectUrl;
-                } else {
-                    showSyncModal(updatedArticleData, redirectUrl);
-                }
+                window.location.href = redirectUrl;
                 return;
             }
 
@@ -1172,19 +1500,33 @@
             const newArticleId = 'custom-' + Date.now();
 
             const linkedProjectId = document.getElementById('linkedProjectId') ? document.getElementById('linkedProjectId').value : '';
+            const isFeatured = !!(document.getElementById('showInHeroAndGrid') && document.getElementById('showInHeroAndGrid').checked);
+            let articleKeywords = [...finalTopics];
+            if (isFeatured) {
+                if (!articleKeywords.includes('featured_home')) articleKeywords.push('featured_home');
+            }
+            if (isCollab && collabName) {
+                const encodedCollab = 'collab:' + encodeURIComponent(collabName);
+                if (!articleKeywords.includes(encodedCollab)) articleKeywords.push(encodedCollab);
+            }
 
             const newArticle = {
                 id: newArticleId,
                 title: title,
                 author: author,
+                isCollab: isCollab,
+                collaboratorId: isCollab ? (collabId || null) : null,
+                collaboratorName: isCollab ? (collabName || null) : null,
+                collaboratorRole: isCollab ? (collabRole || 'Author') : null,
                 date: formattedDate,
                 image: selectedCover,
                 readTime: readTime,
                 description: description,
                 body: body,
-                keywords: [...finalTopics],
+                keywords: articleKeywords,
                 bibliography: bibliography,
-                projectId: linkedProjectId || null
+                projectId: linkedProjectId || null,
+                showInHeroAndGrid: isFeatured
             };
 
             // Save to database via DB engine
@@ -1195,45 +1537,10 @@
                 return;
             }
 
-            const synced = await syncArticleToBackend(newArticle);
+            syncArticleToBackend(newArticle);
             const redirectUrl = `article.html?id=${encodeURIComponent(newArticleId)}`;
-            if (synced) {
-                window.location.href = redirectUrl;
-            } else {
-                showSyncModal(newArticle, redirectUrl);
-            }
+            window.location.href = redirectUrl;
         }
     </script>
-
-    <!-- GitHub Pages Sync Modal -->
-    <div class="syncModalOverlay" id="syncModalOverlay">
-        <div class="syncModalCard">
-            <div class="syncModalHeader">
-                <h3>Article Published!</h3>
-                <span class="syncModalBadge">✓ Saved Locally</span>
-            </div>
-            <div class="syncModalBody">
-                <p>Your article is live in your browser. Since GitHub Pages is a static server, to ensure all visitors on the web can read it, download the updated files below and push them to your repository:</p>
-                <div class="syncModalDownloadRow">
-                    <button type="button" class="syncDownloadBtn" id="syncDownloadJsBtn">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Download articles-data.js
-                    </button>
-                    <button type="button" class="syncDownloadBtn" id="syncDownloadJsonBtn">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Download articles.json
-                    </button>
-                </div>
-                <div class="syncModalHint">
-                    💡 <strong>Tip:</strong> If you run <code>python3 server.py</code> while writing, all articles are automatically saved to these files without needing manual downloads!
-                </div>
-            </div>
-            <div class="syncModalFooter">
-                <button type="button" class="syncModalPrimaryBtn" id="syncContinueBtn">
-                    View Published Article &rarr;
-                </button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
