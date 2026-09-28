@@ -63,6 +63,14 @@ const DB = (function() {
         } else if (a.showInHeroAndGrid === false) {
             kwList = kwList.filter(k => k !== 'featured_home');
         }
+        if (a.projectId) {
+            const encodedProject = 'project:' + encodeURIComponent(a.projectId);
+            if (!kwList.some(k => typeof k === 'string' && k.startsWith('project:'))) {
+                kwList.push(encodedProject);
+            }
+        } else {
+            kwList = kwList.filter(k => typeof k !== 'string' || !k.startsWith('project:'));
+        }
         return {
             id: String(a.id),
             title: a.title || 'Untitled Article',
@@ -75,8 +83,7 @@ const DB = (function() {
             read_time: parseInt(a.readTime || a.read_time, 10) || 5,
             body: a.body || '',
             keywords: kwList,
-            bibliography: a.bibliography || '',
-            project_id: a.projectId || a.project_id || null
+            bibliography: a.bibliography || ''
         };
     }
 
@@ -101,6 +108,18 @@ const DB = (function() {
             }
         }
 
+        let projectId = r.project_id || r.projectId || null;
+        if (!projectId && Array.isArray(kw)) {
+            const projKw = kw.find(k => typeof k === 'string' && k.startsWith('project:'));
+            if (projKw) {
+                try {
+                    projectId = decodeURIComponent(projKw.substring(8));
+                } catch (e) {
+                    projectId = projKw.substring(8);
+                }
+            }
+        }
+
         return {
             id: String(r.id),
             title: r.title || 'Untitled Article',
@@ -120,8 +139,8 @@ const DB = (function() {
             body: r.body || '',
             keywords: kw,
             bibliography: r.bibliography || '',
-            projectId: r.project_id || r.projectId || null,
-            project_id: r.project_id || r.projectId || null,
+            projectId: projectId,
+            project_id: projectId,
             showInHeroAndGrid: isFeatured,
             createdAt: r.created_at || r.createdAt || new Date().toISOString()
         };
